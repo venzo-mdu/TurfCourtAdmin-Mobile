@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Dimensions } from 'react-native';
 
 const CommonTextArea = ({ label, value, onChangeText, placeholder, placeholderTextColor, numberOfLines }) => {
   return (
@@ -37,7 +37,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     textAlignVertical: 'top', // Aligns text at the top of the TextInput
-    backgroundColor:'#ffffff'
+    backgroundColor:'#ffffff',
+    width: Dimensions.get('window').width * 0.8,
+
   },
 });
 
