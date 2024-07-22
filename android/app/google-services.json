@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "744304593354",
+    "project_id": "venzoturfbooking",
+    "storage_bucket": "venzoturfbooking.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:744304593354:android:94189ab9890b90bb296733",
+        "android_client_info": {
+          "package_name": "com.venzo.turfbookingapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeBwuf2ptaO8EjcO2h87mW55SHludE0dI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
