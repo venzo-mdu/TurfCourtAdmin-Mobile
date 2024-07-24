@@ -47,7 +47,7 @@ const AdminStackNav = ({route}) => {
           headerTitleAlign: 'center',
           headerBackTitleVisible: false,
           headerLeft: () => (
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity onPress={() => navigation.navigate(ADMINARENA, {refresh: true})}>
             <Image
               source={IMAGES.LeftBackArrow} // Path to your custom back arrow image if needed
               style={{ width: 20, height: 20, marginLeft: 4 }}  

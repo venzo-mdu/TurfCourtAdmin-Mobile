@@ -75,7 +75,7 @@ useEffect(() => {
             setUserData(user?.user_id);
             await AsyncStorage.setItem('uid', JSON.stringify(user?.user_id));
             setLoggedIn(true);
-            setInitialRoute(ADMINHOME); // Set initial route to home if user is an owner
+            setInitialRoute(ADMINARENA); // Set initial route to home if user is an owner
           } else {
             ToastAndroid.show("Please Logged in the owner user", ToastAndroid.SHORT);
             setInitialRoute(USERLOGIN); // Set initial route to login if user is not an owner
@@ -116,7 +116,7 @@ useEffect(() => {
     {
       loggedIn ? (
         <>
-        <Tab.Screen
+        {/* <Tab.Screen
         name={ADMINHOME}
         component={indexHome}
         options={{
@@ -125,15 +125,15 @@ useEffect(() => {
             <Image source={focused ? IMAGES.HomeGreen : IMAGES.HomeGray } style={{width:30, height:30}} />
           ),
         }}
-      />
+      /> */}
         
       <Tab.Screen
         name={ADMINARENA}
         component={indexArena}
         options={{
-          tabBarLabel: 'Arena',
+          tabBarLabel: 'Home',
           tabBarIcon: ({ focused  }) => (
-            <Image source={focused ? IMAGES.BookingGreen : IMAGES.BookingGray} style={{width:30, height:30}} />
+            <Image source={focused ? IMAGES.HomeGreen : IMAGES.HomeGray} style={{width:30, height:30}} />
           ),
        //   tabBarBadge: 3,
        headerShown: true,
@@ -147,7 +147,7 @@ useEffect(() => {
         options={{
           tabBarLabel: 'booking',
           tabBarIcon: ({ focused  }) => (
-           <Image source={focused ? IMAGES.ProfileGreen : IMAGES.ProfileGray} style={{width:30, height:30}} />
+           <Image source={focused ? IMAGES.BookingGreen : IMAGES.BookingGray} style={{width:30, height:30}} />
           ),
         }}
       />
