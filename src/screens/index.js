@@ -16,7 +16,7 @@ export const USERPROFILE = "User Profile Views";
 
 
 export const ADMINARENA = "Admin Arena Screen";
-export const ADMINHOME = "Admin Home Screen";
+//export const ADMINHOME = "Admin Home Screen";
 export const ADMINPROFILE = "Admin Profile Screen";
 export const ADMINBOOKING = "Admin Booking Screen";
 export const ADDARENA = "Add Arena Screen";

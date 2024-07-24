@@ -6,7 +6,7 @@ import Carousel from 'react-native-snap-carousel';
 import { getgroundData } from '../../../firebase/firebaseFunction/groundDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CardComponent from '../../../components/molecules/CardComponent';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CardSlider from './CardSlider';
 import { IMAGES } from '../../../assets/constants/global_images';
@@ -18,9 +18,11 @@ const indexArena = () => {
   //const isowner = localStorage.getItem("isowner");
   const [groundData, setGrounddata] = useState([]);
   const [uid, setUid] = useState([]);
+  const route = useRoute();
+  const { refresh, refreshViews } = route.params || {};
   const navigation = useNavigation();
 console.log("uid", uid);
-console.log("groundData", groundData)
+//console.log("groundData", groundData)
 
 const getUserData = async () => {
   try {
@@ -64,6 +66,20 @@ useEffect(() => {
     getgroundDetails();
   }, [uid]);
 
+  useEffect(() => {
+    if (refresh) {
+    getgroundDetails();
+    }
+  }, [refresh]);
+
+  useEffect(() => {
+    if (refreshViews) {
+    getgroundDetails();
+    }
+  }, [refreshViews]);
+
+  
+
   const selectGround = (ground_id, index) => {
     // Handle ground selection logic
   };
@@ -89,7 +105,7 @@ useEffect(() => {
         <>
         <CardSlider filteredGrounds={groundData} userId={uid} />
         <TouchableOpacity onPress={handleCreateground} style={styles.addArenaButton}>
-        <Image source={IMAGES.AddArenaButton}  />
+        <Image source={IMAGES.AddArenaButton} />
         </TouchableOpacity>
         </>
       ) : (
@@ -112,6 +128,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     top: 0,
+    position: 'relative',
   },
   // header: {
   //   width: '100%',
@@ -155,7 +172,7 @@ const styles = StyleSheet.create({
     paddingHorizontal:35,
   },
   addArenaButton: {
-    //position: 'absolute',
+    position: 'absolute',
     alignSelf:'flex-end',
     bottom: 30,  // Adjust this value to move the button higher or lower
     right: 0,    // Adjust this value to move the button more to the left or right

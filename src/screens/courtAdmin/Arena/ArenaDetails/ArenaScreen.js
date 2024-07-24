@@ -4,18 +4,21 @@ import CommonTextInput from '../../../../components/molecules/CommonTextInput';
 import DatePicker from 'react-native-date-picker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { IMAGES } from '../../../../assets/constants/global_images';
-import { createCity, createGroundData, getgroundDataById, uploadFile } from '../../../../firebase/firebaseFunction/groundDetails';
+import { createCity, createGroundData, getgroundDataById, UpdateGroundData, uploadFile } from '../../../../firebase/firebaseFunction/groundDetails';
 import { launchImageLibrary } from 'react-native-image-picker';
 import CommonTextArea from '../../../../components/molecules/CommonTextArea';
 import CheckBox from '@react-native-community/checkbox'; 
 import { userData } from '../../../../firebase/firebaseFunction/userDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
-import { ADDARENA } from '../../..';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { ADDARENA, ADMINARENA } from '../../..';
 
 const ArenaScreen = () => {
   const [tab, setTab] = useState("Basic Details");
+  const route = useRoute();
+  const { groundID } = route.params || null;
   //const [review, setGroundData] = useState({});
+  //console.log("groundID", groundID);
   const [groundData, setGroundData] = useState({
     groundname: '',
     phonenumber: '',
@@ -33,13 +36,13 @@ const ArenaScreen = () => {
     pincode: '',
     latitude: '',
     longitude: '',
-    start_time: new Date(),
-    end_time: new Date(),
+    start_time: '',
+    end_time: '',
     active: '',
   });
   const navigation = useNavigation();
   const [details, setDetails] = useState({});
-console.log("Ground Data", groundData)
+//console.log("Ground Data", groundData)
   const [loader, setLoading] = useState(false);
   const [tempstate, settempstate] = useState();
   //let uid = localStorage.getItem("uid");
@@ -61,7 +64,7 @@ console.log("Ground Data", groundData)
   const [openStartPicker, setOpenStartPicker] = useState(false);
   const [openEndPicker, setOpenEndPicker] = useState(false);
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(groundData?.active);
+  const [value, setValue] = useState(null);
   const [items, setItems] = useState([
     { label: 'Active', value: true },
     { label: 'Inactive', value: false },
@@ -70,7 +73,8 @@ console.log("Ground Data", groundData)
     groundData ? groundData?.rules : [""]
   );
 
-  console.log("details", details)
+  //console.log("details", details);
+  //console.log("value12345",groundData?.active)
 
   const tabs = [
     "Basic Details",
@@ -159,30 +163,59 @@ console.log("Ground Data", groundData)
     getUserData();
    // getLocation();
   }, []);
-console.log("uid value123", uid)
-console.log("uid value1233444", details)
+//console.log("uid value123", uid)
+//console.log("uid value1233444", details)
 
-  const grndData = async () => {
-   console.log("uid values", uid)
-      //let groundres = await getgroundDataById(data);
-      let user = await userData(uid);
-console.log("user", user)
-      // setGroundData(groundres);
-      // setArenaDetails(groundres);
-      setDetails(user);
+//   const grndData = async () => {
+//    console.log("uid values", uid)
+//       //let groundres = await getgroundDataById(data);
+//       let user = await userData(uid);
+// console.log("user", user)
+//       // setGroundData(groundres);
+//       // setArenaDetails(groundres);
+//       setDetails(user);
 
-      // settempstate(groundres);
-      // setTextAreas(groundres?.rules);
-      // setLoading(false);
+//       // settempstate(groundres);
+//       // setTextAreas(groundres?.rules);
+//       // setLoading(false);
    
-      // setGroundData(createtempgroundData);
+//       // setGroundData(createtempgroundData);
     
-  };
+//   };
+
+const grndData = async () => {
+ // console.log("Update groundID123", groundID)
+  if (groundID != null) {
+   // console.log("Update groundID", groundID)
+    let groundres = await getgroundDataById(groundID);
+    let user = await userData(uid);
+
+    setGroundData(groundres);
+    //setArenaDetails(groundres);
+    setDetails(user);
+
+    settempstate(groundres);
+    setTextAreas(groundres?.rules);
+    setLoading(false);
+  } else {
+    let user = await userData(uid);
+
+    setDetails(user);
+    setGroundData(createtempgroundData);
+  }
+};
 
   useEffect(() => {
     grndData();
    // getLocation();
   }, [uid]);
+
+  // useEffect(() => {
+  //   // Update the value of the dropdown when groundData?.active changes
+  //   if (groundData?.active !== null) {
+  //     setValue(groundData?.active);
+  //   }
+  // }, [groundData?.active]);
 
  
 
@@ -217,19 +250,24 @@ console.log("user", user)
  /* Rules Available Sections */
 
 const handleAddTextArea = () => {
-  setTextAreas([...textAreas, ""]);
+ // setTextAreas([...textAreas, ""]);
+ const updatedTextAreas = [...textAreas, ""];
+ setTextAreas(updatedTextAreas);
+ setGroundData({ ...groundData, rules: updatedTextAreas });
 };
 
 
  const handleDeleteTextArea = (index) => {
   const updatedTextAreas = textAreas.filter((_, i) => i !== index);
   setTextAreas(updatedTextAreas);
+  setGroundData({ ...groundData, rules: updatedTextAreas });
 };
 
 const handleTextAreaChange = (index, value) => {
   const updatedTextAreas = [...textAreas];
   updatedTextAreas[index] = value;
   setTextAreas(updatedTextAreas);
+  setGroundData({ ...groundData, rules: updatedTextAreas });
 }; 
 
 /* Handle Amenities Sections */
@@ -256,7 +294,7 @@ const handleAmenitiesClick = (value) => {
     };
 
     launchImageLibrary(options, async (response) => {
-      console.log("response111", response)
+      //console.log("response111", response)
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.error) {
@@ -267,7 +305,7 @@ const handleAmenitiesClick = (value) => {
         for (let image of images) {
           const fileType = image.type;
           if (fileType !== 'image/svg+xml') {
-            console.log("Hi")
+            //console.log("Hi")
             const fileUri = image.uri;
             const fileName = "Gallery_IMG_" + new Date().getTime();
             const imageUrl = await uploadFile(uid, fileName, fileUri, 'galleryImage');
@@ -304,7 +342,7 @@ const handleAmenitiesClick = (value) => {
     };
 
     launchImageLibrary(options, async (response) => {
-      console.log("response111", response)
+     // console.log("response111", response)
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.error) {
@@ -378,7 +416,7 @@ const handleAmenitiesClick = (value) => {
       pincode: false,
       start_time: false,
       end_time: false,
-      active: false,
+      // active: false,
     };
     if (groundData?.groundname != "") {
       tempval.groundname = true;
@@ -428,29 +466,29 @@ const handleAmenitiesClick = (value) => {
     if (groundData?.end_time != "") {
       tempval.end_time = true;
     }
-    if (groundData?.active != "") {
-      tempval.active = true;
-    }
+    // if (groundData?.active != "") {
+    //   tempval.active = true;
+    // }
 
     setvalData(Object.values(tempval).every(Boolean));
     if (Object.values(tempval).every(Boolean)) {
-      console.log("detailOwner", details.owner)
+     // console.log("detailOwner", details.owner)
       if (details.owner) {
         groundData.owner = uid;
         groundData.latitude = "9.92872166589861";
         groundData.longitude = "78.16099437904265";
-        groundData.city = groundData.city.toLowerCase();
-        console.log(groundData, "setGroundData");
+        groundData.city = groundData?.city.toLowerCase();
+      //  console.log(groundData, "setGroundData");
         setLoading(true);
         create = await createGroundData(groundData);
-        createcity = await createCity({ cityName: groundData.city });
+        createcity = await createCity({ cityName: groundData?.city });
         
 
         setLoading(false);
         console.log(create, "create", "check ", createcity);
         setGroundData(create);
        // navigate("/courtadmin/dashboard");
-       navigation.navigate(ADDARENA)
+       navigation.navigate(ADMINARENA, { refreshViews : true })
        ToastAndroid.show('Ground Added Successfully', ToastAndroid.SHORT);
        // grndData();
       } else {
@@ -458,9 +496,127 @@ const handleAmenitiesClick = (value) => {
       }
     }
   };
-  
 
+
+  /* Update Ground Details Sections */
+  const updateground = async (groundData) => {
+    if (uid == null) {
+      navigate("/login");
+      return;
+    }
+    let createcity;
+    let tempval = {
+      groundname: false,
+      phonenumber: false,
+      email: false,
+      groundtype: false,
+      coverImage: false,
+      game_type: false,
+      includes: false,
+      rules: false,
+      amenities: false,
+      gallery: false,
+      city: false,
+      state: false,
+      street_address: false,
+      pincode: false,
+      start_time: false,
+      end_time: false,
+      // active: false,
+    };
+    if (groundData?.groundname != "") {
+      tempval.groundname = true;
+    } else {
+    }
+    if (groundData?.groundtype != "") {
+      tempval.groundtype = true;
+    }
+    if (groundData?.email != "") {
+      tempval.email = true;
+    }
+    if (groundData?.phonenumber != "") {
+      tempval.phonenumber = true;
+    }
+    if (groundData?.coverImage != []) {
+      tempval.coverImage = true;
+    }
+    if (groundData?.street_address != "") {
+      tempval.street_address = true;
+    }
+    if (groundData?.pincode != "") {
+      tempval.pincode = true;
+    }
+    if (groundData?.state != "") {
+      tempval.state = true;
+    }
+    if (groundData?.city != "") {
+      tempval.city = true;
+    }
+    if (groundData?.game_type != []) {
+      tempval.game_type = true;
+    }
+    if (groundData?.includes != []) {
+      tempval.includes = true;
+    }
+    if (groundData?.rules != []) {
+      tempval.rules = true;
+    }
+    if (groundData?.amenities != []) {
+      tempval.amenities = true;
+    }
+    if (groundData?.gallery != []) {
+      tempval.gallery = true;
+    }
+    if (groundData?.start_time != "") {
+      tempval.start_time = true;
+    }
+    if (groundData?.end_time != "") {
+      tempval.end_time = true;
+    }
+    //console.log("groundData?.active", groundData?.active)
+    // if (groundData?.active != "") {
+    //   tempval.active = true;
+    // }
+
+    console.log(tempval, "tempval", Object.values(tempval).every(Boolean));
+    setvalData(Object.values(tempval).every(Boolean));
+    if (Object.values(tempval).every(Boolean)) {
+      console.log("tempval", "2");
+      if (details.owner) {
+        let update = "";
+        groundData.rules = textAreas;
+        groundData.city = groundData?.city.toLowerCase();
+       // console.log("Update Values", groundID)
+        update = await UpdateGroundData(groundData, groundID);
+        createcity = await createCity({ cityName: groundData?.city });
+        if (typeof update === "undefined") {
+          // toast.success("Update Success", {
+          //   position: "top-right",
+          //   autoClose: 2000,
+          // });
+          ToastAndroid.show('Ground Updated Successfully', ToastAndroid.SHORT);
+        } else {
+          // toast.error("Update Failed", {
+          //   position: "top-right",
+          //   autoClose: 2000,
+          // });
+          ToastAndroid.show('Ground Updated Failed', ToastAndroid.SHORT);
+        }
+        // console.log(update, data, "check ");
+//console.log("update values", update)
+        setGroundData(update);
+        console.log(typeof update, "check ");
+        grndData();
+      } else {
+        console.log("not a owner");
+      }
+    }
+  };
+
+  
+/* Time Format Views */
   const formatTime = (date) => {
+    if (!date) return 'Select Time';
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
@@ -470,7 +626,7 @@ const handleAmenitiesClick = (value) => {
   const renderItem = ({ item }) => (
     <View style={styles.itemContainerIncludes}>
       <CheckBox
-        value={groundData.includes.includes(item)}
+        value={groundData?.includes.includes(item)}
         onValueChange={() => handleincludeclick(item)}
         tintColors={{ true: '#097E52', false: '#192335' }}
       />
@@ -481,7 +637,7 @@ const handleAmenitiesClick = (value) => {
   const renderAmenities = ({ item }) => (
     <View style={styles.itemContainerIncludes}>
       <CheckBox
-        value={groundData.amenities.includes(item)}
+        value={groundData?.amenities.includes(item)}
         onValueChange={() => handleAmenitiesClick(item)}
         tintColors={{ true: '#097E52', false: '#192335' }}
       />
@@ -515,47 +671,51 @@ const handleAmenitiesClick = (value) => {
             <View style={styles.container}>
             <CommonTextInput
                 label="Arena Name"
-                value={groundData.groundname}
+                value={groundData?.groundname}
                 onChangeText={(text) => handleInputChange('groundname', text)}
                // widthStyle={true} // Adjust this prop based on your requirement
               />
               <CommonTextInput
                 label="Mobile Number"
-                value={groundData.phonenumber}
+                value={groundData?.phonenumber}
                 onChangeText={(text) => handleInputChange('phonenumber', text)}
                // widthStyle={true} // Adjust this prop based on your requirement
               />
               <CommonTextInput
                 label="Email"
-                value={groundData.email}
+                value={groundData?.email}
                 onChangeText={(text) => handleInputChange('email', text)}
                // widthStyle={true} // Adjust this prop based on your requirement
               />
                <CommonTextInput
                 label="Arena Type"
-                value={groundData.groundtype}
+                value={groundData?.groundtype}
                 onChangeText={(text) => handleInputChange('groundtype', text)}
                // widthStyle={true} // Adjust this prop based on your requirement
               />
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Opens At</Text>
                 <TouchableOpacity style={styles.inputDateView} onPress={() => setOpenStartPicker(true)}>
-                  <Text style={styles.inputText}>{formatTime(groundData.start_time)}</Text>
+                  <Text style={styles.inputText}>{groundData?.start_time || 'Select Time'}</Text>
                 </TouchableOpacity>
                 <DatePicker
                   modal
                   open={openStartPicker}
-                  date={groundData.start_time}
+                  date={new Date()}
                   mode="time"
                   onConfirm={(date) => {
                     setOpenStartPicker(false);
-                    handleInputChange('start_time', date);
+                    //handleInputChange('start_time', date);
+                    setGroundData(prevState => ({
+      ...prevState,
+      ['start_time']: formatTime(date),
+    }));
                   }}
                   onCancel={() => {
                     setOpenStartPicker(false);
                   }}
                 />
-                {!groundData.start_time && !valData && (
+                {!groundData?.start_time && !valData && (
                   <Text style={styles.errorText}>*Enter start time</Text>
                 )}
               </View>
@@ -563,22 +723,26 @@ const handleAmenitiesClick = (value) => {
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Closes At</Text>
                 <TouchableOpacity style={styles.inputDateView} onPress={() => setOpenEndPicker(true)}>
-                  <Text style={styles.inputText}>{formatTime(groundData.end_time)}</Text>
+                  <Text style={styles.inputText}>{groundData?.end_time || 'Select Time'}</Text>
                 </TouchableOpacity>
                 <DatePicker
                   modal
                   open={openEndPicker}
-                  date={groundData.end_time}
+                  date={new Date()}
                   mode="time"
                   onConfirm={(date) => {
                     setOpenEndPicker(false);
-                    handleInputChange('end_time', date);
+                    //handleInputChange('end_time', date);
+                    setGroundData(prevState => ({
+      ...prevState,
+      ['end_time']: formatTime(date),
+    }));
                   }}
                   onCancel={() => {
                     setOpenEndPicker(false);
                   }}
                 />
-                {!groundData.end_time && !valData && (
+                {!groundData?.end_time && !valData && (
                   <Text style={styles.errorText}>*Enter end time</Text>
                 )}
             </View>
@@ -586,7 +750,7 @@ const handleAmenitiesClick = (value) => {
         <Text style={styles.label}>Arena - Active/Inactive</Text>
         <DropDownPicker
           open={open}
-          value={value}
+          value={(groundID != null) ? groundData?.active : value}
           items={items}
           setOpen={setOpen}
           setValue={(callback) => {
@@ -615,7 +779,7 @@ const handleAmenitiesClick = (value) => {
       </View>
 
       <View style={styles.imageContainerUpload}>
-        {groundData.coverImage.map((image, index) => (
+        {groundData?.coverImage.map((image, index) => (
           <View key={index} style={styles.imageWrapperUpload}>
             <Image source={{ uri: image }} style={styles.imageUpload} />
             <TouchableOpacity onPress={() => handleImageDelete(index)} style={styles.deleteButton}>
@@ -625,13 +789,13 @@ const handleAmenitiesClick = (value) => {
         ))}
       </View>
 
-      {groundData.coverImage.length === 0 && (
+      {groundData?.coverImage.length === 0 && (
         <Text style={styles.errorText}>*Select Cover Image</Text>
       )}
 
       <View style={styles.infoContainer}>
-        <Text>Put the main picture as first image</Text>
-        <Text>Images should be minimum 270*312 supported file format JPG, PNG, JPEG, WEBP</Text>
+        {/* <Text>Put the main picture as first image</Text> */}
+        <Text>Images should be supported file format JPG, PNG, JPEG, WEBP</Text>
       </View>
       <View>
       <CommonTextArea
@@ -675,16 +839,16 @@ const handleAmenitiesClick = (value) => {
         data={includes}
         renderItem={renderItem}
         keyExtractor={(item) => item}
-        extraData={groundData.includes} // Ensures FlatList updates when state changes
+        extraData={groundData?.includes} // Ensures FlatList updates when state changes
       />
           </View>
           <View>
           <Text style={styles.label}>Rules</Text>
-          <CommonTextArea
+          {/* <CommonTextArea
         value={groundData?.rules}
-        onChangeText={(value) => handleInputChange("rules", value)}
+        onChangeText={(text) => handleInputChange("rules", text)}
         placeholder="Enter text"
-      />
+      /> */}
           <FlatList
         data={textAreas}
         renderItem={renderItemRules}
@@ -705,7 +869,7 @@ const handleAmenitiesClick = (value) => {
         data={amenities}
         renderItem={renderAmenities}
         keyExtractor={(item) => item}
-        extraData={groundData.includes} // Ensures FlatList updates when state changes
+        extraData={groundData?.includes} // Ensures FlatList updates when state changes
       />
           </View>
           <View>
@@ -718,7 +882,7 @@ const handleAmenitiesClick = (value) => {
       </View>
 
       <View style={styles.imageContainerUpload}>
-        {groundData.gallery.map((image, index) => (
+        {groundData?.gallery.map((image, index) => (
           <View key={index} style={styles.imageWrapperUpload}>
             <Image source={{ uri: image }} style={styles.imageUpload} />
             <TouchableOpacity onPress={() => handleImageGalleryDelete(index)} style={styles.deleteButton}>
@@ -728,7 +892,7 @@ const handleAmenitiesClick = (value) => {
         ))}
       </View>
 
-      {groundData.gallery.length === 0 && (
+      {groundData?.gallery.length === 0 && (
         <Text style={styles.errorText}>*Select Gallery Image</Text>
       )}
           </View>
@@ -738,11 +902,11 @@ const handleAmenitiesClick = (value) => {
         
         <CommonTextInput
           label="State"
-          value={startCase(groundData.state)}
+          value={startCase(groundData?.state)}
           onChangeText={(value) => handleInputChange('state', value)}
           //widthStyle={true}
         />
-        {!groundData.state && !valData && (
+        {!groundData?.state && !valData && (
           <Text style={styles.errorText}>*Enter state</Text>
         )}
       </View>
@@ -751,11 +915,11 @@ const handleAmenitiesClick = (value) => {
        
         <CommonTextInput
           label="City"
-          value={capitalize(groundData.city)}
+          value={capitalize(groundData?.city)}
           onChangeText={(value) => handleInputChange('city', value)}
           //widthStyle={true}
         />
-        {!groundData.city && !valData && (
+        {!groundData?.city && !valData && (
           <Text style={styles.errorText}>*Enter city</Text>
         )}
       </View>
@@ -764,11 +928,11 @@ const handleAmenitiesClick = (value) => {
        
         <CommonTextInput
           label="Street Address"
-          value={startCase(groundData.street_address)}
+          value={startCase(groundData?.street_address)}
           onChangeText={(value) => handleInputChange('street_address', value)}
           //widthStyle={true}
         />
-        {!groundData.street_address && !valData && (
+        {!groundData?.street_address && !valData && (
           <Text style={styles.errorText}>*Enter street address</Text>
         )}
       </View>
@@ -776,24 +940,41 @@ const handleAmenitiesClick = (value) => {
       <View style={styles.stack}>
         <CommonTextInput
           label="Pincode"
-          value={groundData.pincode}
+          value={groundData?.pincode}
           onChangeText={(value) => handleInputChange('pincode', value)}
          // widthStyle={true}
         />
-        {!groundData.pincode && !valData && (
+        {!groundData?.pincode && !valData && (
           <Text style={styles.errorText}>*Enter pincode</Text>
         )}
       </View>
 </View>
-
-<View style={styles.buttonContainerArena}>
+{ (groundID != null) ? 
+(<View style={styles.buttonContainerArena}>
         <TouchableOpacity
           style={styles.buttonArena}
           onPress={() => {
             setGroundData(createtempgroundData);
           }}
         >
-          <Text style={styles.buttonTextArena}>Cancel</Text>
+          <Text style={styles.buttonTextArena}>Reset</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.buttonArena}
+          onPress={() => updateground(groundData)}
+        >
+          <Text style={styles.buttonTextArena}>Update Arena</Text>
+        </TouchableOpacity>
+      </View>) : 
+
+    (  <View style={styles.buttonContainerArena}>
+        <TouchableOpacity
+          style={styles.buttonArena}
+          onPress={() => {
+            setGroundData(createtempgroundData);
+          }}
+        >
+          <Text style={styles.buttonTextArena}>Reset</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.buttonArena}
@@ -801,7 +982,8 @@ const handleAmenitiesClick = (value) => {
         >
           <Text style={styles.buttonTextArena}>Add Arena</Text>
         </TouchableOpacity>
-      </View>
+      </View> )
+}
             </View>
     </ScrollView>
   )
@@ -917,7 +1099,7 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 5,
     padding: 10,
-    borderWidth: 1,
+    //borderWidth: 1,
     borderRadius: 10,
     backgroundColor: '#F9F9F6',
     alignItems: 'center',

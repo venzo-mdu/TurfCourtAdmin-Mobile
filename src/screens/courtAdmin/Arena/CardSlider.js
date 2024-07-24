@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, ActivityIndicator, ToastAndroid } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, ActivityIndicator, ToastAndroid, FlatList } from 'react-native';
 import Carousel from 'react-native-snap-carousel';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { IMAGES } from '../../../assets/constants/global_images';
 import { useNavigation } from '@react-navigation/native';
-import { USERALLGROUND, USERGROUNDBOOKING, USERGROUNDDETAILS, USERLOGIN } from '../..';
+import { ADMINTOPTABNAVIGATION, USERALLGROUND, USERGROUNDBOOKING, USERGROUNDDETAILS, USERLOGIN } from '../..';
 import { UpdateUserData, userData } from '../../../firebase/firebaseFunction/userDetails';
 import { removefavGround } from '../../../firebase/firebaseFunction/groundDetails';
 
@@ -104,17 +104,25 @@ const CardSlider = ({ filteredGrounds, userId, onGroundsUpdated }) => {
   //   }
   // };
 
-  const selectGround = (groundId, index) =>{
-    // console.log("index", index,groundId)
-    // console.log("filteredGrounds Particular Data", filteredGrounds[index])
-    // const selectedGround = filteredGrounds.find((ground_id, idx) => idx === index);
-    // console.log("selectedGround",selectedGround)
-    navigation.navigate(USERGROUNDDETAILS, { groundData: groundId, userId: userId });
-  }
+  // const selectGround = (groundId, index) =>{
+  //   // console.log("index", index,groundId)
+  //   // console.log("filteredGrounds Particular Data", filteredGrounds[index])
+  //   // const selectedGround = filteredGrounds.find((ground_id, idx) => idx === index);
+  //   // console.log("selectedGround",selectedGround)
+  //   navigation.navigate(USERGROUNDDETAILS, { groundData: groundId, userId: userId });
+  // }
 
   const handleAllGround = () => {
     navigation.navigate(USERALLGROUND, { userId: userId });
   }
+
+  const handleCreateground = (item) => {
+    //navigate("/courtadmin/myarena");
+    console.log("hi", item)
+    navigation.navigate(ADMINTOPTABNAVIGATION, { groundID: item})
+    //navigation.navigate(ADMINTOPTABNAVIGATION);
+  };
+
 
   // const handleBook = (groundId, index) => {
   //  // console.log("HandleBook Ids", groundId, index)
@@ -141,8 +149,8 @@ const CardSlider = ({ filteredGrounds, userId, onGroundsUpdated }) => {
   //   </View>
   // );
   const renderItem = ({ item, index }) => (
-    <TouchableOpacity onPress={() => selectGround(item?.ground_id, index)}>
-    <View style={styles.card}>
+    <TouchableOpacity>
+    <View key={index} style={styles.card}>
       <Image source={{ uri: item.coverImage[0] }} style={styles.image} resizeMode='cover' />
       <View style={styles.overlay}>
         <View style={styles.ratingContainer}>
@@ -167,7 +175,7 @@ const CardSlider = ({ filteredGrounds, userId, onGroundsUpdated }) => {
         <Text style={styles.address}>{camelCaseLetter(`${item.street_address}, ${item.city}`)}</Text>
       </View>
       </View>
-      <TouchableOpacity style={styles.bookButton}>
+      <TouchableOpacity style={styles.bookButton} onPress={() => handleCreateground(item.ground_id)}>
           <Text style={styles.bookButtonText}>View More</Text>
         </TouchableOpacity>
     </View>
@@ -186,7 +194,8 @@ const CardSlider = ({ filteredGrounds, userId, onGroundsUpdated }) => {
         </TouchableOpacity> */}
       </View>
       {filteredGrounds.length > 0 ? (
-      <Carousel
+        <>
+      {/* <Carousel
         data={filteredGrounds}
         renderItem={renderItem}
         sliderWidth={SLIDER_WIDTH}
@@ -195,7 +204,13 @@ const CardSlider = ({ filteredGrounds, userId, onGroundsUpdated }) => {
         autoplay={true}
         autoplayDelay={1000}
         autoplayInterval={3000}
-      />
+      /> */}
+      <FlatList
+          data={filteredGrounds}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+        />
+        </>
        ) : (
         <Text style={styles.noDataText}>No Grounds In This City</Text>
       ) }
@@ -310,14 +325,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     height: 380,
     padding: 16,
-   // marginTop: 16,
+    marginTop: 16, //Added
     marginBottom: 16,
     shadowColor: '#000',
     shadowOpacity: 0.25,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 2 },
     position: 'relative',
-    overflow: 'hidden', // Ensure the overlay stays within bounds
+    overflow: 'hidden', 
+    width: Dimensions.get('window').width * 0.9, //Added
   },
   image: {
     width: '100%',
