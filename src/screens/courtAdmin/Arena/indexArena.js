@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
 import Carousel from 'react-native-snap-carousel';
 //import { useNavigate } from 'react-router-native';
@@ -6,7 +6,7 @@ import Carousel from 'react-native-snap-carousel';
 import { getgroundData } from '../../../firebase/firebaseFunction/groundDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CardComponent from '../../../components/molecules/CardComponent';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CardSlider from './CardSlider';
 import { IMAGES } from '../../../assets/constants/global_images';
@@ -67,16 +67,32 @@ useEffect(() => {
   }, [uid]);
 
   useEffect(() => {
-    if (refresh) {
+    if (refresh || refreshViews) {
     getgroundDetails();
     }
-  }, [refresh]);
+  }, [refresh, refreshViews]);
 
-  useEffect(() => {
-    if (refreshViews) {
-    getgroundDetails();
-    }
-  }, [refreshViews]);
+  // useEffect(() => {
+  //   if (refreshViews) {
+  //   getgroundDetails();
+  //   }
+  // }, [refreshViews]);
+  useFocusEffect(
+    useCallback(() => {
+      if (refresh) {
+        getgroundDetails();
+      }
+    }, [refresh])
+  );
+
+
+  useFocusEffect(
+    useCallback(() => {
+      if (refreshViews) {
+        getgroundDetails();
+      }
+    }, [refreshViews])
+  );
 
   
 
