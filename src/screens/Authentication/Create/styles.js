@@ -5,24 +5,30 @@ const {
   PoppinsMedium,
   PoppinsSemiBold,
   PoppinsRegular,
+  Outfit,
+  Urbanist,
+  UrbanistMedium,
+  OutfitRegular,
+  OutfitLight,
 } = require('../../../assets/constants/global_fonts');
 import {Shadow5} from '../../../utils/helpers';
 
 export const UserLoginScreenStyles = StyleSheet.create({
   safe: {
-    // backgroundColor: COLORS.WHITE,
     width: '100%',
     height: '100%',
     justifyContent: 'center',
   },
   loginContainer: {
+    paddingVertical: 65,
+    paddingHorizontal: 30,
     backgroundColor: COLORS.WHITE,
     flex: 3,
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
   },
-  topContainer: {
-    flex: 1,
+  logoContainer: {
+    paddingVertical: 50,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -31,17 +37,11 @@ export const UserLoginScreenStyles = StyleSheet.create({
     paddingTop: '5%',
   },
   headingTxt: {
-    // fontSize: mS(20),
-    // color: COLORS.DARK,
-    // fontFamily: PoppinsSemiBold,
-    // textAlign: "center",
-    // marginVertical: hS(8),
-    fontSize: mS(22),
-    color: '#018352',
-    // fontFamily: PoppinsSemiBold,
-    marginVertical: hS(8),
-    paddingVertical: 5,
-    marginHorizontal: hS(16),
+    lineHeight: 27.72,
+    fontSize: hS(24),
+    marginBottom: 20,
+    color: COLORS.PrimaryColor,
+    fontFamily: 'Outfit-Regular',
   },
   phoneCodeText: {
     // fontSize: mS(20),
@@ -57,13 +57,11 @@ export const UserLoginScreenStyles = StyleSheet.create({
     marginHorizontal: hS(16),
   },
   loginSubText: {
-    //marginVertical: hS(8),
-    // paddingVertical:5,
-    marginHorizontal: hS(16),
-    fontSize: mS(16),
-    color: '#868686',
-    paddingBottom: 5,
+    fontFamily: 'Outfit-Regular',
+    fontSize: hS(16),
+    color: COLORS.SecondaryFontColor,
   },
+
   signUpViewText: {
     fontSize: 18,
     fontWeight: '500',
@@ -73,16 +71,12 @@ export const UserLoginScreenStyles = StyleSheet.create({
     marginHorizontal: hS(16),
   },
   phoneBox: {
-    backgroundColor: COLORS.WHITE,
-    width: WD - hS(16) * 2,
-    height: mS(60),
-    alignSelf: 'center',
-    paddingHorizontal: hS(8),
-    marginHorizontal: hS(16),
-    borderWidth: mS(2),
-    //borderColor: COLORS.DARK,
-    borderColor: '#F1F2F7',
-    borderRadius: mS(8),
+    backgroundColor: COLORS.fieldColor,
+    width: '100%',
+    height: 60,
+    borderColor: COLORS.fieldBorderColor,
+    borderWidth: 1.5,
+    borderRadius: 8,
   },
   CheckBoxViews: {
     backgroundColor: 'transparent',
@@ -136,15 +130,16 @@ export const UserLoginScreenStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   bottomaskTxt1: {
-    fontSize: mS(12),
-    color: COLORS.DARK,
-    fontFamily: PoppinsMedium,
+    fontSize: mS(18),
+    color: '#898989',
+    fontFamily: 'Outfit-Light',
     textAlign: 'center',
   },
   bottomaskTxt2: {
-    color: COLORS.PRIMARY,
-    fontFamily: PoppinsSemiBold,
-    textDecorationLine: 'underline',
+    color: '#097E52',
+    fontFamily: 'Outfit-Medium',
+    fontSize: mS(18),
+    lineHeight: 22.68,
   },
 
   otpContainer: {
@@ -152,13 +147,11 @@ export const UserLoginScreenStyles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   otpBottom: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: '#fff',
     marginHorizontal: 0,
     marginTop: 'auto',
     borderTopLeftRadius: mS(6),
     borderTopRightRadius: mS(6),
-
-    ...Shadow5,
   },
   otpCloseBtn: {
     backgroundColor: 'rgba(0,0,0,0.05)',
@@ -202,17 +195,15 @@ export const UserLoginScreenStyles = StyleSheet.create({
 
   /*New */
   loginBox: {
-    backgroundColor: '#192335',
-    width: mS(300),
-    height: mS(50),
-    alignSelf: 'center',
+    backgroundColor: COLORS.buttonColor,
+    width: '100%',
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: hS(20),
-    borderRadius: mS(8),
+    borderRadius: 14,
   },
   loginButtonBox: {
-    backgroundColor: '#192335',
+    backgroundColor: COLORS.buttonColor,
     width: mS(300),
     height: mS(50),
     alignSelf: 'center',
@@ -223,14 +214,31 @@ export const UserLoginScreenStyles = StyleSheet.create({
     paddingTop: 15,
   },
   loginTxt: {
-    fontSize: mS(18),
+    fontSize: mS(16),
     color: COLORS.WHITE,
-    fontFamily: PoppinsMedium,
+    fontFamily: UrbanistMedium,
+    lineHeight: 19.2,
   },
-  divider: {
-    width: '100%',
+
+  lineContainer: {
+    marginTop: '8%',
+    marginBottom: '8%',
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 16,
+    gap: 15,
+    width: '100%',
+  },
+  line: {
+    height: 1,
+    backgroundColor: '#D7D7D7',
+    width: '10%',
+  },
+  lineText: {
+    color: '#898989',
+    fontFamily: 'Outfit-Light',
+    fontSize: mS(18),
+    lineHeight: 22.68,
   },
   phoneNumberContainer: {
     alignItems: 'flex-start',
@@ -240,10 +248,14 @@ export const UserLoginScreenStyles = StyleSheet.create({
   },
   phoneInputContainer: {
     width: '100%',
-    height: 50,
-    marginBottom: 12,
+    height: 60,
+    backgroundColor: COLORS.fieldColor,
+    borderWidth: 1.5,
+    borderColor: COLORS.fieldBorderColor,
+    borderRadius: 14,
   },
   phoneInputTextContainer: {
+    fontFamily: 'Outfit-Regular',
     paddingVertical: 0,
   },
   dropdown: {
