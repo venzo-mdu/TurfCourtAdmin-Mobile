@@ -14,4 +14,7 @@ export const COLORS = {
   fieldColor: '#F9F9F6',
   fieldBorderColor: '#F1F2F7',
   buttonColor: '#192335',
+  fontColor: '#1b1b1b',
+  placeHolder: '#9ea4b2',
+  bgColor: '#f7f7f7',
 };

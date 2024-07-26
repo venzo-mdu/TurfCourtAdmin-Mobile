@@ -20,5 +20,6 @@ export const PoppinsThinItalic = 'Poppins-ThinItalic';
 export const OutfitRegular = 'Outfit-Regular.ttf';
 export const OutfitMedium = 'Outfit-Medium.ttf';
 export const OutfitLight = 'Outfit-Light.ttf';
+export const OutfitSemiBold = 'Outfit-SemiBold.ttf';
 export const UrbanistRegular = 'Urbanist-Regular';
 export const UrbanistMedium = 'Urbanist-Medium';

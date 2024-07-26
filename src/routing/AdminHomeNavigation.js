@@ -22,12 +22,13 @@ import UserCreateScreen from '../screens/Authentication/Create';
 //import Booking from '../screens/User/Booking';
 //import Profile from '../screens/User/Profile';
 import LaunchScreen from '../screens/Auth/Launch';
-import indexArena from '../screens/courtAdmin/Arena/indexArena';
-import indexBooking from '../screens/courtAdmin/Booking/indexBooking';
+import IndexArena from '../screens/courtAdmin/Arena/indexArena';
+import IndexBooking from '../screens/courtAdmin/Booking/indexBooking';
 //import indexSlotDetails from '../screens/courtAdmin/Home/indexHome';
 //import indexReviews from '../screens/courtAdmin/Profile/indexProfile';
 import indexHome from '../screens/courtAdmin/Home/indexHome';
-import indexProfile from '../screens/courtAdmin/Profile/indexProfile';
+import IndexProfile from '../screens/courtAdmin/Profile/indexProfile';
+import {COLORS} from '../assets/constants/global_colors';
 enableScreens(true);
 const Tab = createBottomTabNavigator();
 
@@ -136,45 +137,117 @@ const AdminHomeNavigation = () => {
 
           <Tab.Screen
             name={ADMINARENA}
-            component={indexArena}
+            component={IndexArena}
             options={{
-              tabBarLabel: 'Home',
+              tabBarLabel: ({focused}) => (
+                <Text
+                  style={{
+                    fontFamily: focused ? 'Outfit-SemiBold' : 'Outfit-Light',
+                    fontSize: 16,
+                    color: focused ? '#3a3a3a' : '#898989',
+                    lineHeight: 20.16,
+                  }}>
+                  Home
+                </Text>
+              ),
               tabBarIcon: ({focused}) => (
                 <Image
                   source={focused ? IMAGES.HomeGreen : IMAGES.HomeGray}
                   style={{width: 30, height: 30}}
                 />
               ),
-              //   tabBarBadge: 3,
+              tabBarStyle: {
+                height: 80,
+                paddingBottom: 10,
+                paddingTop: 10,
+              },
+              headerStyle: {
+                backgroundColor: COLORS.bgColor,
+              },
               headerShown: true,
               headerTitle: 'My Arena',
               headerTitleAlign: 'center',
+              headerTitleStyle: {
+                fontFamily: 'Outfit-Medium',
+                fontSize: 22,
+                lineHeight: 27.72,
+              },
             }}
           />
           <Tab.Screen
             name={ADMINBOOKING}
-            component={indexBooking}
+            component={IndexBooking}
             options={{
-              tabBarLabel: 'booking',
+              tabBarLabel: ({focused}) => (
+                <Text
+                  style={{
+                    fontFamily: focused ? 'Outfit-SemiBold' : 'Outfit-Light',
+                    fontSize: 16,
+                    color: focused ? '#3a3a3a' : '#898989',
+                    lineHeight: 20.16,
+                  }}>
+                  Bookings
+                </Text>
+              ),
               tabBarIcon: ({focused}) => (
                 <Image
                   source={focused ? IMAGES.BookingGreen : IMAGES.BookingGray}
                   style={{width: 30, height: 30}}
                 />
               ),
+              tabBarStyle: {
+                height: 80,
+                paddingBottom: 10,
+                paddingTop: 10,
+              },
+              headerStyle: {
+                backgroundColor: COLORS.bgColor,
+              },
+              headerTitle: 'Bookings',
+              headerTitleAlign: 'center',
+              headerTitleStyle: {
+                fontFamily: 'Outfit-Medium',
+                fontSize: 22,
+                lineHeight: 27.72,
+              },
             }}
           />
           <Tab.Screen
             name={ADMINPROFILE}
-            component={indexProfile}
+            component={IndexProfile}
             options={{
-              tabBarLabel: 'Profile',
+              headerTitle: 'Profile',
+              headerTitleAlign: 'center',
+              headerTitleStyle: {
+                fontFamily: 'Outfit-Medium',
+                fontSize: 22,
+                lineHeight: 27.72,
+              },
+              headerStyle: {
+                backgroundColor: COLORS.bgColor,
+              },
+              tabBarLabel: ({focused}) => (
+                <Text
+                  style={{
+                    fontFamily: focused ? 'Outfit-SemiBold' : 'Outfit-Light',
+                    fontSize: 16,
+                    color: focused ? '#3a3a3a' : '#898989',
+                    lineHeight: 20.16,
+                  }}>
+                  Profile
+                </Text>
+              ),
               tabBarIcon: ({focused}) => (
                 <Image
                   source={focused ? IMAGES.ProfileGreen : IMAGES.ProfileGray}
                   style={{width: 30, height: 30}}
                 />
               ),
+              tabBarStyle: {
+                height: 80,
+                paddingBottom: 10,
+                paddingTop: 10,
+              },
             }}
           />
         </>

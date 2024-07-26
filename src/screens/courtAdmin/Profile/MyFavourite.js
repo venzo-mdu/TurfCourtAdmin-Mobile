@@ -1,19 +1,30 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Dimensions } from "react-native";
-import Carousel from "react-native-snap-carousel";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Image,
+  Dimensions,
+} from 'react-native';
+import Carousel from 'react-native-snap-carousel';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {
   getFavGround,
   removefavGround,
-} from "../../../firebase/firebaseFunction/groundDetails";
-import { UpdateUserData, userData } from "../../../firebase/firebaseFunction/userDetails";
+} from '../../../firebase/firebaseFunction/groundDetails';
+import {
+  UpdateUserData,
+  userData,
+} from '../../../firebase/firebaseFunction/userDetails';
 //import CardComponent from "../Common/CardComponent";
-import { USERHOME, USERLOGIN } from "../..";
-import { IMAGES } from "../../../assets/constants/global_images";
-import UserHomeScreen from "../Home";
+import {USERHOME, USERLOGIN} from '../..';
+import {IMAGES} from '../../../assets/constants/global_images';
+import UserHomeScreen from '../Home';
 
-const { width: viewportWidth } = Dimensions.get('window');
+const {width: viewportWidth} = Dimensions.get('window');
 
 const SLIDER_WIDTH = viewportWidth;
 const ITEM_WIDTH = Math.round(SLIDER_WIDTH * 0.8);
@@ -21,12 +32,14 @@ const ITEM_WIDTH = Math.round(SLIDER_WIDTH * 0.8);
 const MyFavourite = () => {
   const [Favarotedata, setFavarotedata] = useState([]);
   const [liked, setLiked] = useState(Array(Favarotedata.length).fill(false));
-  const [loading, setLoading] = useState(Array(Favarotedata.length).fill(false));
+  const [loading, setLoading] = useState(
+    Array(Favarotedata.length).fill(false),
+  );
   //const [loading, setLoading] = useState(false);
   // const uid = localStorage.getItem("uid");
   // let isowner = localStorage.getItem("isowner");
   const route = useRoute();
-  const { uid } = route.params;
+  const {uid} = route.params;
   const navigation = useNavigation();
 
   const Favarote = async () => {
@@ -47,24 +60,24 @@ const MyFavourite = () => {
     }
 
     if (!data?.favarote) {
-     // setLoading(true);
+      // setLoading(true);
       const userDetails = await userData(uid);
       if (uid != null) {
         userDetails?.favarote
           ? userDetails?.favarote.push(data?.ground_id)
           : (userDetails.favarote = [data?.ground_id]);
         const updatedata = await UpdateUserData(userDetails, uid);
-        if (updatedata?.status == "success") {
-          console.log("update successfully");
+        if (updatedata?.status == 'success') {
+          console.log('update successfully');
           Favarote();
         } else {
-          console.error("update data failed");
+          console.error('update data failed');
         }
       }
-  //    setLoading(false);
+      //    setLoading(false);
     } else {
       const removedata = await removefavGround(uid, data?.ground_id);
-      if (removedata?.status == "success") {
+      if (removedata?.status == 'success') {
         Favarote();
       }
     }
@@ -105,31 +118,43 @@ const MyFavourite = () => {
   // }, [isowner, uid, navigation]);
   //console.log("Favarotedata Fav Data", Favarotedata)
 
-  const renderItem = ({ item, index }) => (
+  const renderItem = ({item, index}) => (
     <View style={styles.card}>
-      <Image source={{ uri: item.coverImage[0] }} style={styles.image} resizeMode='cover' />
+      <Image
+        source={{uri: item.coverImage[0]}}
+        style={styles.image}
+        resizeMode="cover"
+      />
       <View style={styles.overlay}>
         <View style={styles.ratingContainer}>
           <Icon name="star" size={20} color="green" />
           <Text style={styles.ratingText}>{item.overallRating}</Text>
         </View>
         <View style={styles.heartContainer}>
-          <TouchableOpacity onPress={(event) => handleHeartPress(event, index, item)}>
-          {loading[index] ? (
-                <ActivityIndicator size="small" color="gray" />
-              ) : (
-            <Icon name={(item.favarote === true) ? 'heart' : 'heart-o'} size={24} color={(item.favarote === true) ? 'green' : 'gray'} />
-        )}
+          <TouchableOpacity
+            onPress={event => handleHeartPress(event, index, item)}>
+            {loading[index] ? (
+              <ActivityIndicator size="small" color="gray" />
+            ) : (
+              <Icon
+                name={item.favarote === true ? 'heart' : 'heart-o'}
+                size={24}
+                color={item.favarote === true ? 'green' : 'gray'}
+              />
+            )}
           </TouchableOpacity>
         </View>
       </View>
-      <View style={{paddingTop:20}}>
-      <Text style={styles.title}>{item.groundname}</Text>
-      <Text style={styles.text}>{item.overview}</Text>
-      <View style={styles.iconContainer}>
-        <Image source={IMAGES.LocationIcon} style={{ width: 20, height: 20 }} />
-        <Text style={styles.address}>{`${item.street_address}, ${item.city}`}</Text>
-      </View>
+      <View style={{paddingTop: 20}}>
+        <Text style={styles.title}>{item.groundname}</Text>
+        <Text style={styles.text}>{item.overview}</Text>
+        <View style={styles.iconContainer}>
+          <Image source={IMAGES.LocationIcon} style={{width: 20, height: 20}} />
+          <Text
+            style={
+              styles.address
+            }>{`${item.street_address}, ${item.city}`}</Text>
+        </View>
       </View>
     </View>
     // <CardComponent key={index} data={item} onClick={handleFav} type="user" />
@@ -170,23 +195,23 @@ const MyFavourite = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9F9F9",
-    fontFamily: "Outfit",
+    backgroundColor: '#F9F9F9',
+    fontFamily: 'Outfit',
   },
   header: {
     backgroundColor: '#108257',
     height: 179,
-   // justifyContent: 'center',
+    // justifyContent: 'center',
     alignItems: 'flex-start',
     paddingHorizontal: 16,
-    flexDirection:'row',
-    paddingTop:25
+    flexDirection: 'row',
+    paddingTop: 25,
   },
   headerText: {
     color: 'white',
     fontSize: 30,
     fontWeight: '500',
-    paddingLeft:50,
+    paddingLeft: 50,
   },
   navigateText: {
     color: 'white',
@@ -203,12 +228,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     height: 450,
     padding: 16,
-   // marginTop: 16,
+    // marginTop: 16,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOpacity: 0.25,
     shadowRadius: 10,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     position: 'relative',
     overflow: 'hidden', // Ensure the overlay stays within bounds
   },
@@ -216,50 +241,50 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 150,
     //borderRadius: 8,
-    borderTopLeftRadius:8,
-    borderTopRightRadius:8
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     padding: 16,
-   // backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    // backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   title: {
     fontSize: 20,
-    fontWeight: '50',
- //   marginTop: 10,
+    // fontWeight: '50',
+    //   marginTop: 10,
     color: '#000000', // Ensure text is visible over the overlay
-  //  position: 'absolute',
-   // bottom: 16,
+    //  position: 'absolute',
+    // bottom: 16,
     //left: 16,
-    paddingHorizontal:10
+    paddingHorizontal: 10,
   },
   text: {
     fontSize: 16,
-  //  marginVertical: 10,
+    //  marginVertical: 10,
     color: '#757C8D', // Ensure text is visible over the overlay
- //   position: 'absolute',
+    //   position: 'absolute',
     top: 15,
-   // left: 16,
-    paddingHorizontal:10,
-    lineHeight:20
+    // left: 16,
+    paddingHorizontal: 10,
+    lineHeight: 20,
   },
   iconContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingTop: 30,
-   // marginTop: 10,
-   // position: 'absolute',
-  //  bottom: 16,
-   // left: 16,
-    paddingHorizontal:10
+    // marginTop: 10,
+    // position: 'absolute',
+    //  bottom: 16,
+    // left: 16,
+    paddingHorizontal: 10,
   },
   address: {
     fontSize: 16,
     marginLeft: 5,
-    fontWeight:"400",
+    fontWeight: '400',
     color: '#000000', // Ensure text is visible over the overlay
   },
   ratingContainer: {
@@ -267,10 +292,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     top: 16,
     left: 16,
-    backgroundColor:"#ffffff",
-    borderRadius:22,
-    width:60,
-    padding:5
+    backgroundColor: '#ffffff',
+    borderRadius: 22,
+    width: 60,
+    padding: 5,
   },
   ratingText: {
     fontSize: 14,
@@ -288,8 +313,8 @@ const styles = StyleSheet.create({
   noDataText: {
     fontSize: 18,
     color: 'red',
-   // marginTop: 20
-  }
+    // marginTop: 20
+  },
 });
 
 export default MyFavourite;
