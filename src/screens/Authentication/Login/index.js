@@ -173,8 +173,7 @@ const UserLoginScreen = () => {
       style={{width: '100%', height: '100%'}}
       source={IMAGES.LoginBgImage}
       resizeMode="cover">
-      {/* <StatusBarCommon color={COLORS.PRIMARY} /> */}
-
+      <StatusBarCommon color={COLORS.PRIMARY} />
       <SafeAreaView style={UserLoginScreenStyles.safe}>
         {/* recaptchaVerifier */}
         <FirebaseRecaptchaVerifierModal
@@ -185,13 +184,15 @@ const UserLoginScreen = () => {
           <Image source={IMAGES.logoImage} resizeMode="contain" />
         </View>
         <View style={UserLoginScreenStyles.loginContainer}>
-          <Text style={[UserLoginScreenStyles.headingTxt]}>Login</Text>
-          <Text style={[UserLoginScreenStyles.loginSubText]}>
-            Login to your account
-          </Text>
-
           {!enterOTP ? (
             <>
+              <Text
+                style={[UserLoginScreenStyles.headingTxt, {paddingTop: 65}]}>
+                Login
+              </Text>
+              <Text style={[UserLoginScreenStyles.loginSubText]}>
+                Login to your account
+              </Text>
               <View style={{paddingBottom: '15%'}}>
                 <Text
                   style={{
@@ -206,6 +207,7 @@ const UserLoginScreen = () => {
                 </Text>
                 <PhoneInput
                   placeholder="Mobile Number"
+                  placeholderColor="red"
                   defaultValue={userPhone}
                   defaultCode="IN"
                   layout="first"
@@ -226,6 +228,7 @@ const UserLoginScreen = () => {
                   textInputStyle={{
                     paddingBottom: 8,
                     color: COLORS.BLACK,
+                    fontSize: hS(16),
                     fontFamily: 'Outfit-Regular',
                   }}
                 />
@@ -243,63 +246,49 @@ const UserLoginScreen = () => {
             </>
           ) : (
             <View style={UserLoginScreenStyles.otpBottom}>
-              <TouchableOpacity
-                activeOpacity={0.75}
-                onPress={CloseEnterOTPFn}
-                style={UserLoginScreenStyles.otpCloseBtn}>
-                <Image
-                  source={IMAGES.CloseB}
-                  style={{width: hS(10), height: hS(10)}}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-
               <View>
-                <View style={UserLoginScreenStyles.welcomeContainer}>
-                  <Text style={UserLoginScreenStyles.headingTxt}>
-                    6-digit Code
+                <Text
+                  style={[UserLoginScreenStyles.headingTxt, {paddingTop: 65}]}>
+                  6-digit Code
+                </Text>
+                <Text style={UserLoginScreenStyles.loginSubText}>
+                  Please enter the code we’ve sent to{'\n'}
+                  <Text style={UserLoginScreenStyles.phoneCodeText}>
+                    {userPhone}
                   </Text>
-                  <Text style={UserLoginScreenStyles.loginSubText}>
-                    Please enter the code we’ve sent to \n{' '}
-                    <Text style={UserLoginScreenStyles.phoneCodeText}>
-                      {userPhone}
-                    </Text>
-                  </Text>
-                </View>
+                </Text>
                 <OTPTextInput
                   ref={OTPref}
                   containerStyle={{
-                    marginHorizontal: hS(16),
                     marginVertical: hS(16),
                   }}
                   autoFocus={true}
-                  // handleCellTextChange={e => console.log("first",e)}
                   handleTextChange={e => setVerificationCode(e)}
-                  // inputCellLength={100}
                   inputCount={6}
-                  offTintColor={COLORS.LIGHTGREY}
-                  tintColor={COLORS.PRIMARY}
                   textInputStyle={{
-                    backgroundColor: COLORS.LIGHTGREY,
+                    fontSize: 20,
+                    backgroundColor: '#F9F9F6',
+                    borderColor: 'F1F2F7',
+                    borderWidth: 1.5,
+                    borderRadius: 14,
                     width: 48,
                     height: 48,
                     margin: 0,
-                    borderRadius: 8,
-                    borderBottomWidth: 4,
+                    paddingTop: 10,
+                    borderBottomWidth: 1.5,
                   }}
                 />
               </View>
 
               <Text style={UserLoginScreenStyles.otpResendTxt}>
-                Resend OTP?
+                Resend Code in {}
                 <Text
                   style={{
-                    fontFamily: PoppinsSemiBold,
-                    textDecorationLine: 'underline',
-                    fontWeight: '300',
+                    fontFamily: 'Outfit-Medium',
+                    color: '#000',
                   }}
                   onPress={seconds === 0 ? SendOTPFn : null}>
-                  {seconds ? formatTime(seconds) : 'Resend'}
+                  {seconds ? formatTime(seconds) : ' Resend'}
                 </Text>
               </Text>
 

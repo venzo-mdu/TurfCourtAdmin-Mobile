@@ -20,7 +20,6 @@ export const UserLoginScreenStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   loginContainer: {
-    paddingVertical: 65,
     paddingHorizontal: 30,
     backgroundColor: COLORS.WHITE,
     flex: 3,
@@ -44,17 +43,9 @@ export const UserLoginScreenStyles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
   },
   phoneCodeText: {
-    // fontSize: mS(20),
-    // color: COLORS.DARK,
-    // fontFamily: PoppinsSemiBold,
-    // textAlign: "center",
-    // marginVertical: hS(8),
-    fontSize: mS(18),
+    fontSize: mS(16),
+    fontFamily: 'Outfit-Medium',
     color: '#000',
-    // fontFamily: PoppinsSemiBold,
-    marginVertical: hS(8),
-    paddingVertical: 5,
-    marginHorizontal: hS(16),
   },
   loginSubText: {
     fontFamily: 'Outfit-Regular',
@@ -63,12 +54,11 @@ export const UserLoginScreenStyles = StyleSheet.create({
   },
 
   signUpViewText: {
-    fontSize: 18,
-    fontWeight: '500',
-    //paddingLeft:20,
-    paddingVertical: 5,
-    color: '#1B1B1B',
-    marginHorizontal: hS(16),
+    fontSize: mS(16),
+    color: COLORS.fontColor,
+    fontFamily: 'Outfit-Regular',
+    lineHeight: 20.16,
+    marginBottom: hS(10),
   },
   phoneBox: {
     backgroundColor: COLORS.fieldColor,
@@ -77,34 +67,21 @@ export const UserLoginScreenStyles = StyleSheet.create({
     borderColor: COLORS.fieldBorderColor,
     borderWidth: 1.5,
     borderRadius: 8,
+    paddingLeft: 10,
   },
   CheckBoxViews: {
-    backgroundColor: 'transparent',
-    width: WD - hS(16) * 2,
-    height: mS(100),
-    //alignSelf: "center",
-    // paddingHorizontal: hS(8),
-    // marginHorizontal: hS(16),
-    // borderWidth: mS(2),
-    // //borderColor: COLORS.DARK,
-    // borderColor:'#F1F2F7',
-    // borderRadius: mS(8),
-    //  justifyContent:'start'
+    width: '90%',
   },
   CheckboxText: {
-    fontSize: mS(18), // Adjust font size
-    color: '#898989', // Use your preferred color
-    fontFamily: 'Outfit', // Use your preferred font
-    padding: 15,
-    // justifyContent:'start',
-    paddingHorizontal: hS(8),
+    fontSize: mS(18),
+    color: '#898989',
+    fontFamily: 'Outfit-Light',
   },
   phoneBoxIP: {
+    fontFamily: 'Outfit-Light',
     height: mS(56),
-    fontSize: mS(18),
-    // color: COLORS.DARK,
+    fontSize: mS(16),
     color: '#000',
-    fontFamily: PoppinsMedium,
     paddingHorizontal: hS(8),
   },
   sendOTPBox: {
@@ -149,12 +126,12 @@ export const UserLoginScreenStyles = StyleSheet.create({
   otpBottom: {
     backgroundColor: '#fff',
     marginHorizontal: 0,
-    marginTop: 'auto',
+    marginTop: 0,
     borderTopLeftRadius: mS(6),
     borderTopRightRadius: mS(6),
   },
   otpCloseBtn: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: 'red',
     width: hS(30),
     height: hS(30),
     alignSelf: 'flex-end',
@@ -167,15 +144,16 @@ export const UserLoginScreenStyles = StyleSheet.create({
   otpHeadingTxt: {
     fontSize: mS(18),
     color: COLORS.BLACK,
-    fontFamily: PoppinsMedium,
+    fontFamily: 'Outfit-Medium',
     textAlign: 'center',
   },
   otpResendTxt: {
-    fontSize: mS(12),
+    fontSize: mS(18),
     color: COLORS.BLACK,
-    fontFamily: PoppinsRegular,
-    textAlign: 'center',
+    fontFamily: 'Outfit-Light',
+    textAlign: 'left',
     marginBottom: hS(10),
+    paddingBottom: 100,
   },
   //   loginBox: {
   //     backgroundColor: COLORS.PRIMARY,
@@ -255,8 +233,9 @@ export const UserLoginScreenStyles = StyleSheet.create({
     borderRadius: 14,
   },
   phoneInputTextContainer: {
-    fontFamily: 'Outfit-Regular',
+    fontFamily: 'Outfit-Medium',
     paddingVertical: 0,
+    borderRadius: 14,
   },
   dropdown: {
     width: '100%',
@@ -264,12 +243,17 @@ export const UserLoginScreenStyles = StyleSheet.create({
     borderColor: '#F1F2F7',
     borderWidth: 1,
     borderRadius: 8,
-    // paddingHorizontal: 8,
+    paddingHorizontal: 15,
     backgroundColor: '#F9F9F6',
   },
   selectedValue: {
     marginTop: 16,
     fontSize: 18,
     paddingLeft: 2,
+  },
+  termsText: {
+    fontSize: mS(18),
+    color: '#097E52',
+    fontFamily: 'Outfit-Medium',
   },
 });
