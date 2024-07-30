@@ -1,20 +1,28 @@
 import React from 'react';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { NavigationContainer } from '@react-navigation/native';
-import { Image, TouchableOpacity, View, Text } from 'react-native';
+import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
+import {NavigationContainer} from '@react-navigation/native';
+import {Image, TouchableOpacity, View, Text} from 'react-native';
 import ArenaScreen from '../screens/courtAdmin/Arena/ArenaDetails/ArenaScreen';
 import BookingScreen from '../screens/courtAdmin/Arena/ArenaDetails/BookingScreen';
 import CourtScreen from '../screens/courtAdmin/Arena/ArenaDetails/CourtScreen';
 import ReviewScreen from '../screens/courtAdmin/Arena/ArenaDetails/ReviewScreen';
-import { IMAGES } from '../assets/constants/global_images';
+import {IMAGES} from '../assets/constants/global_images';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import IonIcons from 'react-native-vector-icons/Ionicons';
+import {COLORS} from '../assets/constants/global_colors';
 
 const Tab = createMaterialTopTabNavigator();
 
-function CustomTabBar({ state, descriptors, navigation, stackNavigation }) {
+function CustomTabBar({state, descriptors, navigation, stackNavigation}) {
   return (
-    <View style={{ flexDirection: 'row', backgroundColor: '#F9F9F9' }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        backgroundColor: '#f9f9f9',
+        paddingVertical: 20,
+      }}>
       {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
+        const {options} = descriptors[route.key];
         const label =
           options.tabBarLabel !== undefined
             ? options.tabBarLabel
@@ -33,7 +41,7 @@ function CustomTabBar({ state, descriptors, navigation, stackNavigation }) {
 
           if (!isFocused && !event.defaultPrevented) {
             navigation.navigate(route.name);
-            stackNavigation.setOptions({ headerTitle: label }); 
+            stackNavigation.setOptions({headerTitle: label});
           }
         };
 
@@ -45,11 +53,10 @@ function CustomTabBar({ state, descriptors, navigation, stackNavigation }) {
         };
 
         let iconName, focusedIconName;
-
         switch (route.name) {
-          case 'Arena':
-            iconName = IMAGES.ArenaFoucs;
-            focusedIconName = IMAGES.ArenaNoFoucs;
+          case 'Add Arena':
+            iconName = IMAGES.ArenaNoFoucs;
+            focusedIconName = IMAGES.ArenaFoucs;
             break;
           case 'Court':
             iconName = IMAGES.CourtFoucs;
@@ -78,17 +85,21 @@ function CustomTabBar({ state, descriptors, navigation, stackNavigation }) {
               backgroundColor: isFocused ? '#097E52' : '#FFFFFF',
               alignItems: 'center',
               justifyContent: 'center',
-              paddingVertical: 10,
-             // borderWidth:1,
-              marginHorizontal: 3, 
-              borderRadius: 8, 
-              elevation: 2, 
-              height:92
+              marginHorizontal: 5,
+              borderRadius: 6,
+              elevation: 0.5,
+              height: 92,
             }}
-            key={route.key}
-          >
-            <Image source={isFocused ? iconName : focusedIconName} style={{ width: 20, height: 20 }} />
-            <Text style={{ color: isFocused ? '#192335' : '#898989', fontSize: 14, paddingTop:10 }}>
+            key={route.key}>
+            <Image source={isFocused ? iconName : focusedIconName} />
+            <Text
+              style={{
+                color: isFocused ? '#fff' : '#192335',
+                fontSize: 12,
+                paddingTop: 5,
+                fontFamily: 'Outfit-Regular',
+                lineHeight: 22,
+              }}>
               {label}
             </Text>
           </TouchableOpacity>
@@ -99,51 +110,84 @@ function CustomTabBar({ state, descriptors, navigation, stackNavigation }) {
 }
 
 export default function AdminTopTabNavigation({route, navigation}) {
-    const { groundID } = route.params || {};
+  const {groundID} = route.params || {};
   return (
-      <Tab.Navigator
-        initialRouteName="Arena"
-        tabBar={props => <CustomTabBar {...props} stackNavigation={navigation}  />}
-        screenOptions={({ route }) => ({
-          headerShown: true,
-          headerTitle: route.name,
-          headerTitleAlign: 'center',
-          headerBackTitleVisible: false,
-          headerLeft: ({ navigation }) => (
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Image
-                source={IMAGES.LeftBackArrow} 
-                style={{ width: 20, height: 20, marginLeft: 10 }}
-              />
-            </TouchableOpacity>
-          ),
-        })}
-      >
-        <Tab.Screen
-          name="Arena"
-          component={ArenaScreen}
-          initialParams={{ groundID }}
-          options={{ tabBarLabel: 'Arena' }}
-        />
-        <Tab.Screen
-          name="Court"
-          component={CourtScreen}
-          initialParams={{ groundID }}
-          options={{ tabBarLabel: 'Court' }}
-        />
-        <Tab.Screen
-          name="Booking"
-          component={BookingScreen}
-          initialParams={{ groundID }}
-          options={{ tabBarLabel: 'Booking' }}
-        />
-        <Tab.Screen
-          name="Reviews"
-          component={ReviewScreen}
-          initialParams={{ groundID }}
-          options={{ tabBarLabel: 'Reviews' }}
-        />
-      </Tab.Navigator>
-    
+    <Tab.Navigator
+      initialRouteName="Add Arena"
+      tabBar={props => <CustomTabBar {...props} stackNavigation={navigation} />}
+      screenOptions={({route}) => ({
+        headerShown: true,
+        headerTitle: route.name,
+        headerTitleAlign: 'center',
+        headerBackTitleVisible: false,
+        headerStyle: {
+          backgroundColor: '#F9F9F9',
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 0,
+        },
+        headerLeft: ({navigation}) => (
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Icon name="angle-left" size={32} color="#4CA181" />
+          </TouchableOpacity>
+        ),
+      })}>
+      <Tab.Screen
+        name="Add Arena"
+        component={ArenaScreen}
+        initialParams={{groundID}}
+        options={{tabBarLabel: 'Court Details'}}
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#F9F9F9',
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 0,
+          },
+        }}
+      />
+      <Tab.Screen
+        name="Court"
+        component={CourtScreen}
+        initialParams={{groundID}}
+        options={{tabBarLabel: 'Court'}}
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#F9F9F9',
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 0,
+          },
+        }}
+      />
+      <Tab.Screen
+        name="Booking"
+        component={BookingScreen}
+        initialParams={{groundID}}
+        options={{tabBarLabel: 'Booking'}}
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: COLORS.WHITE,
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 0,
+          },
+        }}
+      />
+      <Tab.Screen
+        name="Reviews"
+        component={ReviewScreen}
+        initialParams={{groundID}}
+        options={{tabBarLabel: 'Reviews'}}
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#F9F9F9',
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 0,
+          },
+        }}
+      />
+    </Tab.Navigator>
   );
 }

@@ -27,6 +27,8 @@ import CourtScreen from '../screens/courtAdmin/Arena/ArenaDetails/CourtScreen';
 import BookingScreen from '../screens/courtAdmin/Arena/ArenaDetails/BookingScreen';
 import ArenaScreen from '../screens/courtAdmin/Arena/ArenaDetails/ArenaScreen';
 import AdminTopTabNavigation from './AdminTopTabNavigation';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import {COLORS} from '../assets/constants/global_colors';
 
 const Stack = createNativeStackNavigator();
 
@@ -49,13 +51,22 @@ const AdminStackNav = ({route}) => {
           headerTitle: 'Add Arena',
           headerTitleAlign: 'center',
           headerBackTitleVisible: false,
+          headerTitleStyle: {
+            fontFamily: 'Outfit-Medium',
+            fontSize: 22,
+          },
+          headerStyle: {
+            backgroundColor: '#f9f9f9',
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 0,
+            shadowColor: 'transparent',
+          },
+          headerShadowVisible: false,
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => navigation.navigate(ADMINARENA, {refresh: true})}>
-              <Image
-                source={IMAGES.LeftBackArrow} // Path to your custom back arrow image if needed
-                style={{width: 20, height: 20, marginLeft: 4}}
-              />
+              <Icon name="angle-left" size={32} color="#4CA181" />
             </TouchableOpacity>
           ),
         })}
@@ -69,15 +80,23 @@ const AdminStackNav = ({route}) => {
           headerTitle: 'Profile',
           headerTitleAlign: 'center',
           headerBackTitleVisible: false,
+          headerTitleStyle: {
+            fontFamily: 'Outfit Medium',
+            fontSize: 22,
+          },
+          headerStyle: {
+            backgroundColor: 'COLORS.WHITE',
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 0,
+            shadowColor: 'transparent',
+          },
           headerLeft: () => (
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate('profile', {refreshProfiles: true})
               }>
-              <Image
-                source={IMAGES.LeftBackArrow} // Path to your custom back arrow image if needed
-                style={{width: 20, height: 20, marginLeft: 4}}
-              />
+              <Icon name="angle-left" size={32} color="#4CA181" />
             </TouchableOpacity>
           ),
         })}
@@ -90,12 +109,14 @@ const AdminStackNav = ({route}) => {
           headerTitle: 'Add Arena',
           headerTitleAlign: 'center',
           headerBackTitleVisible: false,
+          headerTitleStyle: {
+            fontFamily: 'Outfit Medium',
+            fontSize: 22,
+          },
+
           headerLeft: () => (
             <TouchableOpacity onPress={() => navigation.navigate(ADMINARENA)}>
-              <Image
-                source={IMAGES.LeftBackArrow} // Path to your custom back arrow image if needed
-                style={{width: 20, height: 20, marginLeft: 4}}
-              />
+              <Icon name="angle-left" size={32} color="#4CA181" />
             </TouchableOpacity>
           ),
         })}
