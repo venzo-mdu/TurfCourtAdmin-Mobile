@@ -100,6 +100,7 @@ function CustomTabBar({ state, descriptors, navigation, stackNavigation }) {
 
 export default function AdminTopTabNavigation({route, navigation}) {
     const { groundID } = route.params || {};
+    console.log('groun44444444444454dId',groundID);
   return (
       <Tab.Navigator
         initialRouteName="Arena"

@@ -28,32 +28,75 @@ const ids = {
   Cart: "cart_id",
 };
 
-const fetchBulkData = async (table, filter_key, operator, filter_value) => {
+
+const fetchBulkData = async (
+  table,
+  filter_key,
+  operator,
+  filter_value,
+  order = null,
+  limitNumber = null,
+  otherFilters,
+  countOnly = false
+) => {
   try {
     let collectionRef = collection(db, table);
-
-    collectionRef = query(
-      collectionRef,
-      where(
-        filter_key === "docid" ? documentId() : filter_key,
-        operator,
-        filter_value
-      )
-    );
-
+ 
+    if (filter_key && operator && filter_value) {
+      collectionRef = query(
+        collectionRef,
+        where(
+          filter_key === "docid" ? documentId() : filter_key,
+          operator,
+          filter_value
+        )
+      );
+    }
+ 
+    otherFilters = _.compact(otherFilters);
+    if (otherFilters?.length > 0) {
+      otherFilters?.forEach((filterData) => {
+        collectionRef = query(
+          collectionRef,
+          where(
+            filterData.key === "docid" ? documentId() : filterData.key,
+            filterData.operator,
+            filterData.value
+          )
+        );
+      });
+    }
+ 
+    if (order) {
+      collectionRef = query(
+        collectionRef,
+        orderBy(order.key, order.dir || "asc")
+      );
+    }
+ 
+    if (limitNumber) {
+      collectionRef = query(collectionRef, limit(limitNumber));
+    }
+ 
     let querySnapshot;
-
-    querySnapshot = await getDocs(collectionRef);
-
-    let data = querySnapshot.docs.map((doc) => {
-      return { [ids[table]]: doc.id, ...doc.data() };
-    });
-
-    return data;
+    if (countOnly) {
+      const snapshot = await getCountFromServer(collectionRef);
+      console.log("count: ", snapshot.data().count);
+      return snapshot.data().count;
+    } else {
+      querySnapshot = await getDocs(collectionRef);
+ 
+      let data = querySnapshot.docs.map((doc) => {
+        return { [ids[table]]: doc.id, ...doc.data() };
+      });
+ 
+      return data;
+    }
   } catch (e) {
     console.error("Error getting documents:", e);
   }
 };
+ 
 
 const FetchData = async (
   table,
