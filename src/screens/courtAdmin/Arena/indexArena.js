@@ -8,8 +8,6 @@ import {
   Dimensions,
 } from 'react-native';
 import Carousel from 'react-native-snap-carousel';
-//import { useNavigate } from 'react-router-native';
-//import CardComponent from './CardComponent'; // Adjust the path as needed
 import {getgroundData} from '../../../firebase/firebaseFunction/groundDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CardComponent from '../../../components/molecules/CardComponent';
@@ -61,7 +59,6 @@ const IndexArena = () => {
   };
 
   const handleCreateground = () => {
-    //navigate("/courtadmin/myarena");
     navigation.navigate(ADMINTOPTABNAVIGATION);
   };
 
@@ -176,11 +173,10 @@ const styles = StyleSheet.create({
   addArenaButton: {
     position: 'absolute',
     alignSelf: 'flex-end',
-    bottom: 20, // Adjust this value to move the button higher or lower
-    right: 0, // Adjust this value to move the button more to the left or right
-    width: 80, // Adjust the size of the button as needed
-    height: 80, // Adjust the size of the button as needed
-    //justifyContent:'flex-end'
+    bottom: 20,
+    right: 0,
+    width: 80,
+    height: 80,
   },
   noDataButton: {
     alignItems: 'center',
