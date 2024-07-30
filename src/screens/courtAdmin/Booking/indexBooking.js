@@ -1,12 +1,12 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import {View, Text} from 'react-native';
+import React from 'react';
 
-const indexBooking = () => {
+const IndexBooking = () => {
   return (
     <View>
       <Text>indexBooking</Text>
     </View>
-  )
-}
+  );
+};
 
-export default indexBooking
+export default IndexBooking;

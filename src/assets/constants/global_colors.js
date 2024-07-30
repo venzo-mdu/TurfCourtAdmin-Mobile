@@ -19,5 +19,6 @@ export const COLORS = {
   bgColor: '#f7f7f7',
   tabActiveColor:'#000000',
   verticalBar:'#DCDCDC',
-  
 };
+
+

@@ -1,26 +1,44 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useRef, useState } from 'react';
-import { Image, ImageBackground, Modal, SafeAreaView, Text, TextInput, ToastAndroid, TouchableOpacity, View } from 'react-native';
-import {  ROLE, USERCREATE, USERBOOTOM, USERLOGIN } from '../..';
-import { COLORS } from '../../../assets/constants/global_colors';
-import { PoppinsMedium, PoppinsRegular, PoppinsSemiBold } from '../../../assets/constants/global_fonts';
-import { IMAGES } from '../../../assets/constants/global_images';
-import { StatusBarCommon } from '../../../components';
-import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
+import {useNavigation} from '@react-navigation/native';
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  Image,
+  ImageBackground,
+  Modal,
+  SafeAreaView,
+  Text,
+  TextInput,
+  ToastAndroid,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import {ROLE, USERCREATE, USERBOOTOM, USERLOGIN} from '../..';
+import {COLORS} from '../../../assets/constants/global_colors';
+import {
+  Outfit,
+  PoppinsMedium,
+  PoppinsRegular,
+  PoppinsSemiBold,
+} from '../../../assets/constants/global_fonts';
+import {IMAGES} from '../../../assets/constants/global_images';
+import {StatusBarCommon} from '../../../components';
+import {FirebaseRecaptchaVerifierModal} from 'expo-firebase-recaptcha';
 import OTPTextInput from 'react-native-otp-textinput';
-import { firebaseConfig } from '../../../firebase/firebase';
-import { getadminconfig, loginmobile, loginverifyOtp } from '../../../firebase/firebaseFunction/auth';
-import { FetchDataById } from '../../../firebase/firebaseFunction/crud';
-import { hS, mS } from '../../../utils/metrics';
+import {firebaseConfig} from '../../../firebase/firebase';
+import {
+  getadminconfig,
+  loginmobile,
+  loginverifyOtp,
+} from '../../../firebase/firebaseFunction/auth';
+import {FetchDataById} from '../../../firebase/firebaseFunction/crud';
+import {hS, mS} from '../../../utils/metrics';
 //import { UserLoginScreenStyles } from '../../User/Create/styles';
-import { UserLoginScreenStyles } from '../Create/styles';
+import {UserLoginScreenStyles} from '../Create/styles';
 import PhoneInput from 'react-native-phone-number-input';
 //import AuthNavigation from '../../../navigation/AuthNavigation';
 
 const UserLoginScreen = () => {
   const navigation = useNavigation();
-
 
   const [userPhone, setUserPhone] = useState('');
 
@@ -34,72 +52,66 @@ const UserLoginScreen = () => {
 
   const CloseEnterOTPFn = () => {
     setEnterOTP(false);
-    setVerificationCode("");
+    setVerificationCode('');
   };
 
   const SendOTPFn = async () => {
-
-    if(userPhone?.length == 13) {
-      console.log("HI1")
-      if(verificationId != "") {
-        console.log("HI12")
-        console.log("verificationId", verificationId)
+    if (userPhone?.length == 13) {
+      if (verificationId != '') {
         setEnterOTP(true);
       } else {
-        console.log("userPhone", userPhone)
-        console.log("HI123")
         const res = await loginmobile(userPhone, recaptchaVerifier);
-        console.log("res", res)
         setVerificationID(res.verificationId);
         setEnterOTP(true);
         setSeconds(30);
       }
-
     } else {
-      ToastAndroid.show("Enter valid phone number", ToastAndroid.SHORT);
+      ToastAndroid.show('Enter valid phone number', ToastAndroid.SHORT);
     }
   };
 
   const LoginFn = async () => {
+    if (verificationCode?.length == 6) {
+      const response = await loginverifyOtp(verificationCode, verificationId);
 
-    if(verificationCode?.length == 6) {
-        const response = await loginverifyOtp(verificationCode, verificationId);
+      //ToastAndroid.show(response?.msg, ToastAndroid.SHORT);
 
-        //ToastAndroid.show(response?.msg, ToastAndroid.SHORT);
+      if (!response.error) {
+        if (response?.data?.user_id != '' && response?.data != null) {
+          // const userdata = await FetchDataById('user', response.data.user_id);
 
-        if (!response.error) {
-          if (response?.data?.user_id != '' && response?.data != null) {
-            // const userdata = await FetchDataById('user', response.data.user_id);
+          const res = response?.data;
+          console.log('res Vies', res);
+          if (res?.usertype != '') {
+            setUserPhone('');
+            setVerificationCode('');
 
-            const res = response?.data;
-            console.log("res Vies", res);
-            if (res?.usertype != '') {
-              setUserPhone('');
-              setVerificationCode('');
+            const jsonValue = JSON.stringify(res);
+            console.log('jsonValue', jsonValue);
+            await AsyncStorage.setItem('res-data', jsonValue);
 
-              const jsonValue = JSON.stringify(res);
-console.log("jsonValue", jsonValue)
-              await AsyncStorage.setItem('res-data', jsonValue);
-
-              if (res?.owner === true) {
-                navigation.replace(USERBOOTOM);
-                ToastAndroid.show("User Logged In Successfully", ToastAndroid.SHORT);
+            if (res?.owner === true) {
+              navigation.replace(USERBOOTOM);
+              ToastAndroid.show(
+                'User Logged In Successfully',
+                ToastAndroid.SHORT,
+              );
               // } else if (res?.usertype == 'venzoadmin') {
               //   navigation.replace(USERBOOTOM);
-              } else {
-                navigation.replace(USERBOOTOM);
-                ToastAndroid.show("You are not the owner", ToastAndroid.SHORT);
-                
-                // navigation.navigate(USERHOME);
-              }
+            } else {
+              navigation.replace(USERBOOTOM);
+              ToastAndroid.show('You are not the owner', ToastAndroid.SHORT);
+
+              // navigation.navigate(USERHOME);
             }
           }
-        } else {
-          // setVerificationCode('');
-          OTPref.current = null;
         }
+      } else {
+        // setVerificationCode('');
+        OTPref.current = null;
+      }
     } else {
-      ToastAndroid.show("Enter valid OTP", ToastAndroid.SHORT);
+      ToastAndroid.show('Enter valid OTP', ToastAndroid.SHORT);
     }
   };
 
@@ -110,7 +122,7 @@ console.log("jsonValue", jsonValue)
   };
 
   const setText = () => {
-    otpInput.current.setValue("123456");
+    otpInput.current.setValue('123456');
   };
 
   const [seconds, setSeconds] = useState(0);
@@ -121,193 +133,190 @@ console.log("jsonValue", jsonValue)
 
   useEffect(() => {
     if (seconds > 0) {
-    const interval = setInterval(() => {
-      setSeconds((prevSeconds) => {
-        if (prevSeconds === 1) {
-          clearInterval(interval); // Stop the countdown when it reaches 0
-          clearVerificationId(); // You can perform additional actions here when the countdown reaches 0
-          //console.log("Trigger Clear")
-        }
-        return prevSeconds - 1;
-      });
-    }, 1000);
-  
-    return () => clearInterval(interval); // Cleanup the interval on component unmount
-  }
+      const interval = setInterval(() => {
+        setSeconds(prevSeconds => {
+          if (prevSeconds === 1) {
+            clearInterval(interval); // Stop the countdown when it reaches 0
+            clearVerificationId(); // You can perform additional actions here when the countdown reaches 0
+            //console.log("Trigger Clear")
+          }
+          return prevSeconds - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval); // Cleanup the interval on component unmount
+    }
   }, [seconds]); // Empty dependency array ensures the effect runs only once on mount
 
-  const formatTime = (time) => {
+  const formatTime = time => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(
+      2,
+      '0',
+    )}`;
   };
 
   const signupFn = async () => {
     const config = await getadminconfig();
 
-    if(config?.allowadmin) {
+    if (config?.allowadmin) {
       navigation.navigate(ROLE);
     } else {
-      const role = "user";
+      const role = 'user';
       navigation.navigate(USERCREATE, {role});
     }
   };
 
   return (
-    <View>
-    <ImageBackground source={IMAGES.LoginBgImage}>
+    <ImageBackground
+      style={{width: '100%', height: '100%'}}
+      source={IMAGES.LoginBgImage}
+      resizeMode="cover">
       <StatusBarCommon color={COLORS.PRIMARY} />
-
       <SafeAreaView style={UserLoginScreenStyles.safe}>
         {/* recaptchaVerifier */}
         <FirebaseRecaptchaVerifierModal
           ref={recaptchaVerifier}
           firebaseConfig={firebaseConfig}
         />
-<View style={UserLoginScreenStyles.topContainer}>
-<Image source={IMAGES.logoImage} />
-</View>
-<View style={UserLoginScreenStyles.loginContainer}>
-        {/* <Text style={UserLoginScreenStyles.headingTxt}>Welcome</Text> */}
-        <Text style={[UserLoginScreenStyles.headingTxt, {paddingTop:40}]}>Login</Text>
-          <Text style={UserLoginScreenStyles.loginSubText}>Login to Your Account</Text>
-{
-  !enterOTP ? (
-    <>
-    <View style={[UserLoginScreenStyles.phoneBox, {flexDirection: 'row', paddingTop:4}]}>
-          {/* <TextInput
-            value={'+91'}
-            style={UserLoginScreenStyles.phoneBoxIP}
-            editable={false}
-          />
-
-          <TextInput
-            value={userPhone}
-            onChangeText={val => setUserPhone(val.replace(/[^0-9]/g, ''))}
-            style={[ UserLoginScreenStyles.phoneBoxIP, { flex: 1, fontSize: userPhone ? mS(18) : mS(16), fontFamily: userPhone ? PoppinsMedium : PoppinsRegular } ]}
-            keyboardType={'numeric'}
-            placeholder={'Enter your phone number'}
-            placeholderTextColor={COLORS.PLACEHOLDERGREY}
-            maxLength={10}
-          /> */}
-           <PhoneInput
-        defaultValue={userPhone}
-        defaultCode="IN"
-        layout="first"
-        //onChangeFormattedText={(val) => setUserPhone(val)}
-        onChangeFormattedText={(val) => {
-            // Limit the input to 13 characters (including the country code, e.g., +91xxxxxxxxxx)
-            if (val.replace(/\D/g, '').length <= 12) {
-              setUserPhone(val);
-            } else {
-              ToastAndroid.show("Phone number should not exceed 10 digits", ToastAndroid.SHORT);
-            }
-          }}
-        withShadow
-        autoFocus
-        containerStyle={UserLoginScreenStyles.phoneInputContainer}
-        textContainerStyle={UserLoginScreenStyles.phoneInputTextContainer}
-      />
+        <View style={UserLoginScreenStyles.logoContainer}>
+          <Image source={IMAGES.logoImage} resizeMode="contain" />
         </View>
-        <View style={{paddingTop:40}}>
-        <TouchableOpacity activeOpacity={0.75} onPress={SendOTPFn} style={UserLoginScreenStyles.loginBox}>
-          <Text style={UserLoginScreenStyles.loginTxt}>{verificationId == "" ? "Send OTP" : "Enter OTP"}</Text>
-        </TouchableOpacity>
-        </View>
-        </>
-  ) : (
-    <View style={UserLoginScreenStyles.otpBottom}>
-            <TouchableOpacity activeOpacity={0.75} onPress={CloseEnterOTPFn} style={UserLoginScreenStyles.otpCloseBtn}>
-              <Image source={IMAGES.CloseB} style={{width: hS(10), height: hS(10)}} resizeMode="contain" />
-            </TouchableOpacity>
-
-            {/* <Text style={UserLoginScreenStyles.otpHeadingTxt}>Enter login OTP</Text> */}
-
-            <View>
-            <View style={UserLoginScreenStyles.welcomeContainer}>
-                <Text style={UserLoginScreenStyles.headingTxt}>6-digit Code</Text>
-                <Text style={UserLoginScreenStyles.loginSubText}>
-                  Please enter the code we’ve sent to \n <Text style={UserLoginScreenStyles.phoneCodeText}>{userPhone}</Text>
+        <View style={UserLoginScreenStyles.loginContainer}>
+          {!enterOTP ? (
+            <>
+              <Text
+                style={[UserLoginScreenStyles.headingTxt, {paddingTop: 65}]}>
+                Login
+              </Text>
+              <Text style={[UserLoginScreenStyles.loginSubText]}>
+                Login to your account
+              </Text>
+              <View style={{paddingBottom: '15%'}}>
+                <Text
+                  style={{
+                    paddingTop: '20%',
+                    paddingBottom: 10,
+                    fontFamily: 'Outfit-Regular',
+                    fontSize: hS(16),
+                    lineHeight: 20.16,
+                    color: '#1b1b1b',
+                  }}>
+                  Mobile Number
                 </Text>
+                <PhoneInput
+                  placeholder="Mobile Number"
+                  placeholderColor="red"
+                  defaultValue={userPhone}
+                  defaultCode="IN"
+                  layout="first"
+                  onChangeFormattedText={val => {
+                    if (val.replace(/\D/g, '').length <= 12) {
+                      setUserPhone(val);
+                    } else {
+                      ToastAndroid.show(
+                        'Phone number should not exceed 10 digits',
+                        ToastAndroid.SHORT,
+                      );
+                    }
+                  }}
+                  containerStyle={UserLoginScreenStyles.phoneInputContainer}
+                  textContainerStyle={
+                    UserLoginScreenStyles.phoneInputTextContainer
+                  }
+                  textInputStyle={{
+                    paddingBottom: 8,
+                    color: COLORS.BLACK,
+                    fontSize: hS(16),
+                    fontFamily: 'Outfit-Regular',
+                  }}
+                />
               </View>
-              <OTPTextInput
-                ref={OTPref} 
-                containerStyle={{ marginHorizontal: hS(16), marginVertical: hS(16)}} 
-                autoFocus={true}
-                // handleCellTextChange={e => console.log("first",e)}
-                handleTextChange={e => setVerificationCode(e)}
-                // inputCellLength={100}
-                inputCount={6}
-                offTintColor={COLORS.LIGHTGREY}
-                tintColor={COLORS.PRIMARY}
-                textInputStyle={{backgroundColor: COLORS.LIGHTGREY, width: 48, height: 48, margin:0, borderRadius: 8, borderBottomWidth: 4}}
-              />
+              <View>
+                <TouchableOpacity
+                  activeOpacity={0.75}
+                  onPress={SendOTPFn}
+                  style={UserLoginScreenStyles.loginBox}>
+                  <Text style={UserLoginScreenStyles.loginTxt}>
+                    {verificationId == '' ? 'Get OTP' : 'Login'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <View style={UserLoginScreenStyles.otpBottom}>
+              <View>
+                <Text
+                  style={[UserLoginScreenStyles.headingTxt, {paddingTop: 65}]}>
+                  6-digit Code
+                </Text>
+                <Text style={UserLoginScreenStyles.loginSubText}>
+                  Please enter the code we’ve sent to{'\n'}
+                  <Text style={UserLoginScreenStyles.phoneCodeText}>
+                    {userPhone}
+                  </Text>
+                </Text>
+                <OTPTextInput
+                  ref={OTPref}
+                  containerStyle={{
+                    marginVertical: hS(16),
+                  }}
+                  autoFocus={true}
+                  handleTextChange={e => setVerificationCode(e)}
+                  inputCount={6}
+                  textInputStyle={{
+                    fontSize: 20,
+                    backgroundColor: '#F9F9F6',
+                    borderColor: 'F1F2F7',
+                    borderWidth: 1.5,
+                    borderRadius: 14,
+                    width: 48,
+                    height: 48,
+                    margin: 0,
+                    paddingTop: 10,
+                    borderBottomWidth: 1.5,
+                  }}
+                />
+              </View>
+
+              <Text style={UserLoginScreenStyles.otpResendTxt}>
+                Resend Code in {}
+                <Text
+                  style={{
+                    fontFamily: 'Outfit-Medium',
+                    color: '#000',
+                  }}
+                  onPress={seconds === 0 ? SendOTPFn : null}>
+                  {seconds ? formatTime(seconds) : ' Resend'}
+                </Text>
+              </Text>
+
+              <TouchableOpacity
+                activeOpacity={0.75}
+                onPress={LoginFn}
+                style={UserLoginScreenStyles.loginBox}>
+                <Text style={UserLoginScreenStyles.loginTxt}>Login</Text>
+              </TouchableOpacity>
             </View>
+          )}
 
-            <Text style={UserLoginScreenStyles.otpResendTxt}>Resend OTP? 
-            
-            <Text style={{fontFamily: PoppinsSemiBold, textDecorationLine: "underline", fontWeight:"300"}} onPress={seconds === 0 ? SendOTPFn : null}>
-           
-            {seconds ? formatTime(seconds) : "Resend"}
-         
-            </Text>
-            
-            </Text>
-          
-            <TouchableOpacity activeOpacity={0.75} onPress={LoginFn} style={UserLoginScreenStyles.loginBox}>
-              <Text style={UserLoginScreenStyles.loginTxt}>Login</Text>
-            </TouchableOpacity>
+          <View style={UserLoginScreenStyles.lineContainer}>
+            <View style={UserLoginScreenStyles.line} />
+            <Text style={UserLoginScreenStyles.lineText}>OR</Text>
+            <View style={UserLoginScreenStyles.line} />
           </View>
-  )
-}
-        
-
-        <View style={UserLoginScreenStyles.divider}>
-            <Text>OR</Text>
-          </View>
-        <Text style={UserLoginScreenStyles.bottomaskTxt1}>Don't have an account?{' '}<Text onPress={signupFn} style={UserLoginScreenStyles.bottomaskTxt2}>Sign up</Text></Text>
+          <Text style={UserLoginScreenStyles.bottomaskTxt1}>
+            Don't have an Account ?{' '}
+            <Text
+              onPress={signupFn}
+              style={UserLoginScreenStyles.bottomaskTxt2}>
+              Sign up
+            </Text>
+          </Text>
         </View>
       </SafeAreaView>
-
-      {/* <Modal
-        animationType="slide"
-        transparent={true}
-        visible={enterOTP}
-        onRequestClose={CloseEnterOTPFn}
-      >
-        <SafeAreaView style={UserLoginScreenStyles.otpContainer}>
-          <View style={UserLoginScreenStyles.otpBottom}>
-            <TouchableOpacity activeOpacity={0.75} onPress={CloseEnterOTPFn} style={UserLoginScreenStyles.otpCloseBtn}>
-              <Image source={IMAGES.CloseB} style={{width: hS(10), height: hS(10)}} resizeMode="contain" />
-            </TouchableOpacity>
-
-            <Text style={UserLoginScreenStyles.otpHeadingTxt}>Enter login OTP</Text>
-
-            <View>
-              <OTPTextInput
-                ref={OTPref} 
-                containerStyle={{ marginHorizontal: hS(16), marginVertical: hS(16)}} 
-                autoFocus={true}
-                // handleCellTextChange={e => console.log("first",e)}
-                handleTextChange={e => setVerificationCode(e)}
-                // inputCellLength={100}
-                inputCount={6}
-                offTintColor={COLORS.LIGHTGREY}
-                tintColor={COLORS.PRIMARY}
-                textInputStyle={{backgroundColor: COLORS.LIGHTGREY, width: 48, height: 48, margin:0, borderRadius: 8, borderBottomWidth: 4}}
-              />
-            </View>
-
-            <Text style={UserLoginScreenStyles.otpResendTxt}>Resend OTP? <Text style={{fontFamily: PoppinsSemiBold, textDecorationLine: "underline"}}>{seconds ? formatTime(seconds) : "Resend"}</Text></Text>
-          
-            <TouchableOpacity activeOpacity={0.75} onPress={LoginFn} style={UserLoginScreenStyles.loginBox}>
-              <Text style={UserLoginScreenStyles.loginTxt}>Login</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </Modal> */}
-      </ImageBackground>
-    </View>
+    </ImageBackground>
   );
 };
 
