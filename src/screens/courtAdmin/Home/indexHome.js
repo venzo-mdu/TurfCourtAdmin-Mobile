@@ -33,6 +33,8 @@ import CurrentEventsSlider from '../Arena/currentEventsSlider';
 import {IMAGES} from '../../../assets/constants/global_images';
 import AdminTopTabNavigation from '../../../routing/AdminTopTabNavigation';
 import {ADMINTOPTABNAVIGATION} from '../..';
+import {getgroundData} from '../../../firebase/firebaseFunction/groundDetails';
+import GroundEventsSlider from '../Arena/groundEventSlider';
 
 const screenWidth = Dimensions.get('window').width;
 const responsivePadding = screenWidth * 0.03;
@@ -40,6 +42,8 @@ const responsivePadding = screenWidth * 0.03;
 const IndexHome = () => {
   const [userId, setUserId] = useState('');
   const [groundData, setGroundData] = useState([]);
+  const [groundData1, setGrounddata1] = useState([]);
+  const [groundRefresh, groundRefreshViews] = useState([]);
   const [uniqueCities, setUniqueCities] = useState([]);
   const [search, setSearch] = useState('');
   const [filteredCities, setFilteredCities] = useState([]);
@@ -71,7 +75,36 @@ const IndexHome = () => {
   );
   // console.log("filteredGrounds", filteredGrounds);
 
-  console.log('userid', userId);
+  const getgroundDetails = async () => {
+    let response = await getgroundData(userId);
+    setGrounddata1(response);
+  };
+
+  useEffect(() => {
+    getgroundDetails();
+  }, [userId]);
+
+  useEffect(() => {
+    if (groundRefresh || groundRefreshViews) {
+      getgroundDetails();
+    }
+  }, [groundRefresh, groundRefreshViews]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (groundRefresh) {
+        getgroundDetails();
+      }
+    }, [groundRefresh]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (groundRefreshViews) {
+        getgroundDetails();
+      }
+    }, [groundRefreshViews]),
+  );
 
   const getUserData = async () => {
     try {
@@ -293,57 +326,16 @@ const IndexHome = () => {
           {/* {selectedCity ? <Text style={styles.selected}>Selected City: {selectedCity}</Text> : null} */}
         </View>
 
-        <View style={styles.dropDownHeader}>
-          <View>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => setOpen(true)}>
-              <Text style={styles.buttonText}>
-                {date?.toLocaleDateString('en-GB')}
-              </Text>
-              <Ionicons name="calendar-clear-outline" size={20} color="#fff" />
-            </TouchableOpacity>
-            <DatePicker
-              modal
-              mode="date"
-              open={open}
-              date={date}
-              minimumDate={new Date()}
-              onConfirm={date => {
-                setOpen(false);
-                setDate(date);
-              }}
-              onCancel={() => {
-                setOpen(false);
-              }}
-            />
-          </View>
-          <View style={{paddingLeft: responsivePadding}}>
-            <DropDownPicker
-              open={openDropList}
-              value={value}
-              items={items}
-              setOpen={setOpenDropList}
-              setValue={setValue}
-              setItems={setItems}
-              style={styles.dropdown}
-              dropDownContainerStyle={styles.dropdownContainer}
-              textStyle={styles.text}
-              placeholder="Game Type"
-              placeholderStyle={styles.placeholder}
-              labelStyle={styles.label}
-              ArrowUpIconComponent={({style}) => (
-                <Entypo name="chevron-small-down" size={24} color="white" />
-              )}
-              ArrowDownIconComponent={({style}) => (
-                <Entypo name="chevron-small-down" size={24} color="white" />
-              )}
-            />
-          </View>
-        </View>
-
         <UpcomingEventsSlider uid={userId} refreshUpcoming={refreshUpcoming} />
         <CurrentEventsSlider uid={userId} refreshUpcoming={refreshUpcoming} />
+        {/* My Arena */}
+        {groundData1.length > 0 ? (
+          <>
+            <GroundEventsSlider filteredGrounds={groundData1} userId={userId} />
+          </>
+        ) : (
+          <Text>No Arena</Text>
+        )}
         <TouchableOpacity
           onPress={handleCreateground}
           style={styles.addArenaButton}>
