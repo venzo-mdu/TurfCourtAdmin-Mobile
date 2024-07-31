@@ -1,4 +1,3 @@
-// App.js
 import {useNavigation, useRoute} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
 import {View, Text, Button, StyleSheet, Dimensions} from 'react-native';
