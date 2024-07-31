@@ -31,6 +31,8 @@ import {StatusBarCommon} from '../../../components';
 import {COLORS} from '../../../assets/constants/global_colors';
 import CurrentEventsSlider from '../Arena/currentEventsSlider';
 import {IMAGES} from '../../../assets/constants/global_images';
+import AdminTopTabNavigation from '../../../routing/AdminTopTabNavigation';
+import {ADMINTOPTABNAVIGATION} from '../..';
 
 const screenWidth = Dimensions.get('window').width;
 const responsivePadding = screenWidth * 0.03;

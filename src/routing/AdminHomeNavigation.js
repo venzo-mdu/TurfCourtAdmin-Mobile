@@ -29,6 +29,7 @@ import IndexBooking from '../screens/courtAdmin/Booking/indexBooking';
 import IndexHome from '../screens/courtAdmin/Home/indexHome';
 import IndexProfile from '../screens/courtAdmin/Profile/indexProfile';
 import {COLORS} from '../assets/constants/global_colors';
+import BookingScreen from '../screens/courtAdmin/Arena/ArenaDetails/BookingScreen';
 enableScreens(true);
 const Tab = createBottomTabNavigator();
 
@@ -205,7 +206,7 @@ const AdminHomeNavigation = () => {
 
           <Tab.Screen
             name={ADMINBOOKING}
-            component={IndexBooking}
+            component={BookingScreen}
             options={{
               tabBarLabel: ({focused}) => (
                 <Text
