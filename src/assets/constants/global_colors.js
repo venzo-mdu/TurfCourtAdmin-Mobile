@@ -17,6 +17,8 @@ export const COLORS = {
   fontColor: '#1b1b1b',
   placeHolder: '#9ea4b2',
   bgColor: '#f7f7f7',
-  tabActiveColor: '#000000',
-  verticalBar: '#DCDCDC',
+  tabActiveColor:'#000000',
+  verticalBar:'#DCDCDC',
 };
+
+

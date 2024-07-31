@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
+
 import React, {useEffect, useState} from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -110,6 +111,7 @@ const BookingScreen = () => {
       ground_name: 'abcd sports',
       user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
       owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193', //Accepted
+
     },
   ];
 
@@ -145,12 +147,14 @@ const BookingScreen = () => {
       console.log('Bookings data length--------------', finalData.length);
     } else if (value == 'Completed') {
       const tableData = sampleData?.filter(item => item.status === 'Completed');
+
       const finalData = tableData;
       console.log('tableData', finalData);
       setFilterData(finalData);
       console.log('Completed data length--------------', finalData.length);
     } else if (value == 'On-Going') {
       const tableData = sampleData?.filter(item => item.status === 'On-going');
+
       const finalData = tableData;
       console.log('tableData', finalData);
       setFilterData(finalData);
@@ -164,6 +168,7 @@ const BookingScreen = () => {
       setFilterData(finalData);
       console.log('Cancelled data length--------------', finalData.length);
     }
+
   };
 
   const handlestatusEdit = data => {
@@ -220,6 +225,7 @@ const BookingScreen = () => {
     const {backgroundColor, color, icon} = getStatusColor(item.status);
     return (
       <View style={styles.slide}>
+
         <View style={styles.header}>
           <View
             style={{
@@ -239,6 +245,7 @@ const BookingScreen = () => {
               item.status === 'Completed' ||
               item.status === 'Accepted') && (
               <AntDesign name={icon} size={12} color={color} />
+
             )}
             <Text
               style={[
@@ -281,6 +288,7 @@ const BookingScreen = () => {
               ]}>
               {item.ground_name}
             </Text>
+
             <View style={styles.line}></View>
             <Text
               style={[
@@ -292,6 +300,7 @@ const BookingScreen = () => {
               ]}>
               {item.court_name}
             </Text>
+
           </View>
 
           <Text
@@ -305,11 +314,13 @@ const BookingScreen = () => {
             ]}>
             ${item.amount}
           </Text>
+
         </View>
         <Text
           style={[
             styles.text,
             {fontFamily: 'Outfit-Regular', color: '#192335'},
+
           ]}>
           {formatDateTime(item)}
         </Text>
@@ -417,6 +428,7 @@ const BookingScreen = () => {
         </View>
       )}
       <Modal visible={statusopen} transparent={true}>
+
         <View style={styles.modalContainerCancelView}>
           <View style={styles.modalContentCancelView}>
             <TouchableOpacity
@@ -452,6 +464,7 @@ const BookingScreen = () => {
                 }}>
                 <Text style={styles.cancelButton}>Canceled</Text>
               </TouchableOpacity>
+
             </View>
           </View>
         </View>
