@@ -28,9 +28,10 @@ import {userData} from '../../../../firebase/firebaseFunction/userDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {ADDARENA, ADMINARENA} from '../../..';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import Collapsible from 'react-native-collapsible';
 import {COLORS} from '../../../../assets/constants/global_colors';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ArenaScreen = () => {
   const [tab, setTab] = useState('Basic Details');
@@ -92,12 +93,14 @@ const ArenaScreen = () => {
     groundData ? groundData?.rules : [''],
   );
   const [basicDetailsOpen, setBasicDetailsOpen] = useState(true);
-  const [coverImageOpen, setCoverImageOpen] = useState(false);
-  const [sportsAvailableOpen, setSportsAvailableOpen] = useState(false);
-  const [inclueOpen, setInclueOpen] = useState(false);
-  const [amenitiesOpen, setAmenitiesOpen] = useState(false);
-  const [galleryOpen, setGalleryOpen] = useState(false);
-  const [locationOpen, setLocationOpen] = useState(false);
+  const [coverImageOpen, setCoverImageOpen] = useState(true);
+  const [sportsAvailableOpen, setSportsAvailableOpen] = useState(true);
+  const [inclueOpen, setInclueOpen] = useState(true);
+  const [ruleOpen, setRuleOpen] = useState(true);
+  const [amenitiesOpen, setAmenitiesOpen] = useState(true);
+  const [galleryOpen, setGalleryOpen] = useState(true);
+  const [locationOpen, setLocationOpen] = useState(true);
+  const [overviewOpen, setOverviewOpen] = useState(true);
 
   //console.log("details", details);
   //console.log("value12345",groundData?.active)
@@ -656,7 +659,7 @@ const ArenaScreen = () => {
       <CheckBox
         value={groundData?.includes.includes(item)}
         onValueChange={() => handleincludeclick(item)}
-        tintColors={{true: '#097E52', false: '#192335'}}
+        tintColors={{true: '#097E52', false: '#878787'}}
       />
       <Text style={styles.labelIncludes}>{item}</Text>
     </View>
@@ -667,7 +670,7 @@ const ArenaScreen = () => {
       <CheckBox
         value={groundData?.amenities.includes(item)}
         onValueChange={() => handleAmenitiesClick(item)}
-        tintColors={{true: '#097E52', false: '#192335'}}
+        tintColors={{true: '#097E52', false: '#878787'}}
       />
       <Text style={styles.labelIncludes}>{item}</Text>
     </View>
@@ -679,15 +682,26 @@ const ArenaScreen = () => {
         <CommonTextArea
           value={item}
           onChangeText={value => handleTextAreaChange(index, value)}
-          placeholder="Enter text"
+          placeholder="Enter your Rules"
         />
       </View>
       <View>
         <TouchableOpacity
           style={styles.deleteButtonRule}
           onPress={() => handleDeleteTextArea(index)}>
-          {/* <Text style={styles.deleteTextRule}>Delete</Text> */}
-          <Image source={IMAGES.DeleteIcons} style={styles.deleteIcon} />
+          <View
+            style={{
+              backgroundColor: '#FFDEDE',
+              padding: 5,
+              borderRadius: 9,
+              width: 26,
+            }}>
+            <MaterialCommunityIcons
+              name="delete-outline"
+              size={15}
+              color="#E50000"
+            />
+          </View>
         </TouchableOpacity>
       </View>
     </View>
@@ -756,9 +770,72 @@ const ArenaScreen = () => {
                 onChangeText={text => handleInputChange('groundtype', text)}
                 keyboardType="default"
               />
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Opens At</Text>
+                <TouchableOpacity
+                  style={styles.inputDateView}
+                  onPress={() => setOpenStartPicker(true)}>
+                  <Text style={styles.inputText}>
+                    {groundData?.start_time || 'Select Time'}
+                  </Text>
+                </TouchableOpacity>
+                <DatePicker
+                  modal
+                  open={openStartPicker}
+                  date={new Date()}
+                  mode="time"
+                  onConfirm={date => {
+                    setOpenStartPicker(false);
+                    //handleInputChange('start_time', date);
+                    setGroundData(prevState => ({
+                      ...prevState,
+                      ['start_time']: formatTime(date),
+                    }));
+                  }}
+                  onCancel={() => {
+                    setOpenStartPicker(false);
+                  }}
+                />
+                {!groundData?.start_time && !valData && (
+                  <Text style={styles.errorText}>*Enter start time</Text>
+                )}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Closes At</Text>
+                <TouchableOpacity
+                  style={styles.inputDateView}
+                  onPress={() => setOpenEndPicker(true)}>
+                  <Text style={styles.inputText}>
+                    {groundData?.end_time || 'Select Time'}
+                  </Text>
+                </TouchableOpacity>
+                <DatePicker
+                  style={{fontFamily: 'Outfit-Regular'}}
+                  modal
+                  open={openEndPicker}
+                  date={new Date()}
+                  mode="time"
+                  onConfirm={date => {
+                    setOpenEndPicker(false);
+                    //handleInputChange('end_time', date);
+                    setGroundData(prevState => ({
+                      ...prevState,
+                      ['end_time']: formatTime(date),
+                    }));
+                  }}
+                  onCancel={() => {
+                    setOpenEndPicker(false);
+                  }}
+                />
+                {!groundData?.end_time && !valData && (
+                  <Text style={styles.errorText}>*Enter end time</Text>
+                )}
+              </View>
             </View>
           </Collapsible>
         </View>
+
         {/* CoverImage */}
         <View style={{zIndex: 5000, paddingBottom: 24}}>
           <TouchableOpacity
@@ -766,7 +843,8 @@ const ArenaScreen = () => {
               styles.accordionHeader,
               !coverImageOpen ? styles.openHeader : styles.closedHeader,
             ]}
-            onPress={() => setCoverImageOpen(!coverImageOpen)}>
+            onPress={() => setCoverImageOpen(!coverImageOpen)}
+            activeOpacity={1}>
             <Text style={styles.accordionHeaderText}>Cover Image</Text>
             <Ionicons
               name={!coverImageOpen ? 'chevron-up' : 'chevron-down'}
@@ -775,7 +853,12 @@ const ArenaScreen = () => {
           </TouchableOpacity>
           <Collapsible collapsed={coverImageOpen}>
             <View
-              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
+              style={{
+                paddingHorizontal: 20,
+                backgroundColor: COLORS.WHITE,
+                borderBottomLeftRadius: 12,
+                borderBottomRightRadius: 12,
+              }}>
               <View
                 style={{
                   borderBottomColor: '#F3F4F6',
@@ -805,20 +888,21 @@ const ArenaScreen = () => {
                       <TouchableOpacity
                         onPress={() => handleImageDelete(index)}
                         style={styles.deleteButton}>
-                        <Text style={styles.deleteText}>X</Text>
+                        <MaterialCommunityIcons
+                          name="delete-outline"
+                          size={13}
+                          color="#fff"
+                        />
                       </TouchableOpacity>
                     </View>
                   ))}
-                </View>
+                  {groundData?.coverImage.length === 0 && (
+                    <Text style={styles.errorText}>* Select cover image</Text>
+                  )}
 
-                {groundData?.coverImage.length === 0 && (
-                  <Text style={styles.errorText}>*Select Cover Image</Text>
-                )}
-
-                <View style={styles.infoContainer}>
-                  {/* <Text>Put the main picture as first image</Text> */}
-                  <Text>
-                    Images should be supported file format JPG, PNG, JPEG, WEBP
+                  <Text style={styles.infoContainer}>
+                    The supported image file formats are JPG, PNG, JPEG, and
+                    WEBP
                   </Text>
                 </View>
               </View>
@@ -826,67 +910,448 @@ const ArenaScreen = () => {
           </Collapsible>
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Opens At</Text>
+        {/* Sports Available */}
+        <View style={{zIndex: 5000, paddingBottom: 24}}>
           <TouchableOpacity
-            style={styles.inputDateView}
-            onPress={() => setOpenStartPicker(true)}>
-            <Text style={styles.inputText}>
-              {groundData?.start_time || 'Select Time'}
-            </Text>
+            style={[
+              styles.accordionHeader,
+              !sportsAvailableOpen ? styles.openHeader : styles.closedHeader,
+            ]}
+            onPress={() => setSportsAvailableOpen(!sportsAvailableOpen)}
+            activeOpacity={1}>
+            <Text style={styles.accordionHeaderText}>Sports Available</Text>
+            <Ionicons
+              name={!sportsAvailableOpen ? 'chevron-up' : 'chevron-down'}
+              size={24}
+            />
           </TouchableOpacity>
-          <DatePicker
-            modal
-            open={openStartPicker}
-            date={new Date()}
-            mode="time"
-            onConfirm={date => {
-              setOpenStartPicker(false);
-              //handleInputChange('start_time', date);
-              setGroundData(prevState => ({
-                ...prevState,
-                ['start_time']: formatTime(date),
-              }));
-            }}
-            onCancel={() => {
-              setOpenStartPicker(false);
-            }}
-          />
-          {!groundData?.start_time && !valData && (
-            <Text style={styles.errorText}>*Enter start time</Text>
-          )}
+          <Collapsible collapsed={sportsAvailableOpen}>
+            <View
+              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
+              <View
+                style={{
+                  borderBottomColor: '#F3F4F6',
+                  borderBottomWidth: 1,
+                }}
+              />
+            </View>
+            <View
+              style={[
+                {
+                  paddingVertical: 20,
+                  zIndex: 2000,
+                  paddingHorizontal: 10,
+                  backgroundColor: '#fff',
+                  borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,
+                },
+              ]}>
+              <View>
+                <FlatList
+                  data={game_type}
+                  renderItem={({item}) => (
+                    <TouchableOpacity
+                      style={[
+                        styles.itemContainerSports,
+                        {
+                          borderColor: groundData?.game_type?.includes(item)
+                            ? '#000'
+                            : '#F9F9F6',
+                        },
+                      ]}
+                      onPress={() => handleGameclick(item)}>
+                      <Image
+                        source={iconsss[item]}
+                        style={styles.iconSports}
+                        resizeMode="contain"
+                      />
+                      <Text style={styles.itemTextSports}>
+                        {item.replace('_', ' ')}
+                      </Text>
+                      {groundData?.game_type?.includes(item) && (
+                        <Ionicons
+                          style={styles.tickIconSports}
+                          name="checkmark-circle"
+                          size={15}
+                          color="#4CA181"
+                        />
+                      )}
+                    </TouchableOpacity>
+                  )}
+                  keyExtractor={item => item}
+                  numColumns={3}
+                  columnWrapperStyle={styles.rowSports}
+                />
+              </View>
+            </View>
+          </Collapsible>
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Closes At</Text>
+        {/* Includes */}
+        <View style={{zIndex: 5000, paddingBottom: 24}}>
           <TouchableOpacity
-            style={styles.inputDateView}
-            onPress={() => setOpenEndPicker(true)}>
-            <Text style={styles.inputText}>
-              {groundData?.end_time || 'Select Time'}
-            </Text>
+            style={[
+              styles.accordionHeader,
+              !inclueOpen ? styles.openHeader : styles.closedHeader,
+            ]}
+            onPress={() => setInclueOpen(!inclueOpen)}
+            activeOpacity={1}>
+            <Text style={styles.accordionHeaderText}>Includes</Text>
+            <Ionicons
+              name={!inclueOpen ? 'chevron-up' : 'chevron-down'}
+              size={24}
+            />
           </TouchableOpacity>
-          <DatePicker
-            modal
-            open={openEndPicker}
-            date={new Date()}
-            mode="time"
-            onConfirm={date => {
-              setOpenEndPicker(false);
-              //handleInputChange('end_time', date);
-              setGroundData(prevState => ({
-                ...prevState,
-                ['end_time']: formatTime(date),
-              }));
-            }}
-            onCancel={() => {
-              setOpenEndPicker(false);
-            }}
-          />
-          {!groundData?.end_time && !valData && (
-            <Text style={styles.errorText}>*Enter end time</Text>
-          )}
+          <Collapsible collapsed={inclueOpen}>
+            <View
+              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
+              <View
+                style={{
+                  borderBottomColor: '#F3F4F6',
+                  borderBottomWidth: 1,
+                }}
+              />
+            </View>
+            <View
+              style={[
+                {
+                  paddingVertical: 20,
+                  zIndex: 2000,
+                  paddingHorizontal: 10,
+                  backgroundColor: '#fff',
+                  borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,
+                },
+              ]}>
+              <View>
+                <FlatList
+                  data={includes}
+                  renderItem={renderItem}
+                  keyExtractor={item => item}
+                  extraData={groundData?.includes}
+                />
+              </View>
+            </View>
+          </Collapsible>
         </View>
+
+        {/* Rules */}
+        <View style={{zIndex: 5000, paddingBottom: 24}}>
+          <TouchableOpacity
+            style={[
+              styles.accordionHeader,
+              !ruleOpen ? styles.openHeader : styles.closedHeader,
+            ]}
+            onPress={() => setRuleOpen(!ruleOpen)}
+            activeOpacity={1}>
+            <Text style={styles.accordionHeaderText}>Rules</Text>
+            <Ionicons
+              name={!ruleOpen ? 'chevron-up' : 'chevron-down'}
+              size={24}
+            />
+          </TouchableOpacity>
+          <Collapsible collapsed={ruleOpen}>
+            <View
+              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
+              <View
+                style={{
+                  borderBottomColor: '#F3F4F6',
+                  borderBottomWidth: 1,
+                }}
+              />
+            </View>
+            <View
+              style={[
+                {
+                  paddingVertical: 20,
+                  zIndex: 2000,
+                  paddingHorizontal: 10,
+                  backgroundColor: '#fff',
+                  borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,
+                },
+              ]}>
+              <View>
+                <FlatList
+                  data={textAreas}
+                  renderItem={renderItemRules}
+                  keyExtractor={(item, index) => index.toString()}
+                  contentContainerStyle={styles.listContainerRule}
+                />
+                <TouchableOpacity
+                  style={styles.addButtonRule}
+                  onPress={handleAddTextArea}>
+                  <Text style={styles.addButtonTextRule}>Add Rule</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Collapsible>
+        </View>
+
+        {/* Amenities */}
+        <View style={{zIndex: 5000, paddingBottom: 24}}>
+          <TouchableOpacity
+            style={[
+              styles.accordionHeader,
+              !amenitiesOpen ? styles.openHeader : styles.closedHeader,
+            ]}
+            onPress={() => setAmenitiesOpen(!amenitiesOpen)}
+            activeOpacity={1}>
+            <Text style={styles.accordionHeaderText}>Amenities</Text>
+            <Ionicons
+              name={!amenitiesOpen ? 'chevron-up' : 'chevron-down'}
+              size={24}
+            />
+          </TouchableOpacity>
+          <Collapsible collapsed={amenitiesOpen}>
+            <View
+              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
+              <View
+                style={{
+                  borderBottomColor: '#F3F4F6',
+                  borderBottomWidth: 1,
+                }}
+              />
+            </View>
+            <View
+              style={[
+                {
+                  paddingVertical: 20,
+                  zIndex: 2000,
+                  paddingHorizontal: 10,
+                  backgroundColor: '#fff',
+                  borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,
+                },
+              ]}>
+              <FlatList
+                data={amenities}
+                renderItem={renderAmenities}
+                keyExtractor={item => item}
+                extraData={groundData?.includes} // Ensures FlatList updates when state changes
+              />
+            </View>
+          </Collapsible>
+        </View>
+
+        {/* Gallery */}
+        <View style={{zIndex: 5000, paddingBottom: 24}}>
+          <TouchableOpacity
+            style={[
+              styles.accordionHeader,
+              !galleryOpen ? styles.openHeader : styles.closedHeader,
+            ]}
+            onPress={() => setGalleryOpen(!galleryOpen)}
+            activeOpacity={1}>
+            <Text style={styles.accordionHeaderText}>Gallery</Text>
+            <Ionicons
+              name={!galleryOpen ? 'chevron-up' : 'chevron-down'}
+              size={24}
+            />
+          </TouchableOpacity>
+          <Collapsible collapsed={galleryOpen}>
+            <View
+              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
+              <View
+                style={{
+                  borderBottomColor: '#F3F4F6',
+                  borderBottomWidth: 1,
+                }}
+              />
+            </View>
+            <View
+              style={[
+                {
+                  paddingVertical: 20,
+                  zIndex: 2000,
+                  paddingHorizontal: 10,
+                  backgroundColor: '#fff',
+                  borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,
+                },
+              ]}>
+              <View>
+                <View style={styles.uploadContainer}>
+                  <TouchableOpacity
+                    style={styles.uploadButton}
+                    onPress={handleGalleryClick}>
+                    <Image
+                      source={IMAGES.UploadImages}
+                      style={styles.uploadIcon}
+                    />
+                    <Text style={styles.uploadText}>Upload Image</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.imageContainerUpload}>
+                  {groundData?.gallery.map((image, index) => (
+                    <View key={index} style={styles.imageWrapperUpload}>
+                      <Image source={{uri: image}} style={styles.imageUpload} />
+                      <TouchableOpacity
+                        onPress={() => handleImageGalleryDelete(index)}
+                        style={styles.deleteButton}>
+                        <MaterialCommunityIcons
+                          name="delete-outline"
+                          size={13}
+                          color="#fff"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+
+                {groundData?.gallery.length === 0 && (
+                  <Text style={styles.errorText}>*Select Gallery Image</Text>
+                )}
+              </View>
+            </View>
+          </Collapsible>
+        </View>
+
+        {/* Location */}
+        <View style={{zIndex: 5000, paddingBottom: 24}}>
+          <TouchableOpacity
+            style={[
+              styles.accordionHeader,
+              !locationOpen ? styles.openHeader : styles.closedHeader,
+            ]}
+            onPress={() => setLocationOpen(!locationOpen)}
+            activeOpacity={1}>
+            <Text style={styles.accordionHeaderText}>Location</Text>
+            <Ionicons
+              name={!locationOpen ? 'chevron-up' : 'chevron-down'}
+              size={24}
+            />
+          </TouchableOpacity>
+          <Collapsible collapsed={locationOpen}>
+            <View
+              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
+              <View
+                style={{
+                  borderBottomColor: '#F3F4F6',
+                  borderBottomWidth: 1,
+                }}
+              />
+            </View>
+            <View
+              style={[
+                {
+                  paddingVertical: 20,
+                  zIndex: 2000,
+                  paddingHorizontal: 10,
+                  backgroundColor: '#fff',
+                  borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,
+                },
+              ]}>
+              <View>
+                <Text style={styles.label}>Locations</Text>
+                <View style={styles.stack}>
+                  <CommonTextInput
+                    label="State"
+                    value={startCase(groundData?.state)}
+                    onChangeText={value => handleInputChange('state', value)}
+                    //widthStyle={true}
+                  />
+                  {!groundData?.state && !valData && (
+                    <Text style={styles.errorText}>*Enter state</Text>
+                  )}
+                </View>
+
+                <View style={styles.stack}>
+                  <CommonTextInput
+                    label="City"
+                    value={capitalize(groundData?.city)}
+                    onChangeText={value => handleInputChange('city', value)}
+                    //widthStyle={true}
+                  />
+                  {!groundData?.city && !valData && (
+                    <Text style={styles.errorText}>*Enter city</Text>
+                  )}
+                </View>
+
+                <View style={styles.stack}>
+                  <CommonTextInput
+                    label="Street Address"
+                    value={startCase(groundData?.street_address)}
+                    onChangeText={value =>
+                      handleInputChange('street_address', value)
+                    }
+                    //widthStyle={true}
+                  />
+                  {!groundData?.street_address && !valData && (
+                    <Text style={styles.errorText}>*Enter street address</Text>
+                  )}
+                </View>
+
+                <View style={styles.stack}>
+                  <CommonTextInput
+                    label="Pincode"
+                    value={groundData?.pincode}
+                    onChangeText={value => handleInputChange('pincode', value)}
+                    // widthStyle={true}
+                  />
+                  {!groundData?.pincode && !valData && (
+                    <Text style={styles.errorText}>*Enter pincode</Text>
+                  )}
+                </View>
+              </View>
+            </View>
+          </Collapsible>
+        </View>
+
+        {/* Overview */}
+        <View style={{zIndex: 5000, paddingBottom: 24}}>
+          <TouchableOpacity
+            style={[
+              styles.accordionHeader,
+              !overviewOpen ? styles.openHeader : styles.closedHeader,
+            ]}
+            onPress={() => setOverviewOpen(!overviewOpen)}
+            activeOpacity={1}>
+            <Text style={styles.accordionHeaderText}>Overview</Text>
+            <Ionicons
+              name={!overviewOpen ? 'chevron-up' : 'chevron-down'}
+              size={24}
+            />
+          </TouchableOpacity>
+          <Collapsible collapsed={overviewOpen}>
+            <View
+              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
+              <View
+                style={{
+                  borderBottomColor: '#F3F4F6',
+                  borderBottomWidth: 1,
+                }}
+              />
+            </View>
+            <View
+              style={[
+                {
+                  paddingVertical: 20,
+                  zIndex: 2000,
+                  paddingHorizontal: 10,
+                  backgroundColor: '#fff',
+                  borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,
+                },
+              ]}>
+              <View>
+                <CommonTextArea
+                  value={groundData?.overview}
+                  onChangeText={text => handleInputChange('overview', text)}
+                  // placeholderTextColor="#666"
+                  // numberOfLines={4}
+                />
+                {!groundData?.overview && !valData && (
+                  <Text style={styles.errorText}>*Enter overview</Text>
+                )}
+              </View>
+            </View>
+          </Collapsible>
+        </View>
+
+        {/* Active/Inactive */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Arena - Active/Inactive</Text>
           <DropDownPicker
@@ -903,7 +1368,7 @@ const ArenaScreen = () => {
               });
             }}
             setItems={setItems}
-            style={styles.dropdown}
+            style={[styles.dropdown]}
             textStyle={styles.dropdownText}
             placeholder="Select Active/Inactive"
           />
@@ -914,166 +1379,34 @@ const ArenaScreen = () => {
           )}
         </View>
 
-        <View>
-          <CommonTextArea
-            label="Overview"
-            value={groundData?.overview}
-            onChangeText={text => handleInputChange('overview', text)}
-            // placeholderTextColor="#666"
-            // numberOfLines={4}
-          />
-          {!groundData?.overview && !valData && (
-            <Text style={styles.errorText}>*Enter overview</Text>
-          )}
-        </View>
-        <View>
-          <Text style={styles.label}>Sports Available</Text>
-          <FlatList
-            data={game_type}
-            renderItem={({item}) => (
-              <TouchableOpacity
-                style={[
-                  styles.itemContainerSports,
-                  {
-                    borderColor: groundData?.game_type?.includes(item)
-                      ? '#000'
-                      : '#F9F9F6',
-                  },
-                ]}
-                onPress={() => handleGameclick(item)}>
-                <Image source={iconsss[item]} style={styles.iconSports} />
-                <Text style={styles.itemTextSports}>
-                  {item.replace('_', ' ')}
-                </Text>
-                {groundData?.game_type?.includes(item) && (
-                  <Image
-                    source={IMAGES.TickIcons}
-                    style={styles.tickIconSports}
-                  />
-                )}
-              </TouchableOpacity>
-            )}
-            keyExtractor={item => item}
-            numColumns={3}
-            columnWrapperStyle={styles.rowSports}
-          />
-        </View>
-        <View>
-          <Text style={styles.label}>Inclueds</Text>
-          <FlatList
-            data={includes}
-            renderItem={renderItem}
-            keyExtractor={item => item}
-            extraData={groundData?.includes} // Ensures FlatList updates when state changes
-          />
-        </View>
-        <View>
-          <Text style={styles.label}>Rules</Text>
-          {/* <CommonTextArea
-        value={groundData?.rules}
-        onChangeText={(text) => handleInputChange("rules", text)}
-        placeholder="Enter text"
-      /> */}
-          <FlatList
-            data={textAreas}
-            renderItem={renderItemRules}
-            keyExtractor={(item, index) => index.toString()}
-            contentContainerStyle={styles.listContainerRule}
-          />
-          <TouchableOpacity
-            style={styles.addButtonRule}
-            onPress={handleAddTextArea}>
-            <Text style={styles.addButtonTextRule}>Add Rule</Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <Text style={styles.label}>Amenities</Text>
-
-          <FlatList
-            data={amenities}
-            renderItem={renderAmenities}
-            keyExtractor={item => item}
-            extraData={groundData?.includes} // Ensures FlatList updates when state changes
-          />
-        </View>
-        <View>
-          <Text style={styles.label}>Locations</Text>
-          <View style={styles.stack}>
-            <CommonTextInput
-              label="State"
-              value={startCase(groundData?.state)}
-              onChangeText={value => handleInputChange('state', value)}
-              //widthStyle={true}
-            />
-            {!groundData?.state && !valData && (
-              <Text style={styles.errorText}>*Enter state</Text>
-            )}
-          </View>
-
-          <View style={styles.stack}>
-            <CommonTextInput
-              label="City"
-              value={capitalize(groundData?.city)}
-              onChangeText={value => handleInputChange('city', value)}
-              //widthStyle={true}
-            />
-            {!groundData?.city && !valData && (
-              <Text style={styles.errorText}>*Enter city</Text>
-            )}
-          </View>
-
-          <View style={styles.stack}>
-            <CommonTextInput
-              label="Street Address"
-              value={startCase(groundData?.street_address)}
-              onChangeText={value => handleInputChange('street_address', value)}
-              //widthStyle={true}
-            />
-            {!groundData?.street_address && !valData && (
-              <Text style={styles.errorText}>*Enter street address</Text>
-            )}
-          </View>
-
-          <View style={styles.stack}>
-            <CommonTextInput
-              label="Pincode"
-              value={groundData?.pincode}
-              onChangeText={value => handleInputChange('pincode', value)}
-              // widthStyle={true}
-            />
-            {!groundData?.pincode && !valData && (
-              <Text style={styles.errorText}>*Enter pincode</Text>
-            )}
-          </View>
-        </View>
         {groundID != null ? (
           <View style={styles.buttonContainerArena}>
             <TouchableOpacity
-              style={styles.buttonArena}
+              style={[styles.buttonArena, {backgroundColor: '#097E52'}]}
               onPress={() => {
                 setGroundData(createtempgroundData);
               }}>
               <Text style={styles.buttonTextArena}>Reset</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.buttonArena}
+              style={[styles.buttonArena, {backgroundColor: '#192335'}]}
               onPress={() => updateground(groundData)}>
-              <Text style={styles.buttonTextArena}>Update Arena</Text>
+              <Text style={styles.buttonTextArena}>Update</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.buttonContainerArena}>
             <TouchableOpacity
-              style={styles.buttonArena}
+              style={[styles.buttonArena, {backgroundColor: '#097E52'}]}
               onPress={() => {
                 setGroundData(createtempgroundData);
               }}>
               <Text style={styles.buttonTextArena}>Reset</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.buttonArena}
+              style={[styles.buttonArena, {backgroundColor: '#192335'}]}
               onPress={() => createground(groundData)}>
-              <Text style={styles.buttonTextArena}>Add Arena</Text>
+              <Text style={styles.buttonTextArena}>Add</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -1096,18 +1429,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
+    fontFamily: 'Outfit-Regular',
     fontSize: 16,
-    color: '#1B1B1B',
+    fontWeight: '400',
     marginBottom: 5,
+    color: '#1B1B1B',
   },
   inputDateView: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 5,
+    height: 60,
+    borderRadius: 12,
     backgroundColor: '#FAFAFA',
+    paddingHorizontal: 10,
+    fontFamily: 'Outfit-Regular',
+    fontSize: 20,
     justifyContent: 'center',
-    width: Dimensions.get('window').width * 0.9,
   },
   inputText: {
     fontSize: 16,
@@ -1116,16 +1451,19 @@ const styles = StyleSheet.create({
 
   dropdown: {
     backgroundColor: '#FAFAFA',
-    borderColor: '#ccc',
+    borderColor: '#FAFAFA',
     borderRadius: 8,
+    height: 60,
   },
   dropdownText: {
-    color: '#B7B9BF',
+    fontFamily: 'Outfit-Regular',
+    color: '#000',
     fontSize: 14,
   },
   errorText: {
     fontSize: 13,
     color: 'red',
+    fontFamily: 'Outfit-Regular',
   },
 
   /* Upload Image Container */
@@ -1158,15 +1496,19 @@ const styles = StyleSheet.create({
   imageUpload: {
     width: 100,
     height: 100,
+    borderRadius: 15,
     resizeMode: 'cover',
   },
   deleteButton: {
+    width: 18,
+    height: 18,
     position: 'absolute',
     top: 3,
     right: 3,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: '#CA0D0D',
     borderRadius: 15,
-    padding: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   deleteText: {
     color: '#fff',
@@ -1174,7 +1516,8 @@ const styles = StyleSheet.create({
   },
 
   infoContainer: {
-    marginTop: 10,
+    fontFamily: 'Outfit-Regular',
+    marginBottom: 20,
     color: '#757C8D',
     fontSize: 14,
   },
@@ -1184,21 +1527,21 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 5,
     padding: 10,
-    //borderWidth: 1,
-    borderRadius: 10,
-    backgroundColor: '#F9F9F6',
+    borderRadius: 5,
+    backgroundColor: COLORS.fieldColor,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconSports: {
-    width: 52,
-    height: 35,
+    // width: 52,
+    // height: 35,
     marginBottom: 10,
   },
   itemTextSports: {
     color: '#192335',
     fontSize: 12,
-    fontWeight: '500',
+    lineHeight: 22,
+    fontFamily: 'Outfit-Medium',
   },
   tickIconSports: {
     width: 15,
@@ -1219,16 +1562,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   labelIncludes: {
-    color: '#757C8D',
+    fontFamily: 'Outfit-Regular',
+    color: COLORS.fontColor,
     fontSize: 16,
-    marginLeft: 10, // Space between checkbox and label
+    marginLeft: 10,
   },
 
   /* Rules Sections */
   itemContainerRule: {
+    width: '100%',
     flexDirection: 'row',
-    // alignItems: 'center',
-    marginBottom: 10,
   },
   deleteButtonRule: {
     // backgroundColor: '#E57373',
@@ -1281,20 +1624,21 @@ const styles = StyleSheet.create({
   buttonContainerArena: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
+    marginBottom: 20,
   },
   buttonArena: {
-    backgroundColor: '#192335',
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    borderRadius: 12,
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    width: Dimensions.get('window').width * 0.4, // Adjust width as needed
+    width: '48%',
+    // width: Dimensions.get('window').width * 0.4, // Adjust width as needed
   },
   buttonTextArena: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 16,
+    fontFamily: 'Outfit-Regular',
+    lineHeight: 20.16,
   },
   accordionHeader: {
     flexDirection: 'row',

@@ -26,7 +26,7 @@ import IndexArena from '../screens/courtAdmin/Arena/indexArena';
 import IndexBooking from '../screens/courtAdmin/Booking/indexBooking';
 //import indexSlotDetails from '../screens/courtAdmin/Home/indexHome';
 //import indexReviews from '../screens/courtAdmin/Profile/indexProfile';
-import indexHome from '../screens/courtAdmin/Home/indexHome';
+import IndexHome from '../screens/courtAdmin/Home/indexHome';
 import IndexProfile from '../screens/courtAdmin/Profile/indexProfile';
 import {COLORS} from '../assets/constants/global_colors';
 enableScreens(true);
@@ -83,7 +83,7 @@ const AdminHomeNavigation = () => {
             setUserData(user?.user_id);
             await AsyncStorage.setItem('uid', JSON.stringify(user?.user_id));
             setLoggedIn(true);
-            setInitialRoute(ADMINARENA); // Set initial route to home if user is an owner
+            setInitialRoute(ADMINHOME); // Set initial route to home if user is an owner
           } else {
             ToastAndroid.show(
               'Please Logged in the owner user',
@@ -124,18 +124,46 @@ const AdminHomeNavigation = () => {
       }}>
       {loggedIn ? (
         <>
-          {/* <Tab.Screen
-        name={ADMINHOME}
-        component={indexHome}
-        options={{
-          tabBarLabel: 'Home',
-          tabBarIcon: ({ focused  }) => (
-            <Image source={focused ? IMAGES.HomeGreen : IMAGES.HomeGray } style={{width:30, height:30}} />
-          ),
-        }}
-      /> */}
-
           <Tab.Screen
+            name={ADMINHOME}
+            component={IndexHome}
+            options={{
+              tabBarLabel: ({focused}) => (
+                <Text
+                  style={{
+                    fontFamily: focused ? 'Outfit-SemiBold' : 'Outfit-Light',
+                    fontSize: 16,
+                    color: focused ? '#3a3a3a' : '#898989',
+                    lineHeight: 20.16,
+                  }}>
+                  Home
+                </Text>
+              ),
+              tabBarIcon: ({focused}) => (
+                <Image
+                  source={focused ? IMAGES.HomeGreen : IMAGES.HomeGray}
+                  style={{width: 30, height: 30}}
+                />
+              ),
+              tabBarStyle: {
+                height: 80,
+                paddingBottom: 10,
+                paddingTop: 10,
+              },
+              headerStyle: {
+                backgroundColor: COLORS.bgColor,
+              },
+              headerTitle: 'Bookings',
+              headerTitleAlign: 'center',
+              headerTitleStyle: {
+                fontFamily: 'Outfit-Medium',
+                fontSize: 22,
+                lineHeight: 27.72,
+              },
+            }}
+          />
+
+          {/* <Tab.Screen
             name={ADMINARENA}
             component={IndexArena}
             options={{
@@ -173,7 +201,8 @@ const AdminHomeNavigation = () => {
                 lineHeight: 27.72,
               },
             }}
-          />
+          /> */}
+
           <Tab.Screen
             name={ADMINBOOKING}
             component={IndexBooking}

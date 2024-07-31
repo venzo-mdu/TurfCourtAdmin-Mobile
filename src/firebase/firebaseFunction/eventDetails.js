@@ -1,18 +1,18 @@
-import { collection, getDocs, query, where } from "firebase/firestore";
-import moment from "moment";
-import { db } from "../firebase";
+import {collection, getDocs, query, where} from 'firebase/firestore';
+import moment from 'moment';
+import {db} from '../firebase';
 import {
   DeleteData,
   FetchData,
   FetchDataById,
   InsertData,
   UpdateData,
-} from "./crud";
-import { userData } from "./userDetails";
-import { getgroundDataById, getreview } from "./groundDetails";
-import { v4 } from "uuid";
+} from './crud';
+import {userData} from './userDetails';
+import {getgroundDataById, getreview} from './groundDetails';
+import {v4} from 'uuid';
 
-export const createNewEvent = async (event_data) => {
+export const createNewEvent = async event_data => {
   // let event_data = {
   //     court_id: "CnkVReBw3zCwffn5boL9",
   //     user_id: "5f0oAXJHFaSmKSkpxkzxq8qRwy22",
@@ -28,27 +28,29 @@ export const createNewEvent = async (event_data) => {
     // const sepfunc = separateConsecutiveSecondElements(event_data)
     // sepfunc?.map(async (item, Outerindex) => {
     event_data?.map(async (item, Outerindex) => {
-      const currentBookId = v4()
-      item?.map(async (innerItem) => {
-
-        let ground_data = await FetchDataById("ground_details", innerItem?.ground_id);
-        let user_data = await FetchDataById("user", innerItem?.user_id);
+      const currentBookId = v4();
+      item?.map(async innerItem => {
+        let ground_data = await FetchDataById(
+          'ground_details',
+          innerItem?.ground_id,
+        );
+        let user_data = await FetchDataById('user', innerItem?.user_id);
         let cart_id = innerItem?.cart_id;
         innerItem.ground_name = ground_data?.groundname;
         innerItem.user_name = user_data?.username;
         innerItem.createdAt = new Date();
-        innerItem.status = "Awaiting";
-        innerItem.reason = "";
+        innerItem.status = 'Awaiting';
+        innerItem.reason = '';
         innerItem.images = ground_data?.coverImage;
         innerItem.owner_id = ground_data?.owner;
         innerItem.BookId = `${currentBookId}-${Outerindex}`;
         delete innerItem.cart_id;
-        await InsertData("events", innerItem);
+        await InsertData('events', innerItem);
         await removeCartData(cart_id);
       });
     });
 
-    return { status: "Success" };
+    return {status: 'Success'};
   } catch (error) {
     return error;
   }
@@ -71,14 +73,15 @@ export const createNewEvent = async (event_data) => {
 export const getEventdetailsByType = async (uid, usertype) => {
   try {
     const fieldName =
-      usertype === "owner"
-        ? "ground_id"
-        : usertype === "owners"
-          ? "owner_id"
-          : "user_id";
+      usertype === 'owner'
+        ? 'ground_id'
+        : usertype === 'owners'
+        ? 'owner_id'
+        : 'user_id';
+    console.log('fieldName: ', fieldName);
     const fieldValue = uid;
     if (uid != null) {
-      let data = await FetchData("events", fieldName, fieldValue);
+      let data = await FetchData('events', fieldName, fieldValue);
       data.sort((a, b) => a.createdAt - b.createdAt);
 
       let ground;
@@ -86,14 +89,14 @@ export const getEventdetailsByType = async (uid, usertype) => {
       if (data?.length) {
         ground = await getgroundDataById(
           data[0]?.ground_id,
-          "user",
-          fieldValue
+          'user',
+          fieldValue,
         );
         // let review = await getreview(data[0]?.ground_id);
         user = await userData(ground?.owner);
       }
       if (data) {
-        data.forEach((item) => {
+        data.forEach(item => {
           item.images = ground?.coverImage;
           item.ground_ph = ground?.phonenumber;
           item.ground_address = ground?.street_address;
@@ -107,30 +110,30 @@ export const getEventdetailsByType = async (uid, usertype) => {
         });
         data.sort((a, b) => b.createdAt - a.createdAt);
       }
-      return { status: "success", data: data };
+      return {status: 'success', data: data};
     } else {
-      return { status: "failure", data: "No Login User" };
+      return {status: 'failure', data: 'No Login User'};
     }
   } catch (error) {
-    return { status: "failure", data: error };
+    return {status: 'failure', data: error};
   }
 };
 
-export const getcourtevent = async (court_id) => {
+export const getcourtevent = async court_id => {
   try {
-    if (court_id != "") {
-      let events = await FetchData("events", "court_id", court_id);
+    if (court_id != '') {
+      let events = await FetchData('events', 'court_id', court_id);
       // const filteredEvent = events?.filter(item => { return new Date(item?.start).toDateString() == new Date(date).toDateString() })
       if (events) {
-        console.log("events", events, "courtDataBySlot");
+        console.log('events', events, 'courtDataBySlot');
 
         return events;
       } else {
-        console.log("!events", "courtDataBySlot");
+        console.log('!events', 'courtDataBySlot');
         return [];
       }
     } else {
-      console.log("!!events", "courtDataBySlot");
+      console.log('!!events', 'courtDataBySlot');
 
       return [];
     }
@@ -141,22 +144,22 @@ export const getcourtevent = async (court_id) => {
 
 export const updateEventData = async (event_id, updatedata) => {
   updatedata.end = new Date(
-    updatedata.end.setHours(updatedata.end.getHours() + 5)
+    updatedata.end.setHours(updatedata.end.getHours() + 5),
   );
   updatedata.end = new Date(
-    updatedata.end.setMinutes(updatedata.end.getMinutes() + 30)
+    updatedata.end.setMinutes(updatedata.end.getMinutes() + 30),
   );
   updatedata.start = new Date(
-    updatedata.start.setHours(updatedata.start.getHours() + 5)
+    updatedata.start.setHours(updatedata.start.getHours() + 5),
   );
   updatedata.start = new Date(
-    updatedata.start.setMinutes(updatedata.start.getMinutes() + 30)
+    updatedata.start.setMinutes(updatedata.start.getMinutes() + 30),
   );
   updatedata.end = updatedata?.end.toISOString().slice(0, 16);
   updatedata.start = updatedata?.start.toISOString().slice(0, 16);
 
   try {
-    let result = await UpdateData("events", updatedata, event_id);
+    let result = await UpdateData('events', updatedata, event_id);
     const data = result;
     return data;
   } catch (error) {
@@ -166,7 +169,7 @@ export const updateEventData = async (event_id, updatedata) => {
 
 export const changeEventStatus = async (event_id, status) => {
   try {
-    let result = await UpdateData("events", { status: status }, event_id);
+    let result = await UpdateData('events', {status: status}, event_id);
     return result;
   } catch (error) {
     return error;
@@ -176,23 +179,23 @@ export const changeEventStatus = async (event_id, status) => {
 export const courtswithoutevents = async (
   targetGroundIds,
   startTime,
-  endTime
+  endTime,
 ) => {
-  let collectionRef = collection(db, "events");
+  let collectionRef = collection(db, 'events');
   collectionRef = query(
     collectionRef,
-    where("court_id", "in", targetGroundIds)
+    where('court_id', 'in', targetGroundIds),
   );
 
   let data;
   try {
     const querySnapshot = await getDocs(collectionRef);
-    data = querySnapshot.docs.map((doc) => {
+    data = querySnapshot.docs.map(doc => {
       return doc.data();
     });
     let ids = [];
     if (data) {
-      data.map((item) => {
+      data.map(item => {
         if (
           (new Date(item.start) < new Date(startTime) &&
             new Date(item.end) < new Date(startTime)) == false &&
@@ -203,39 +206,39 @@ export const courtswithoutevents = async (
         }
       });
     }
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       resolve(ids);
     });
   } catch (error) {
     // console.error('Error getting documents:', e);
-    return { status: "failure", data: error };
+    return {status: 'failure', data: error};
   }
 };
 
-export const AddCartdata = async (cartdata) => {
+export const AddCartdata = async cartdata => {
   try {
     let cartData;
-    cartdata?.map(async (item) => {
-      await InsertData("Cart", item);
+    cartdata?.map(async item => {
+      await InsertData('Cart', item);
     });
     cartData = await GetcartDataById(
       cartdata[0]?.user_id,
-      cartdata[0]?.ground_id
+      cartdata[0]?.ground_id,
     );
     Promise.resolve();
-    return { status: "success", data: cartData };
+    return {status: 'success', data: cartData};
   } catch (error) {
     return error;
   }
 };
 
 export const GetcartDataById = async (uid, ground_id) => {
-  let cart = await FetchData("Cart", "user_id", uid);
-  let cartData = cart?.filter((item) => item.ground_id == ground_id);
-  console.log(cartData, "gtr43");
+  let cart = await FetchData('Cart', 'user_id', uid);
+  let cartData = cart?.filter(item => item.ground_id == ground_id);
+  console.log(cartData, 'gtr43');
   const currentDate = new Date();
   let filterdate = [];
-  cartData?.map(async (item) => {
+  cartData?.map(async item => {
     let date1 = new Date(item?.start);
     let date2 = new Date(currentDate);
     if (Math.abs(date1.getTime() < date2.getTime())) {
@@ -244,7 +247,7 @@ export const GetcartDataById = async (uid, ground_id) => {
       filterdate.push(item);
     }
   });
-  console.log("gtr43", filterdate);
+  console.log('gtr43', filterdate);
 
   if (cartData?.length) {
     return cartData;
@@ -253,9 +256,9 @@ export const GetcartDataById = async (uid, ground_id) => {
   }
 };
 
-export const removeCartData = async (cartid) => {
+export const removeCartData = async cartid => {
   try {
-    let cart = await DeleteData("Cart", cartid);
+    let cart = await DeleteData('Cart', cartid);
   } catch (error) {
     return error;
   }
@@ -266,26 +269,26 @@ export const updateEventStatus = async (uid, usertype) => {
     const data = await getEventdetailsByType(uid, usertype);
 
     const currentDate = new Date();
-    data?.data?.forEach(async (item) => {
+    data?.data?.forEach(async item => {
       let date1 = new Date(item?.starttime);
       let date2 = new Date(currentDate);
       // date2.setMinutes(0, 0, 0);
       let endDate1 = new Date(item?.endtime);
       // if (Math.abs(date1.getTime() - date2.getTime()) <= 59999) {
       if (Math.abs(date1.getTime() <= date2.getTime())) {
-        if (item.status == "Awaiting") {
-          await changeEventStatus(item?.event_id, "Cancelled");
-          console.log("awaiting", "setInterval11");
-        } else if (item.status == "Accepted") {
-          await changeEventStatus(item?.event_id, "Ongoing");
-          console.log("accepted", "setInterval11");
+        if (item.status == 'Awaiting') {
+          await changeEventStatus(item?.event_id, 'Cancelled');
+          console.log('awaiting', 'setInterval11');
+        } else if (item.status == 'Accepted') {
+          await changeEventStatus(item?.event_id, 'Ongoing');
+          console.log('accepted', 'setInterval11');
         }
       }
       if (Math.abs(endDate1.getTime() <= date2.getTime())) {
-        if (item.status == "Ongoing") {
-          console.log("gtreee2");
-          await changeEventStatus(item?.event_id, "Completed");
-          console.log("ongoing", "setInterval11");
+        if (item.status == 'Ongoing') {
+          console.log('gtreee2');
+          await changeEventStatus(item?.event_id, 'Completed');
+          console.log('ongoing', 'setInterval11');
         }
       }
     });
@@ -293,10 +296,10 @@ export const updateEventStatus = async (uid, usertype) => {
     return err;
   }
 };
-export const separateConsecutiveSecondElements = (arrayOfObjects) => {
+export const separateConsecutiveSecondElements = arrayOfObjects => {
   arrayOfObjects.sort((a, b) => a.mapIndexx - b.mapIndexx);
   function extractDate(dateTime) {
-    return dateTime.split("T")[0];
+    return dateTime.split('T')[0];
   }
   // Initialize the result array
   let result = [];
@@ -310,10 +313,13 @@ export const separateConsecutiveSecondElements = (arrayOfObjects) => {
     } else {
       // Check if the current element is consecutive to the last element in the group
 
-      if (arrayOfObjects[i].mapIndexx === arrayOfObjects[i - 1].mapIndexx + 1 &&
+      if (
+        arrayOfObjects[i].mapIndexx === arrayOfObjects[i - 1].mapIndexx + 1 &&
         arrayOfObjects[i].gametype === arrayOfObjects[i - 1].gametype &&
         arrayOfObjects[i].court_id === arrayOfObjects[i - 1].court_id &&
-        extractDate(arrayOfObjects[i].start) === extractDate(arrayOfObjects[i - 1].start)) {
+        extractDate(arrayOfObjects[i].start) ===
+          extractDate(arrayOfObjects[i - 1].start)
+      ) {
         // If it is, add it to the current group
         tempGroup.push(arrayOfObjects[i]);
       } else {
@@ -327,6 +333,6 @@ export const separateConsecutiveSecondElements = (arrayOfObjects) => {
   if (tempGroup.length > 0) {
     result.push(tempGroup);
   }
-  console.log(result, "result", arrayOfObjects)
+  console.log(result, 'result', arrayOfObjects);
   return result;
-}
+};
