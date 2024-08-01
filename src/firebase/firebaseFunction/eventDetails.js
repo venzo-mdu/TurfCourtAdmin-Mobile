@@ -7,6 +7,7 @@ import {
   FetchDataById,
   InsertData,
   UpdateData,
+  fetchBulkData,
 } from './crud';
 import {userData} from './userDetails';
 import {getgroundDataById, getreview} from './groundDetails';
@@ -71,62 +72,83 @@ export const createNewEvent = async event_data => {
 // delete item.cart_id;
 // await InsertData("events", item);
 // await removeCartData(cart_id);
-export const getEventdetailsByType = async(
+// export const getEventdetailsByType = async (
+//   uid,
+//   usertype,
+//   order = { key: "start", dir: "asc" },
+//   limitNumber = null,
+//   otherFilters,
+ 
+  
+// ) => {
+//   if (!otherFilters) {
+//     return;
+//   }
+//   try {
+//     console.log('inside getEventdetailsByType');
+//     const fieldName =
+//       usertype === "owner"
+//         ? "ground_id"
+//         : usertype === "owners"
+//         ? "owner_id"
+//         : "user_id";
+//     const fieldValue = uid;
+//     if (uid != null) {
+//       let data = await fetchBulkData(
+//         "events",
+//         fieldName,
+//         "==",
+//         fieldValue,
+//         order,
+//         limitNumber,
+//         otherFilters,
+//       );
+//       console.log('nnnnn:',usertype,order,fieldValue,otherFilters,limitNumber,fieldName);
+//      console.log(data,'data')
+//       return { status: "success", data: data };
+//     } else {
+//       return { status: "failure", data: "No Login User" };
+//     }
+//   } catch (error) {
+//     return { status: "failure", data: error };
+//   }
+// };
+
+export const getEventdetailsByType = async (
   uid,
   usertype,
   order = { key: "start", dir: "asc" },
   limitNumber = null,
   otherFilters
-)=>{    console.log('event resl');
-
+) => {
   if (!otherFilters) {
     return;
   }
   try {
     const fieldName =
-      usertype === 'owner'
-        ? 'ground_id'
-        : usertype === 'owners'
-        ? 'owner_id'
-        : 'user_id';
-    console.log('fieldName: ', fieldName);
+      usertype === "owner"
+        ? "ground_id"
+        : usertype === "owners"
+        ? "owner_id"
+        : "user_id";
     const fieldValue = uid;
     if (uid != null) {
-      let data = await FetchData('events', fieldName, fieldValue);
-      data.sort((a, b) => a.createdAt - b.createdAt);
-
-      let ground;
-      let user;
-      if (data?.length) {
-        ground = await getgroundDataById(
-          data[0]?.ground_id,
-          'user',
-          fieldValue,
-        );
-        // let review = await getreview(data[0]?.ground_id);
-        user = await userData(ground?.owner);
-      }
-      if (data) {
-        data.forEach(item => {
-          item.images = ground?.coverImage;
-          item.ground_ph = ground?.phonenumber;
-          item.ground_address = ground?.street_address;
-          item.review = ground?.overallRating;
-          item.details = ground?.overview;
-          // item.createdAt = new Date(moment(item.createdAt).format('MMM DD YYYY hh:mm A'))
-          item.starttime = item.start;
-          item.endtime = item.end;
-          delete item.start;
-          delete item.end;
-        });
-        data.sort((a, b) => b.createdAt - a.createdAt);
-      }
-      return {status: 'success', data: data};
+      let data = await fetchBulkData(
+        "events",
+        fieldName,
+        "==",
+        fieldValue,
+        order,
+        limitNumber,
+        otherFilters,
+      );
+      // console.log('data-----',data);
+      return { status: "success", data: data };
     } else {
-      return {status: 'failure', data: 'No Login User'};
+      return { status: "failure", data: "No Login User" };
     }
   } catch (error) {
-    return {status: 'failure', data: error};
+    return { status: "failure", data: error };
   }
 };
     

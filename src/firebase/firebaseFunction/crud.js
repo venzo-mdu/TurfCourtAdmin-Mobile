@@ -15,8 +15,10 @@ import {
   setDoc,
   orderBy,
   documentId,
+  limit,
+  getCountFromServer,
 } from "firebase/firestore";
-
+import _ from "lodash";
 const ids = {
   user: "user_id",
   ground_details: "ground_id",
@@ -40,8 +42,7 @@ const fetchBulkData = async (
   countOnly = false
 ) => {
   try {
-    let collectionRef = collection(db, table);
- 
+    let collectionRef = collection(db, "events");
     if (filter_key && operator && filter_value) {
       collectionRef = query(
         collectionRef,
@@ -81,22 +82,22 @@ const fetchBulkData = async (
     let querySnapshot;
     if (countOnly) {
       const snapshot = await getCountFromServer(collectionRef);
-      console.log("count: ", snapshot.data().count);
       return snapshot.data().count;
     } else {
       querySnapshot = await getDocs(collectionRef);
- 
       let data = querySnapshot.docs.map((doc) => {
-        return { [ids[table]]: doc.id, ...doc.data() };
+        return { [ids[table]]: doc.id, 
+          ...doc.data(),
+
+        };
       });
- 
       return data;
     }
   } catch (e) {
     console.error("Error getting documents:", e);
   }
 };
- 
+
 
 const FetchData = async (
   table,

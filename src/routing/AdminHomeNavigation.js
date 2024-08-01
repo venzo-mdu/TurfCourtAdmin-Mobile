@@ -50,7 +50,8 @@ const AdminHomeNavigation = () => {
   const [initialRoute, setInitialRoute] = useState(null);
   const [USERDATA, setUserData] = useState();
   const [loggedIn, setLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true); 
+  // Loading state
   console.log('USERDATA', USERDATA);
 
   useEffect(() => {
@@ -207,6 +208,7 @@ const AdminHomeNavigation = () => {
           <Tab.Screen
             name={ADMINBOOKING}
             component={BookingScreen}
+            
             options={{
               tabBarLabel: ({focused}) => (
                 <Text
