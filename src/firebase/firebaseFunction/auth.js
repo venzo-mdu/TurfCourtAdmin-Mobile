@@ -13,7 +13,7 @@ import {
   UpdateData,
 } from './crud';
 import DeviceInfo from 'react-native-device-info';
-import { auth } from '../firebase';
+import {auth} from '../firebase';
 
 export const signup = async userData => {
   try {
@@ -37,7 +37,6 @@ export const signup = async userData => {
       userData.isuseractive = true;
       return {data: data, userdata: userData};
     } else {
-
       return {
         data: null,
         error: 'Phone number is Already registered.',
@@ -45,13 +44,11 @@ export const signup = async userData => {
       };
     }
   } catch (err) {
-
     return {data: null, error: err, msg: 'Incorrect Login Credentials'};
   }
 };
 
 export const verifyOtp = async (otp, response) => {
-
   let valueOTP = otp;
 
   if (valueOTP === '' || valueOTP === null) {
@@ -64,14 +61,12 @@ export const verifyOtp = async (otp, response) => {
     const userdata = await InsertDataWithUID('user', response?.userdata, uid);
     return {data: userdata, null: null, msg: 'user signup successfully'};
   } catch (err) {
-
     return {data: null, error: err, msg: 'Incorrect OTP'};
   }
 };
 
 const checkPhoneNumberAvailability = async phoneNumber => {
   try {
-
     const usersRef = await FetchData('user');
     const checkAvilable = usersRef.filter(user => {
       return user.phonenumber == phoneNumber;
@@ -117,7 +112,6 @@ export const login = async (phoneNumber, recaptchaVerifierComp) => {
       };
     }
   } catch (error) {
-
     return error;
   }
 };
@@ -142,7 +136,6 @@ export const loginverifyOtp = async (otp, verificationId) => {
     //   const userData = await FetchDataById('user', uid);
     //   return {userData, error: null, msg: 'User logged in successfully'};
   } catch (err) {
-
     return {data: null, error: err, msg: 'Incorrect Login Credentials'};
   }
 };
@@ -168,7 +161,7 @@ export const getadminconfig = async () => {
   return result.length ? result[0] : null;
 };
 
-export const signupformobile = async (userData) => {
+export const signupformobile = async userData => {
   try {
     const isAvailable = await checkPhoneNumberAvailability(
       userData.phonenumber,
@@ -180,7 +173,6 @@ export const signupformobile = async (userData) => {
       const confirmation = await signInWithPhoneNumber(auth, phoneNumber, true);
       return {data: confirmation, userdata: userData};
     } else {
-
       return {
         data: null,
         error: 'Phone number is Already registered.',
@@ -214,15 +206,14 @@ const getDeviceInformation = async () => {
 };
 
 export const loginmobile = async (phoneNumber, recaptchaVerifierComp) => {
-
   try {
     const isAvailable = await checkPhoneNumberAvailability(phoneNumber);
 
     if (isAvailable) {
       let phoneNumber1 = phoneNumber;
-console.log("phoneNumber1", phoneNumber1);
+      console.log('phoneNumber1', phoneNumber1);
       const phoneProvider = new PhoneAuthProvider(auth);
-      console.log("phoneNumber1", phoneNumber1);
+      console.log('phoneNumber1', phoneNumber1);
       const verificationId = await phoneProvider.verifyPhoneNumber(
         phoneNumber1,
         recaptchaVerifierComp.current,
@@ -263,18 +254,15 @@ console.log("phoneNumber1", phoneNumber1);
       };
     }
   } catch (error) {
-
     return error;
   }
 };
 
 export const loginmobile1 = async phoneNumber => {
-
   // try {
   //   const isAvailable = await checkPhoneNumberAvailability(phoneNumber);
   //   if (isAvailable) {
   //     let phoneNumber = '+91' + phoneNumber
-
   //     const confirmation = await signInWithPhoneNumber(
   //       auth,
   //       phoneNumber,
@@ -284,9 +272,7 @@ export const loginmobile1 = async phoneNumber => {
   //   } else {
   //     return { data: null, error: 'Phone number is Not registered.', msg: 'Phone number is Not registered.' };
   //   }
-
   // } catch (error) {
-
   //   return error
   // }
 };
@@ -333,86 +319,102 @@ export const loginverifyOtpmobile = async (otp, response) => {
     const userData = await FetchDataById('user', uid);
     return {userData, error: null, msg: 'User logged in successfully'};
   } catch (err) {
-
     return {data: null, error: err, msg: 'Incorrect Login Credentials'};
   }
 };
 
 export const loginMobile11 = async (phoneNumber, recaptchaVerifier) => {
   try {
-    let phonenumber = '+91' + phoneNumber
+    let phonenumber = '+91' + phoneNumber;
     const isAvailable = await checkPhoneNumberAvailability(phoneNumber);
     if (isAvailable) {
       const phoneProvider = new PhoneAuthProvider(auth);
       const verificationId = await phoneProvider.verifyPhoneNumber(
         phonenumber,
-        recaptchaVerifier
+        recaptchaVerifier,
       );
-      return { data: verificationId, error: null, msg: '' };
+      return {data: verificationId, error: null, msg: ''};
     } else {
-      return { data: null, error: 'Phone number is Not registered.', msg: 'Phone number is Not registered.' };
+      return {
+        data: null,
+        error: 'Phone number is Not registered.',
+        msg: 'Phone number is Not registered.',
+      };
     }
   } catch (error) {
-    return error
+    return error;
   }
-}
- 
-export const verifyOtpmobile11 = async (verificationCode,verificationId) => {
+};
 
-  try{
-      const credential = PhoneAuthProvider.credential(verificationId,verificationCode);
-
-      const data = await signInWithCredential(auth,credential);
-
-      return { data, error: null, msg: 'User logged in successfully' };
-    } catch (error) {
-      return { data: null, error: error, msg: 'Incorrect Login Credentials' };
-    }
-}
-
-export const mobilesignup = async (userData, recaptchaVerifier) => {
+export const verifyOtpmobile11 = async (verificationCode, verificationId) => {
   try {
-    const isAvailable = await checkPhoneNumberAvailability(userData.phonenumber);
-
-    if (!isAvailable) {
-     // let phonenumber1 = '+91' + userData.phonenumber
-     let phonenumber1 = userData.phonenumber
-console.log("phonenumber1", phonenumber1)
-      const phoneProvider = new PhoneAuthProvider(auth);
-console.log("phoneProvider",phoneProvider)
-      const verificationId = await phoneProvider.verifyPhoneNumber(
-        phonenumber1,
-        recaptchaVerifier
-      );
-      console.log("verificationId", verificationId)
-      // const verificationId = await phoneProvider.providerId(phonenumber1)
-
-      return { 'data': verificationId, 'userdata': userData, error: null, msg: ''  }
-    } else {
-      return { data: null, error: 'Phone number is Not registered.', msg: 'Phone number is Not registered.' };
-    }
- 
-  } catch (error) {
-    return error
-  }
-}
- 
-export const signinverifyotp = async(verificationCode,response) => {
-
-  if (verificationCode === '' || verificationCode === null) {
-    return {data:null, error :' Please type your OTP' };
-  }
- 
-  try {
-    const credential = PhoneAuthProvider.credential(response?.data, verificationCode);
+    const credential = PhoneAuthProvider.credential(
+      verificationId,
+      verificationCode,
+    );
 
     const data = await signInWithCredential(auth, credential);
 
-    const userdata = await InsertDataWithUID('user', response?.userdata, data?.user?.uid);
+    return {data, error: null, msg: 'User logged in successfully'};
+  } catch (error) {
+    return {data: null, error: error, msg: 'Incorrect Login Credentials'};
+  }
+};
+
+export const mobilesignup = async (userData, recaptchaVerifier) => {
+  try {
+    const isAvailable = await checkPhoneNumberAvailability(
+      userData.phonenumber,
+    );
+
+    if (!isAvailable) {
+      // let phonenumber1 = '+91' + userData.phonenumber
+      let phonenumber1 = userData.phonenumber;
+      console.log('phonenumber1', phonenumber1);
+      const phoneProvider = new PhoneAuthProvider(auth);
+      console.log('phoneProvider', phoneProvider);
+      const verificationId = await phoneProvider.verifyPhoneNumber(
+        phonenumber1,
+        recaptchaVerifier,
+      );
+      console.log('verificationId', verificationId);
+      // const verificationId = await phoneProvider.providerId(phonenumber1)
+
+      return {data: verificationId, userdata: userData, error: null, msg: ''};
+    } else {
+      return {
+        data: null,
+        error: 'Phone number is Not registered.',
+        msg: 'Phone number is Not registered.',
+      };
+    }
+  } catch (error) {
+    return error;
+  }
+};
+
+export const signinverifyotp = async (verificationCode, response) => {
+  if (verificationCode === '' || verificationCode === null) {
+    return {data: null, error: ' Please type your OTP'};
+  }
+
+  try {
+    const credential = PhoneAuthProvider.credential(
+      response?.data,
+      verificationCode,
+    );
+
+    const data = await signInWithCredential(auth, credential);
+
+    const userdata = await InsertDataWithUID(
+      'user',
+      response?.userdata,
+      data?.user?.uid,
+    );
     userdata.user_id = data?.user?.uid;
 
-    return { data: userdata, null: null, msg: 'user signup successfully' };
+    return {data: userdata, null: null, msg: 'user signup successfully'};
   } catch (err) {
-    return { data: null, error: err, msg: 'Incorrect Login Credentials' };
+    return {data: null, error: err, msg: 'Incorrect Login Credentials'};
   }
-}
+};
