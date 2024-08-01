@@ -65,12 +65,10 @@ export default function ApprovalWaitingEventsSlider({uid, refreshUpcoming}) {
       item => item.status === 'Accepted' || item.status === 'Awaiting',
     );
 
-    function compareByDate(obj1, obj2) {
-      return new Date(obj1.starttime) - new Date(obj2.starttime);
-    }
-
-    tableData2.sort(compareByDate);
-    const finalData = findElementsWithSameProp(tableData2);
+    const currentTimeData = tableData2.filter(
+      item => new Date(item.starttime) >= currentDate,
+    );
+    const finalData = findElementsWithSameProp(currentTimeData);
     setfilterData(finalData);
     setLoading(false);
   };
@@ -104,32 +102,6 @@ export default function ApprovalWaitingEventsSlider({uid, refreshUpcoming}) {
   }
 
   const renderItem = ({item, index}) => {
-    const startdateTime = new Date(item[0].starttime);
-    const enddateTime = new Date(item[0].endtime);
-
-    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-
-    const dayOfWeek = daysOfWeek[startdateTime.getDay()];
-    const month = months[startdateTime.getMonth()];
-    const day = startdateTime.getDate();
-    const year = startdateTime.getFullYear();
-
-    const sumOfProp2 = item.reduce((sum, obj) => sum + parseInt(obj.amount), 0);
-
     const handleViewBooking = () => {
       navigation.navigate(USERBOOKINGVIEW);
     };
@@ -273,7 +245,23 @@ export default function ApprovalWaitingEventsSlider({uid, refreshUpcoming}) {
             </Text>
           </View>
         </>
-      ) : null}
+      ) : (
+        <View style={{paddingBottom: 10}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              paddingBottom: 10,
+            }}>
+            <Text style={styles.title}>Waiting for Approval</Text>
+          </View>
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyContainerText}>
+              There is no pending approval
+            </Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -357,5 +345,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 12,
     fontWeight: '400',
+  },
+  emptyContainer: {
+    height: 140,
+    backgroundColor: COLORS.BLACK,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyContainerText: {
+    color: '#fff',
+    fontFamily: 'Outfit-Regular',
+    fontSize: 16,
   },
 });

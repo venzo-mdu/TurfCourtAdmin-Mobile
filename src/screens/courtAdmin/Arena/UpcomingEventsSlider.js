@@ -68,13 +68,12 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
     const tableData2 = thismonthdata?.filter(
       item => item.status === 'Approved',
     );
-    function compareByDate(obj1, obj2) {
-      return new Date(obj1.starttime) - new Date(obj2.starttime);
-    }
-    tableData2.sort(compareByDate);
 
-    const finalData = findElementsWithSameProp(tableData2);
-    console.log('filteredData', 'ccc', finalData);
+    const currentTimeData = tableData2.filter(
+      item => new Date(item.starttime) >= currentDate,
+    );
+
+    const finalData = findElementsWithSameProp(currentTimeData);
     setfilterData(finalData);
     setLoading(false);
   };
@@ -108,32 +107,6 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
   }
 
   const renderItem = ({item, index}) => {
-    const startdateTime = new Date(item[0].starttime);
-    const enddateTime = new Date(item[0].endtime);
-
-    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-
-    const dayOfWeek = daysOfWeek[startdateTime.getDay()];
-    const month = months[startdateTime.getMonth()];
-    const day = startdateTime.getDate();
-    const year = startdateTime.getFullYear();
-
-    const sumOfProp2 = item.reduce((sum, obj) => sum + parseInt(obj.amount), 0);
-
     const handleViewBooking = () => {
       navigation.navigate(USERBOOKINGVIEW);
     };
@@ -277,7 +250,23 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
             </Text>
           </View>
         </>
-      ) : null}
+      ) : (
+        <>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              paddingBottom: 10,
+            }}>
+            <Text style={styles.title}>Upcoming Booking</Text>
+          </View>
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyContainerText}>
+              There is no upcoming bookings
+            </Text>
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -361,5 +350,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 12,
     fontWeight: '400',
+  },
+  emptyContainer: {
+    height: 140,
+    backgroundColor: COLORS.PrimaryColor,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyContainerText: {
+    color: '#fff',
+    fontFamily: 'Outfit-Regular',
+    fontSize: 16,
   },
 });
