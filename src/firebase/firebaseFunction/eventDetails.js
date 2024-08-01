@@ -12,7 +12,6 @@ import {userData} from './userDetails';
 import {getgroundDataById, getreview} from './groundDetails';
 import {v4} from 'uuid';
 
-
 export const createNewEvent = async event_data => {
   // let event_data = {
   //     court_id: "CnkVReBw3zCwffn5boL9",
@@ -71,17 +70,7 @@ export const createNewEvent = async event_data => {
 // delete item.cart_id;
 // await InsertData("events", item);
 // await removeCartData(cart_id);
-export const getEventdetailsByType = async(
-  uid,
-  usertype,
-  order = { key: "start", dir: "asc" },
-  limitNumber = null,
-  otherFilters
-)=>{    console.log('event resl');
-
-  if (!otherFilters) {
-    return;
-  }
+export const getEventdetailsByType = async (uid, usertype) => {
   try {
     const fieldName =
       usertype === 'owner'
@@ -129,8 +118,8 @@ export const getEventdetailsByType = async(
     return {status: 'failure', data: error};
   }
 };
-    
-export const getcourtevent = async (court_id) => {
+
+export const getcourtevent = async court_id => {
   try {
     if (court_id != '') {
       let events = await FetchData('events', 'court_id', court_id);
