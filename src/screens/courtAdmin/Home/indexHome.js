@@ -26,12 +26,11 @@ import {
 } from '@react-navigation/native';
 import {Dimensions} from 'react-native';
 import CardSlider from '../Arena/CardSlider';
-import UpcomingEventsSlider from '../Arena/UpcomingEventsSlider';
+import ApprovalWaitingEventsSlider from '../Arena/approvalWaitingEventsSlider';
 import {StatusBarCommon} from '../../../components';
 import {COLORS} from '../../../assets/constants/global_colors';
-import CurrentEventsSlider from '../Arena/currentEventsSlider';
+import UpcomingEventsSlider from '../Arena/upcomingEventsSlider';
 import {IMAGES} from '../../../assets/constants/global_images';
-import AdminTopTabNavigation from '../../../routing/AdminTopTabNavigation';
 import {ADMINTOPTABNAVIGATION} from '../..';
 import {getgroundData} from '../../../firebase/firebaseFunction/groundDetails';
 import GroundEventsSlider from '../Arena/groundEventSlider';
@@ -326,8 +325,11 @@ const IndexHome = () => {
           {/* {selectedCity ? <Text style={styles.selected}>Selected City: {selectedCity}</Text> : null} */}
         </View>
 
+        <ApprovalWaitingEventsSlider
+          uid={userId}
+          refreshUpcoming={refreshUpcoming}
+        />
         <UpcomingEventsSlider uid={userId} refreshUpcoming={refreshUpcoming} />
-        <CurrentEventsSlider uid={userId} refreshUpcoming={refreshUpcoming} />
         {/* My Arena */}
         {groundData1.length > 0 ? (
           <>

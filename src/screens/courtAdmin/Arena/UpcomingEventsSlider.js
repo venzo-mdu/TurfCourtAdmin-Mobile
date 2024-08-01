@@ -1,4 +1,3 @@
-// App.js
 import {useNavigation, useRoute} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
 import {View, Text, Button, StyleSheet, Dimensions} from 'react-native';
@@ -67,20 +66,14 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
 
     setNonFilter(thismonthdata);
     const tableData2 = thismonthdata?.filter(
-      item => item.status === 'Accepted' || item.status === 'Awaiting',
+      item => item.status === 'Approved',
     );
-    function compareByDate(obj1, obj2) {
-      return new Date(obj1.starttime) - new Date(obj2.starttime);
-    }
-    // console.log(tableData2, "tableData2", "1");
 
-    // Sort the array of objects by date using the compare function
-    tableData2.sort(compareByDate);
-    // console.log(tableData2, "tableData2");
-    // const finalData = findElementsWithSameProp(tableData2)
-    // console.log(finalData,"finalData")
-    const finalData = findElementsWithSameProp(tableData2);
-    // console.log("filteredData", "ccc", finalData)
+    const currentTimeData = tableData2.filter(
+      item => new Date(item.starttime) >= currentDate,
+    );
+
+    const finalData = findElementsWithSameProp(currentTimeData);
     setfilterData(finalData);
     setLoading(false);
   };
@@ -114,32 +107,6 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
   }
 
   const renderItem = ({item, index}) => {
-    const startdateTime = new Date(item[0].starttime);
-    const enddateTime = new Date(item[0].endtime);
-
-    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-
-    const dayOfWeek = daysOfWeek[startdateTime.getDay()];
-    const month = months[startdateTime.getMonth()];
-    const day = startdateTime.getDate();
-    const year = startdateTime.getFullYear();
-
-    const sumOfProp2 = item.reduce((sum, obj) => sum + parseInt(obj.amount), 0);
-
     const handleViewBooking = () => {
       navigation.navigate(USERBOOKINGVIEW);
     };
@@ -209,15 +176,15 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
               hours2 = 12;
             }
             return (
-              // <View style={[styles.row, styles.spaceBetween]}>
-              <Text style={styles.text}>{`${dayOfWeek}, ${month} ${day
-                .toString()
-                .padStart(2, '0')} | ${hours}:${minutes
-                .toString()
-                .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
-                .toString()
-                .padStart(2, '0')} ${ampm2}`}</Text>
-              // </View>
+              <View style={{paddingBottom: 10}}>
+                <Text style={styles.text}>{`${dayOfWeek}, ${month} ${day
+                  .toString()
+                  .padStart(2, '0')} | ${hours}:${minutes
+                  .toString()
+                  .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
+                  .toString()
+                  .padStart(2, '0')} ${ampm2}`}</Text>
+              </View>
             );
           })}
           <View
@@ -248,7 +215,7 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
               justifyContent: 'space-between',
               paddingBottom: 10,
             }}>
-            <Text style={styles.title}>Waiting for Approval</Text>
+            <Text style={styles.title}>Upcoming Booking</Text>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Text
                 style={{
@@ -283,7 +250,23 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
             </Text>
           </View>
         </>
-      ) : null}
+      ) : (
+        <>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              paddingBottom: 10,
+            }}>
+            <Text style={styles.title}>Upcoming Booking</Text>
+          </View>
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyContainerText}>
+              There is no upcoming bookings
+            </Text>
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -299,7 +282,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   slide: {
-    backgroundColor: '#000',
+    backgroundColor: '#108257',
     borderRadius: 8,
     height: 175,
     padding: 10,
@@ -367,5 +350,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 12,
     fontWeight: '400',
+  },
+  emptyContainer: {
+    height: 140,
+    backgroundColor: COLORS.PrimaryColor,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyContainerText: {
+    color: '#fff',
+    fontFamily: 'Outfit-Regular',
+    fontSize: 16,
   },
 });

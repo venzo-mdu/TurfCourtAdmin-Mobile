@@ -13,7 +13,6 @@ import {userData} from './userDetails';
 import {getgroundDataById, getreview} from './groundDetails';
 import {v4} from 'uuid';
 
-
 export const createNewEvent = async event_data => {
   // let event_data = {
   //     court_id: "CnkVReBw3zCwffn5boL9",
@@ -72,48 +71,7 @@ export const createNewEvent = async event_data => {
 // delete item.cart_id;
 // await InsertData("events", item);
 // await removeCartData(cart_id);
-// export const getEventdetailsByType = async (
-//   uid,
-//   usertype,
-//   order = { key: "start", dir: "asc" },
-//   limitNumber = null,
-//   otherFilters,
- 
-  
-// ) => {
-//   if (!otherFilters) {
-//     return;
-//   }
-//   try {
-//     console.log('inside getEventdetailsByType');
-//     const fieldName =
-//       usertype === "owner"
-//         ? "ground_id"
-//         : usertype === "owners"
-//         ? "owner_id"
-//         : "user_id";
-//     const fieldValue = uid;
-//     if (uid != null) {
-//       let data = await fetchBulkData(
-//         "events",
-//         fieldName,
-//         "==",
-//         fieldValue,
-//         order,
-//         limitNumber,
-//         otherFilters,
-//       );
-//       console.log('nnnnn:',usertype,order,fieldValue,otherFilters,limitNumber,fieldName);
-//      console.log(data,'data')
-//       return { status: "success", data: data };
-//     } else {
-//       return { status: "failure", data: "No Login User" };
-//     }
-//   } catch (error) {
-//     return { status: "failure", data: error };
-//   }
-// };
-
+    
 export const getEventdetailsByType = async (
   uid,
   usertype,
@@ -152,7 +110,7 @@ export const getEventdetailsByType = async (
   }
 };
     
-export const getcourtevent = async (court_id) => {
+export const getcourtevent = async court_id => {
   try {
     if (court_id != '') {
       let events = await FetchData('events', 'court_id', court_id);
