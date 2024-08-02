@@ -6,6 +6,9 @@ import { createNewCourt, getgroundDataById, getGroundslotdata, updatecourt } fro
 import { useRoute, useTheme } from '@react-navigation/native';
 import CommonTextInput from '../../../../components/molecules/CommonTextInput';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import DatePicker from 'react-native-date-picker';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { getcourtevent } from '../../../../firebase/firebaseFunction/eventDetails';
 
 const CourtScreen = () => {
   const [tab, setTab] = useState("Add Court");
@@ -30,7 +33,9 @@ console.log("CourtScreeen groundData", groundData)
     selectedEditslot: "",
   });
 
-  const currentDate = new Date().toISOString().split("T")[0];
+  console.log("selectedValues", selectedValue)
+ // const currentDate = new Date().toISOString().split("T")[0];
+ const currentDate = new Date();
   const [availablecourt, setAvailablecourt] = useState({
     Courts: "",
     date: currentDate,
@@ -70,6 +75,31 @@ console.log("CourtScreeen groundData", groundData)
   const [SlotToEdit, setSlotToEdit] = useState();
   const [AnchorEl, setAnchorEl] = useState();
   const [AccordionOpen, setAccordionOpen] = useState(false);
+  const [createSlots, setCreateslots] = useState({
+    price: "",
+    date: new Date(),
+    starttime: '',
+    endtime: '',
+    isActive: true,
+  });
+  console.log("createSlots", createSlots);
+/* Slot Timing States */
+  const [openCourtDropdown, setOpenCourtDropdown] = useState(false);
+  const [openDatePicker, setOpenDatePicker] = useState(false);
+  const [openStartPicker, setOpenStartPicker] = useState(false);
+  const [openEndPicker, setOpenEndPicker] = useState(false);
+  const [courtItems, setCourtItems] = useState([]);
+  console.log("courtItemsValus", courtItems);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [valueAvailable, setValueAvailable] = useState(null);
+  const [items, setItems] = useState([
+      {label: 'Apple', value: 'apple'},
+      {label: 'Banana', value: 'banana'},
+      {label: 'Pear', value: 'pear'},
+      {label: "Cricket", value: "w8SLqfDdGeXXnfA74Ckf"}
+  ]);
+  console.log("valuessssss", value)
 
   /* GRN DATA FETCH */
   const grndData = async () => {
@@ -204,6 +234,207 @@ console.log("CourtScreeen groundData", groundData)
   };
 
 
+  /* Add Time Slot  */
+  // const handleCourtChange = async (value) => {
+  // // console.log("value handleCourtChange", value);
+  // //   setSelectedValue((prev) => ({ ...prev, Courts: value }));
+  // console.log("Selected value in handleCourtChange:", value);
+  
+  // // Ensure `value` is a string or the appropriate value type
+  // if (typeof value === 'string' || typeof value === 'number') {
+  //   setSelectedValue(prev => ({ ...prev, Courts: value }));
+  // } else {
+  //   console.warn('Unexpected value type:', value);
+  // }
+  // };
+
+  const formatDateValues = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleDateChange = async (value) => {
+  console.log("value", value);
+  //  value = value.target.value;
+      console.log("value123", value);
+    const today = new Date();
+    const selectedDate = new Date(value);
+
+    today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate.getTime() < today.getTime()) {
+      alert("Please select a future date.");
+    } else {
+     // setCreateslots({ ...createSlots, date: value });
+     const formattedDate = formatDateValues(value);
+     setCreateslots((prevSlots) => ({
+      ...prevSlots,
+      date: formattedDate,
+    }));
+    }
+  };
+
+  const handleTimeChange = (type, date) => {
+    if (
+      createSlots.date.toDateString() === new Date().toDateString() &&
+      date.getHours() < new Date().getHours()
+    ) {
+      Alert.alert("Past time is not allowed");
+    } else {
+      setCreateslots({
+        ...createSlots,
+        [type]: date,
+      });
+    }
+  };
+
+  // const formatTimeSlot = (date) => {
+  //   return date.toLocaleTimeString('en-GB', {
+  //     hour: '2-digit',
+  //     minute: '2-digit',
+  //   });
+  // };
+
+  const formatTime = date => {
+    if (!date) return 'Select Time';
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+  
+ /* Got the DropDown Value Of Court Slot */
+   useEffect(() => {
+    if (groundData?.court_details) {
+      const items = groundData?.court_details.map((court, index) => ({
+        id: index + 1,
+        value: court?.court_id,
+        label: court?.court_name,
+        gameType: court?.gametype,
+      }));
+      setCourtItems(items);
+    }
+  }, [groundData]);
+
+  useEffect(() => {
+    // Update selectedValue.Courts when value changes
+    if (value !== null) {
+      setSelectedValue((prev) => ({
+        ...prev,
+        Courts: value,
+      }));
+    }
+    else if(valueAvailable !== null){
+      setAvailablecourt((prev) => ({
+        ...prev,
+        Courts: value,
+      }));
+      handleavailablecourt(valueAvailable);
+    }
+  }, [value, valueAvailable]);
+
+
+  /* Add Funciton of SLot */
+  const handleAddCourtSlot = async () => {
+    if (
+      selectedValue?.Courts == "" ||
+      createSlots?.price == "" ||
+      createSlots?.date == "" ||
+      createSlots?.starttime == "" ||
+      createSlots?.endtime == ""
+    ) {
+      console.log("Hi123")
+      setAddCourtTimingError(true);
+    } else {
+      setLoading(true);
+      console.log("Hi12345")
+      console.log("selectedValue?.Courts", selectedValue?.Courts)
+      const courtDataBySlot = await getcourtevent(selectedValue?.Courts);
+      console.log("courtDataBySlot---------", courtDataBySlot.length)
+      setLoading(false);
+      const startT = `${createSlots.date}T${createSlots.starttime}`;
+      const endT = `${createSlots.date}T${createSlots.endtime}`;
+      if (courtDataBySlot.length != 0) {
+        console.log("Hi2222", courtDataBySlot)
+        const newStartTime = new Date(startT);
+        const newEndTime = new Date(endT);
+        const isExist = courtDataBySlot.filter((item) => {
+          return (
+            (new Date(item.start) < newStartTime &&
+              new Date(item.end) < newStartTime) == false &&
+            (new Date(item.start) > newEndTime &&
+              new Date(item.end) > newEndTime) == false
+          );
+        });
+        if (!isExist.length) {
+          setSlotModalOpen(true);
+          setAddCourtTimingError(false);
+        } else {
+          setCreateEditSlotWarning(true);
+        }
+      } else {
+        setSlotModalOpen(true);
+        setAddCourtTimingError(false);
+      }
+    }
+  };
+
+
+  /* Available Timing Sections */
+  const handleavailablecourt = async (value) => {
+   // setAvailablecourt({ ...availablecourt, Courts: value });
+    console.log("data HandleAvailCOurt123", !_.isEmpty(availablecourt.date) && !_.isEmpty(value))
+    if (!_.isEmpty(availablecourt.date) && !_.isEmpty(value)) {
+      setAccordionOpen(true);
+      setLoading(true);
+      const data = await getcourtevent(value?.value);
+      console.log("data HandleAvailCOurt", data)
+      setLoading(false);
+      setEventData(data);
+    } else {
+      setEventData([]);
+      setAccordionOpen(false);
+      setLoading(false);
+    }
+  };
+
+  // const handleavialbleDateChange = async (value) => {
+  //   //value = value.target.value;
+
+  //   const today = new Date();
+  //   const selectedDate = new Date(value);
+  //   today.setHours(0, 0, 0, 0);
+  //   selectedDate.setHours(0, 0, 0, 0);
+
+  //   if (selectedDate.getTime() < today.getTime()) {
+
+  //     alert("Please select a future date.");
+  //   } else {
+  //     console.log("New Values", !_.isEmpty(value) && !_.isEmpty(availablecourt.Courts))
+  //     if (!_.isEmpty(value) && !_.isEmpty(availablecourt.Courts)) {
+  //       setAccordionOpen(true);
+  //       setLoading(true);
+  //       const formattedDate = formatDateValues(value);
+  //       setAvailablecourt((prevSlots) => ({
+  //        ...prevSlots,
+  //        date: formattedDate,
+  //      }));
+  //      // setAvailablecourt({ ...availablecourt, date: value });
+  //       console.log('eventss', groundData, value)
+  //       getCourttime(groundData, value);
+  //       setLoading(false);
+  //     } else {
+  //       setEventData([]);
+  //       setAccordionOpen(false);
+  //       setLoading(false);
+  //     }
+  //   }
+  // };
+
+
+
   const CourtCard = ({ item, handlemodal, handleEditCourt }) => {
     const { colors } = useTheme();
   
@@ -302,6 +533,225 @@ console.log("CourtScreeen groundData", groundData)
         />
       ))}
     </View>
+    <View>
+    <Text style={styles.labelSlot}>Add Slot Timing</Text>
+    </View>
+    <View>
+      <Text style={styles.labelSlot}>Courts</Text>
+      {/* <DropDownPicker
+        open={openCourtDropdown}
+        value={selectedValue?.Courts}
+        items={courtItems}
+        setOpen={setOpenCourtDropdown}
+        setValue={handleCourtChange}
+        setItems={setCourtItems}
+        placeholder="Select Court"
+        style={styles.dropdownSlot}
+        dropDownStyle={styles.dropdownSlot}
+      /> */}
+      <DropDownPicker
+                    open={open}
+                    value={value}
+                    items={courtItems}
+                    setOpen={setOpen}
+                    setValue={setValue}
+                    setItems={setItems}
+                    placeholder={'Select Court'}
+                />
+      {AddCourtTimingError && selectedValue.Courts === "" && (
+        <Text style={styles.errorText}>*Select appropriate values</Text>
+      )}
+
+      <CommonTextInput
+        label="Price"
+        value={createSlots.price}
+        onChangeText={(text) => setCreateslots({ ...createSlots, price: text })}
+        widthStyle={false}
+      />
+      {AddCourtTimingError && createSlots.price === "" && (
+        <Text style={styles.errorText}>*Enter appropriate values</Text>
+      )}
+
+      <Text style={styles.labelSlot}>Date</Text>
+      {/* <DatePicker
+        date={createSlots.date}
+        onDateChange={handleDateChange}
+        minimumDate={new Date()}
+        mode="date"
+        style={styles.datePickerSlot}
+      /> */}
+       <TouchableOpacity style={styles.buttonSlot} onPress={() => setOpenDatePicker(true)}>
+        <Text style={styles.buttonTextSlot}> {createSlots.date ? new Date(createSlots.date).toLocaleDateString('en-GB') : 'Select Date'}</Text>
+      </TouchableOpacity>
+      <DatePicker
+        modal
+        mode="date"
+        open={openDatePicker}
+        date={new Date(createSlots.date)}
+        minimumDate={new Date()}
+        onConfirm={(date) => {
+          setOpenDatePicker(false);
+          handleDateChange(date);
+        }}
+        onCancel={() => {
+          setOpenDatePicker(false);
+        }}
+      />
+       {/* <Text style={styles.labelSlot}>Start Timing</Text>
+      <TouchableOpacity style={styles.inputSlotDateView} onPress={() => setOpenStartPicker(true)}>
+        <Text style={styles.inputSlotText}>{createSlots.starttime ? formatTimeSlot(createSlots.starttime) : 'Select Time'}</Text>
+      </TouchableOpacity>
+      <DatePicker
+        modal
+        open={openStartPicker}
+        date={createSlots.starttime}
+        mode="time"
+        onConfirm={(date) => {
+          setOpenStartPicker(false);
+          handleTimeChange('starttime', date);
+        }}
+        onCancel={() => {
+          setOpenStartPicker(false);
+        }}
+      />
+      {AddCourtTimingError && !createSlots.starttime && (
+        <Text style={styles.errorText}>*Enter start time</Text>
+      )}
+
+      <Text style={styles.labelSlot}>End Timing</Text>
+      <TouchableOpacity style={styles.inputSlotDateView} onPress={() => setOpenEndPicker(true)}>
+        <Text style={styles.inputSlotText}>{createSlots.endtime ? formatTimeSlot(createSlots.endtime) : 'Select Time'}</Text>
+      </TouchableOpacity>
+      <DatePicker
+        modal
+        open={openEndPicker}
+        date={createSlots.endtime}
+        mode="time"
+        onConfirm={(date) => {
+          setOpenEndPicker(false);
+          handleTimeChange('endtime', date);
+        }}
+        onCancel={() => {
+          setOpenEndPicker(false);
+        }}
+      />
+      {AddCourtTimingError && !createSlots.endtime && (
+        <Text style={styles.errorText}>*Enter end time</Text>
+      )} */}
+         <View style={styles.inputContainer}>
+                <Text style={styles.labelSlot}>Start Time</Text>
+                <TouchableOpacity
+                  style={styles.inputDateViewSlot}
+                  onPress={() => setOpenStartPicker(true)}>
+                  <Text style={styles.inputTextSlot}>
+                    {createSlots?.starttime || 'Select Time'}
+                  </Text>
+                </TouchableOpacity>
+                <DatePicker
+                  modal
+                  open={openStartPicker}
+                  date={new Date()}
+                  mode="time"
+                  onConfirm={date => {
+                    setOpenStartPicker(false);
+                    //handleInputChange('start_time', date);
+                    setCreateslots(prevState => ({
+                      ...prevState,
+                      ['starttime']: formatTime(date),
+                    }));
+                  }}
+                  onCancel={() => {
+                    setOpenStartPicker(false);
+                  }}
+                />
+                {!createSlots?.starttime && AddCourtTimingError && (
+                  <Text style={styles.errorText}>*Enter start time</Text>
+                )}
+              </View>
+              <View style={styles.inputContainer}>
+                <Text style={styles.labelSlot}>End Time</Text>
+                <TouchableOpacity
+                  style={styles.inputDateViewSlot}
+                  onPress={() => setOpenEndPicker(true)}>
+                  <Text style={styles.inputTextSlot}>
+                    {createSlots?.endtime || 'Select Time'}
+                  </Text>
+                </TouchableOpacity>
+                <DatePicker
+                  style={{fontFamily: 'Outfit-Regular'}}
+                  modal
+                  open={openEndPicker}
+                  date={new Date()}
+                  mode="time"
+                  onConfirm={date => {
+                    setOpenEndPicker(false);
+                    //handleInputChange('end_time', date);
+                    setCreateslots(prevState => ({
+                      ...prevState,
+                      ['endtime']: formatTime(date),
+                    }));
+                  }}
+                  onCancel={() => {
+                    setOpenEndPicker(false);
+                  }}
+                />
+                {!createSlots?.endtime && AddCourtTimingError && (
+                  <Text style={styles.errorText}>*Enter end time</Text>
+                )}
+              </View>
+      <View>
+      <TouchableOpacity
+        style={styles.addButtonRule}
+        onPress={handleAddCourtSlot}
+      >
+        <Text style={styles.addButtonTextRule}>Add</Text>
+      </TouchableOpacity>
+      </View>
+     
+    </View>
+    <View>
+    <Text style={styles.labelSlot}>Available Timing</Text>
+    </View>
+    <View>
+    <Text style={styles.labelSlot}>Courts</Text>
+      <DropDownPicker
+                    open={open}
+                    value={valueAvailable}
+                    items={courtItems}
+                    setOpen={setOpen}
+                    setValue={setValueAvailable}
+                    setItems={setItems}
+                    placeholder={'Select Court'}
+                />
+      {AddCourtTimingError && availablecourt.Courts === "" && (
+        <Text style={styles.errorText}>*Select appropriate values</Text>
+      )}
+      <Text style={styles.labelSlot}>Date</Text>
+      {/* <DatePicker
+        date={createSlots.date}
+        onDateChange={handleDateChange}
+        minimumDate={new Date()}
+        mode="date"
+        style={styles.datePickerSlot}
+      /> */}
+       {/* <TouchableOpacity style={styles.buttonSlot} onPress={() => setOpenDatePicker(true)}>
+        <Text style={styles.buttonTextSlot}> {availablecourt.date ? new Date(availablecourt.date).toLocaleDateString('en-GB') : 'Select Date'}</Text>
+      </TouchableOpacity>
+      <DatePicker
+        modal
+        mode="date"
+        open={openDatePicker}
+        date={new Date(availablecourt.date)}
+        minimumDate={new Date()}
+        onConfirm={(date) => {
+          setOpenDatePicker(false);
+          handleavialbleDateChange(date);
+        }}
+        onCancel={() => {
+          setOpenDatePicker(false);
+        }}
+      /> */}
+    </View>
 
 {/* Modal For Create Court */}
 <Modal
@@ -367,6 +817,40 @@ console.log("CourtScreeen groundData", groundData)
               <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
             </TouchableOpacity>
           </View>
+        </View>
+      </View>
+    </Modal>
+    <Modal
+      visible={CreateEditSlotWarning}
+      transparent={true}
+      onRequestClose={() => setCreateSlotWarning(false)}
+      animationType="slide"
+    >
+      <View style={styles.modalCreateCourtOverlay}>
+        <View style={styles.modalCreateCourtContainer}>
+          <View style={styles.headerCreateCourt}>
+            <Text style={styles.modalCreateCourtText}>
+            Cannot create slot as another slot already exists in the chosen
+            time range.
+            </Text>
+            <TouchableOpacity onPress={() => setCreateSlotWarning(false)}>
+              <Text style={styles.closeCreateCourtButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+          {/* <View style={styles.buttonCreateCourtContainer}>
+            <TouchableOpacity
+              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
+              onPress={() => setModalOpen(false)}
+            >
+              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmCreateCourtButton]}
+              onPress={handleCreateCourt}
+            >
+              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
+            </TouchableOpacity>
+          </View> */}
         </View>
       </View>
     </Modal>
@@ -555,6 +1039,58 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#757C8D',
     marginRight: 8,
+  },
+  /* Slot Timing Styles*/
+  labelSlot: {
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#333',
+  },
+  dropdownSlot: {
+    backgroundColor: '#fafafa',
+    borderColor: '#ccc',
+    marginBottom: 16,
+  },
+  datePickerSlot: {
+    marginBottom: 16,
+  },
+    buttonSlot: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fafafa',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 16,
+  },
+  buttonTextSlot: {
+    color: '#000000',
+    fontSize: 16,
+  },
+   inputSlotDateView: {
+    backgroundColor: '#FAFAFA',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 16,
+    justifyContent: 'center',
+  },
+  inputSlotText: {
+    color: '#333',
+  },
+  inputDateViewSlot: {
+    height: 60,
+    borderRadius: 12,
+    backgroundColor: '#FAFAFA',
+    paddingHorizontal: 10,
+    fontFamily: 'Outfit-Regular',
+    fontSize: 20,
+    justifyContent: 'center',
+  },
+  inputTextSlot: {
+    fontSize: 16,
+    color: '#000',
+  },
+  inputContainer: {
+    marginBottom: 20,
   },
 })
 
