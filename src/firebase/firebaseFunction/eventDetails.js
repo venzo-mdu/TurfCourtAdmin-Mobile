@@ -78,8 +78,8 @@ export const getEventdetailsByType = async (uid, usertype) => {
         : usertype === 'owners'
         ? 'owner_id'
         : 'user_id';
-    console.log('fieldName: ', fieldName);
     const fieldValue = uid;
+    console.log('fieldName: ', fieldName, fieldValue);
     if (uid != null) {
       let data = await FetchData('events', fieldName, fieldValue);
       data.sort((a, b) => a.createdAt - b.createdAt);
