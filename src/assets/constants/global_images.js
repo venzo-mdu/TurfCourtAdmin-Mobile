@@ -49,6 +49,7 @@ export const IMAGES = {
     ReviewsNoFoucs: require(ImagePath + "review_icon_blue.png"),
     TickIcons: require(ImagePath + "tick_icon.png"),
     DeleteIcons: require(ImagePath + "delete_icons.png"),
+    BlockedRec: require(ImagePath + "blocked_rec_red.png"),
    
     
     
