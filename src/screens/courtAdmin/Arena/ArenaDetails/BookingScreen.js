@@ -14,161 +14,116 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
 import {getTimeFormatted} from '../../../../utils/getHours';
 import {COLORS} from '../../../../assets/constants/global_colors';
+import { getEventdetailsByType,separateConsecutiveSecondElements, } from '../../../../firebase/firebaseFunction/eventDetails';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import moment from 'moment';
+import { data } from '../../../../testData/data';
+
+
 
 const BookingScreen = () => {
-  const sampleData = [
-    {
-      event_id: '8WLs8znlIUc3ffZqhg9D',
-      user_name: 'Jadeja',
-      court_id: '49fcUezuCwv9egxpScZ5',
-      end: '2024-07-29T20:00',
-      court_name: 'Tester court1',
-      status: 'Awaiting',
-      BookId: '1e31ab64-564f-4564-84e6-0ee6723f2e89-0',
-      createdAt: {seconds: 1722236051, nanoseconds: 24000000},
-      amount: '683',
-      reason: '',
-      ground_id: 'ZkBMZmjdlvff84hU7srJ',
-      start: '2024-07-29T19:00',
-      mapIndexx: 632129078,
-      gametype: 'Cricket',
-      ground_name: 'abc sport',
-      user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
-      owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193',
-    },
-    {
-      event_id: '8WLs8znlIUc3ffZqhg9u',
-      user_name: 'Jadeja',
-      court_id: '49fcUezuCwv9egxpScZ5',
-      end: '2024-07-29T23:00',
-      court_name: 'Tester court2',
-      status: 'Completed',
-      BookId: '1e31ab64-564f-4564-84e6-0ee6723f2e89-0',
-      createdAt: {seconds: 1722236051, nanoseconds: 24000000},
-      amount: '633',
-      reason: '',
-      ground_id: 'ZkBMZmjdlvff84hU7srJ',
-      start: '2024-07-29T22:00',
-      mapIndexx: 632129078,
-      gametype: 'Cricket',
-      ground_name: 'abc sports',
-      user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
-      owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193',
-    },
-    {
-      event_id: '8WLs8znlIUc3ffZqhg9u',
-      user_name: 'Jadeja',
-      court_id: '49fcUezuCwv9egxpScZ5',
-      end: '2024-07-29T23:00',
-      court_name: 'Tester court2',
-      status: 'Cancelled',
-      BookId: '1e31ab64-564f-4564-84e6-0ee6723f2e89-0',
-      createdAt: {seconds: 1722236051, nanoseconds: 24000000},
-      amount: '633',
-      reason: '',
-      ground_id: 'ZkBMZmjdlvff84hU7srJ',
-      start: '2024-07-29T22:00',
-      mapIndexx: 632129078,
-      gametype: 'Cricket',
-      ground_name: 'abc sports',
-      user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
-      owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193',
-    },
-    {
-      event_id: '8WLs8znlIUc3ffZqhg9u',
-      user_name: 'Jadeja',
-      court_id: '49fcUezuCwv9egxpScZ5',
-      end: '2024-07-29T23:00',
-      court_name: 'Tester court2',
-      status: 'On-going',
-      BookId: '1e31ab64-564f-4564-84e6-0ee6723f2e89-0',
-      createdAt: {seconds: 1722236051, nanoseconds: 24000000},
-      amount: '633',
-      reason: '',
-      ground_id: 'ZkBMZmjdlvff84hU7srJ',
-      start: '2024-07-29T22:00',
-      mapIndexx: 632129078,
-      gametype: 'Cricket',
-      ground_name: 'abcd sports',
-      user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
-      owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193', //Accepted
-    },
-    {
-      event_id: '8WLs8znlIUc3ffZqhg9u',
-      user_name: 'Jadeja',
-      court_id: '49fcUezuCwv9egxpScZ5',
-      end: '2024-07-29T23:00',
-      court_name: 'Tester court2',
-      status: 'Accepted',
-      BookId: '1e31ab64-564f-4564-84e6-0ee6723f2e89-0',
-      createdAt: {seconds: 1722236051, nanoseconds: 24000000},
-      amount: '633',
-      reason: '',
-      ground_id: 'ZkBMZmjdlvff84hU7srJ',
-      start: '2024-07-29T22:00',
-      mapIndexx: 632129078,
-      gametype: 'Cricket',
-      ground_name: 'abcd sports',
-      user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
-      owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193', //Accepted
-
-    },
-  ];
-
+ 
   const [tab, setTab] = useState('Bookings');
   const [statusopen, setstatusopen] = useState(false);
   const [filterData, setFilterData] = useState([]);
   const [uid, setUid] = useState('');
   const [selectedEventData, setSelectedEventData] = useState();
+  const [data, setdata] = useState([]);
+  const [finalData, setFinalData] = useState([]);
+  const [nonfilter, setNonFilter] = useState([]);
+
 
   useEffect(() => {
-    if (tab === 'Bookings') {
-      const tableData = sampleData?.filter(
-        item => item.status === 'Accepted' || item.status === 'Awaiting',
-      );
-      const finalData = tableData;
-      console.log('tableData', finalData);
-      setFilterData(finalData);
-    }
+    const getUserData = async () => {
+      try {
+        const value = await AsyncStorage.getItem('uid');
+        if (value) {
+          setUid(JSON.parse(value));
+        }
+      } catch (error) {
+        console.error('Error retrieving user data', error);
+      }
+    };
+    getUserData(); 
+    eventData(); 
   }, []);
 
+  const eventData = async () => {
+    if (uid == null) {
+      navigate("/login");
+    }
+    let startDate = moment().format("YYYY-MM-DDTHH:mm");
+    let endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
+    
+    let statusValue = ["Accepted", "Awaiting"];
+
+    
+    if (tab === "Cancelled") {
+      statusValue = ["Cancelled", "Canceled"];
+      startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
+    } else if (tab === "Completed") {
+      statusValue = [tab];
+      startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
+      endOfMonth = moment().format("YYYY-MM-DDTHH:mm");
+    } else if (tab !== "Bookings" && tab !== "Cancelled") {
+      statusValue = [tab];
+    }
+    
+    const otherFilters = [
+      { key: "status", operator: "in", value: statusValue },
+      { key: "start", operator: ">=", value: startDate },
+      { key: "end", operator: "<=", value: endOfMonth },
+    ];
+    if (otherFilters && otherFilters.length > 0) {
+      const response = await getEventdetailsByType(
+        uid,
+        "owner",
+        { key: "start", dir: "asc" },
+        null,
+        otherFilters,
+      );
+    
+      // console.log('response----------------------',response?.data);
+      const events = response?.data;
+    
+      setdata(events);
+      setFilterData(events);
+    }   
+  };
+ 
   const handleChange = value => {
     setTab(value);
-    //   const tableData = sampleData?.filter(item => item.status == value);
-    //  console.log('tableData',tableData);
 
     if (value == 'Bookings') {
-      const tableData = sampleData?.filter(
+      const tableData = data?.filter(
         item => item.status === 'Accepted' || item.status === 'Awaiting',
       );
       const finalData = tableData;
-      console.log('tableData', finalData);
       setFilterData(finalData);
-      console.log('Bookings data length--------------', finalData.length);
-    } else if (value == 'Completed') {
-      const tableData = sampleData?.filter(item => item.status === 'Completed');
+      //console.log('Bookings data length--------------', finalData.length);
+    } 
+    else if (value == 'Completed') {
+      const tableData = data?.filter(item => item.status === 'Completed');
 
       const finalData = tableData;
-      console.log('tableData', finalData);
       setFilterData(finalData);
-      console.log('Completed data length--------------', finalData.length);
-    } else if (value == 'On-Going') {
-      const tableData = sampleData?.filter(item => item.status === 'On-going');
-
+      //console.log('Completed data length--------------', finalData.length);
+    } 
+    else if (value == 'On-Going') {
+      const tableData = data?.filter(item => item.status === 'On-going');
       const finalData = tableData;
-      console.log('tableData', finalData);
+      // console.log('tableData', finalData);
       setFilterData(finalData);
-      console.log('On-Going data length--------------', finalData.length);
-    } else if (value == 'Cancelled') {
-      const tableData = sampleData?.filter(
+      //console.log('On-Going data length--------------', finalData.length);
+    } 
+    else if (value == 'Cancelled') {
+      const tableData = data?.filter(
         item => item.status === 'Cancelled' || item.status === 'Canceled',
       );
       const finalData = tableData;
-      console.log('tableData', finalData);
       setFilterData(finalData);
-      console.log('Cancelled data length--------------', finalData.length);
+     // console.log('Cancelled data length--------------', finalData.length);
     }
-
   };
 
   const handlestatusEdit = data => {
@@ -190,6 +145,17 @@ const BookingScreen = () => {
       });
       setstatusopen(true);
     }
+  };
+
+  const groupDataByGroundName = data => {
+    return data.reduce((acc, item) => {
+      const groundName = item.ground_name;
+      if (!acc[groundName]) {
+        acc[groundName] = [];
+      }
+      acc[groundName].push(item);
+      return acc;
+    }, {});
   };
 
   const getStatusColor = status => {
@@ -222,6 +188,8 @@ const BookingScreen = () => {
   };
 
   const renderItem = ({item}) => {
+    // console.log('item',item);
+    const groupedData = groupDataByGroundName(data);
     const {backgroundColor, color, icon} = getStatusColor(item.status);
     return (
       <View style={styles.slide}>
@@ -405,7 +373,7 @@ const BookingScreen = () => {
           </TouchableOpacity>
         ))}
       </View>
-      {console.log('filterDataaaa', filterData)}
+      {/* {console.log('filterDataaaa', filterData)} */}
       {filterData.length !== 0 ? (
         <>
           <FlatList

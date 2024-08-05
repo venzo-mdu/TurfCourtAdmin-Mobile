@@ -29,7 +29,6 @@ import CardSlider from '../Arena/CardSlider';
 import ApprovalWaitingEventsSlider from '../Arena/approvalWaitingEventsSlider';
 import {StatusBarCommon} from '../../../components';
 import {COLORS} from '../../../assets/constants/global_colors';
-//import UpcomingEventsSlider from '../Arena/upcomingEventsSlider';
 import UpcomingEventsSlider from '../Arena/UpcomingEventsSlider';
 import {IMAGES} from '../../../assets/constants/global_images';
 import {ADMINTOPTABNAVIGATION} from '../..';

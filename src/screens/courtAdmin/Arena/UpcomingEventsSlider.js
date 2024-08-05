@@ -47,7 +47,7 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
   const [nonfilter, setNonFilter] = useState([]);
   // const route = useRoute();
   // const { uid } = route.params;
-  console.log('uid Data Upcoming', uid);
+  // console.log('uid Data Upcoming', uid);
 
   /* Event Data Method */
   const eventData = async () => {
@@ -114,8 +114,6 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
   };
 
   const handleOpenModal = item => {
-    console.log('Item:', item);
-    console.log('working');
     setSelectedSlot(item);
     setModalVisible(true);
   };

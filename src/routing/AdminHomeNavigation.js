@@ -51,7 +51,7 @@ const AdminHomeNavigation = () => {
   const [USERDATA, setUserData] = useState();
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true); // Loading state
-  console.log('USERDATA', USERDATA);
+  // console.log('USERDATA', USERDATA);
 
   useEffect(() => {
     getdataFn();
@@ -74,7 +74,7 @@ const AdminHomeNavigation = () => {
       if (value) {
         const parsedValue = JSON.parse(value);
         const user = await userData(parsedValue?.user_id);
-        console.log('user', user);
+        // console.log('user', user);
         if (user) {
           // setUserData(user?.user_id);
           // await AsyncStorage.setItem('uid', JSON.stringify(user?.user_id));
@@ -206,7 +206,7 @@ const AdminHomeNavigation = () => {
 
           <Tab.Screen
             name={ADMINBOOKING}
-            component={BookingScreen}
+            component={() => <BookingScreen />}
             options={{
               tabBarLabel: ({focused}) => (
                 <Text
