@@ -7,7 +7,7 @@ import {
   FetchDataById,
   InsertData,
   UpdateData,
-  fetchBulkData,
+  fetchBulkData
 } from './crud';
 import {userData} from './userDetails';
 import {getgroundDataById, getreview} from './groundDetails';
@@ -71,7 +71,6 @@ export const createNewEvent = async event_data => {
 // delete item.cart_id;
 // await InsertData("events", item);
 // await removeCartData(cart_id);
-    
 export const getEventdetailsByType = async (
   uid,
   usertype,
@@ -98,9 +97,9 @@ export const getEventdetailsByType = async (
         fieldValue,
         order,
         limitNumber,
-        otherFilters,
+        otherFilters
       );
-      // console.log('data-----',data);
+
       return { status: "success", data: data };
     } else {
       return { status: "failure", data: "No Login User" };
@@ -109,7 +108,7 @@ export const getEventdetailsByType = async (
     return { status: "failure", data: error };
   }
 };
-    
+
 export const getcourtevent = async court_id => {
   try {
     if (court_id != '') {

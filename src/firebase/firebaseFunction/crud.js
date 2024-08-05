@@ -15,10 +15,9 @@ import {
   setDoc,
   orderBy,
   documentId,
-  limit,
-  getCountFromServer,
-} from "firebase/firestore";
-import _ from "lodash";
+} from 'firebase/firestore';
+import _ from 'lodash';
+
 const ids = {
   user: 'user_id',
   ground_details: 'ground_id',
@@ -41,8 +40,8 @@ const fetchBulkData = async (
   countOnly = false,
 ) => {
   try {
-
     let collectionRef = collection(db, table);
+
     if (filter_key && operator && filter_value) {
       collectionRef = query(
         collectionRef,
@@ -90,6 +89,7 @@ const fetchBulkData = async (
       let data = querySnapshot.docs.map(doc => {
         return {[ids[table]]: doc.id, ...doc.data()};
       });
+
       return data;
     }
   } catch (e) {

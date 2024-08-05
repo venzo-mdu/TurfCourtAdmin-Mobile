@@ -73,12 +73,13 @@ const UserLoginScreen = () => {
   const LoginFn = async () => {
     if (verificationCode?.length == 6) {
       const response = await loginverifyOtp(verificationCode, verificationId);
+      console.log('response---',response,verificationCode,verificationId);
 
-      //ToastAndroid.show(response?.msg, ToastAndroid.SHORT);
+    // ToastAndroid.show(response?.msg, ToastAndroid.SHORT);
 
       if (!response.error) {
         if (response?.data?.user_id != '' && response?.data != null) {
-          // const userdata = await FetchDataById('user', response.data.user_id);
+        // const userdata = await FetchDataById('user', response.data.user_id);
 
           const res = response?.data;
           console.log('res Vies', res);

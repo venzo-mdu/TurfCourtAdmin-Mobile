@@ -4,7 +4,7 @@ import {View, Text, Button, StyleSheet, Dimensions} from 'react-native';
 import Carousel from 'react-native-snap-carousel';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {getEventdetailsByType} from '../../../firebase/firebaseFunction/eventDetails';
-import {USERBOOKINGVIEW} from '../..';
+import {ADMINBOOKING} from '../..';
 import {TouchableOpacity} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import {COLORS} from '../../../assets/constants/global_colors';
@@ -28,6 +28,8 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
   const [filterData, setfilterData] = useState([]);
   const prop1Map = new Map();
   const navigation = useNavigation();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState(null);
 
   // console.log("filterData Upcoming", filterData.length, filterData)
   //console.log("selectedEventData Upcoming", selectedEventData)
@@ -44,7 +46,7 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
   const [nonfilter, setNonFilter] = useState([]);
   // const route = useRoute();
   // const { uid } = route.params;
-  console.log('uid Data Upcoming', uid);
+  // console.log('uid Data Upcoming', uid);
 
   /* Event Data Method */
   const eventData = async () => {
@@ -52,7 +54,7 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
     if (uid == null) {
       navigate('/login');
     }
-    const response = await getEventdetailsByType(uid, 'user');
+    const response = await getEventdetailsByType(uid, 'owners');
 
     setdata(response?.data);
 
@@ -66,7 +68,7 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
 
     setNonFilter(thismonthdata);
     const tableData2 = thismonthdata?.filter(
-      item => item.status === 'Approved',
+      item => item.status === 'Accepted',
     );
 
     const currentTimeData = tableData2.filter(
@@ -106,11 +108,18 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
     return result;
   }
 
-  const renderItem = ({item, index}) => {
-    const handleViewBooking = () => {
-      navigation.navigate(USERBOOKINGVIEW);
-    };
+  const handleViewBooking = item => {
+    // navigation.navigate(ADMINBOOKING, {groundId: item});
+  };
 
+  const handleOpenModal = item => {
+    // console.log('Item:', item);
+    // console.log('working');
+    setSelectedSlot(item);
+    setModalVisible(true);
+  };
+
+  const renderItem = ({item, index}) => {
     return (
       <View style={styles.slide}>
         <View style={styles.header}>
@@ -193,12 +202,17 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
               height: 0.5,
             }}></View>
           <View>
-            <TouchableOpacity onPress={handleViewBooking}>
+            <TouchableOpacity onPress={() => handleOpenModal(item[index])}>
               <View style={styles.footer}>
                 <Text style={styles.text}>View</Text>
                 <Icon name="eye" size={20} color="#ffffff" />
               </View>
             </TouchableOpacity>
+            <SlotModal
+              visible={modalVisible}
+              slot={selectedSlot}
+              onClose={() => setModalVisible(false)}
+            />
           </View>
         </View>
       </View>
