@@ -13,6 +13,30 @@ import {userData} from './userDetails';
 import {getgroundDataById, getreview} from './groundDetails';
 import {v4} from 'uuid';
 
+
+
+export const createNewBlockEvent = async (event_data) => {
+  try {
+    event_data?.map(async (item, Outerindex) => {
+      console.log(item,"item create");
+      let ground_data = await FetchDataById("ground_details", item?.ground_id);
+      console.log(ground_data,"ground_data create");
+      let user_data = await FetchDataById("user", item?.user_id);
+      console.log(user_data,"user_data create");
+      item.ground_name = ground_data?.groundname;
+      item.user_name = user_data?.username;
+      item.createdAt = new Date();
+      item.status = "Blocked";
+      item.owner_id = ground_data?.owner;
+      await InsertData("events", item);
+    });
+
+    return { status: "Success" };
+  } catch (error) {
+    return error;
+  }
+};
+
 export const createNewEvent = async event_data => {
   // let event_data = {
   //     court_id: "CnkVReBw3zCwffn5boL9",
@@ -89,6 +113,7 @@ export const getEventdetailsByType = async (
         ? "owner_id"
         : "user_id";
     const fieldValue = uid;
+    console.log('fieldName: ', fieldName, fieldValue);
     if (uid != null) {
       let data = await fetchBulkData(
         "events",
@@ -115,7 +140,7 @@ export const getcourtevent = async court_id => {
       let events = await FetchData('events', 'court_id', court_id);
       // const filteredEvent = events?.filter(item => { return new Date(item?.start).toDateString() == new Date(date).toDateString() })
       if (events) {
-        console.log('events', events, 'courtDataBySlot');
+       // console.log('events', events, 'courtDataBySlot');
 
         return events;
       } else {

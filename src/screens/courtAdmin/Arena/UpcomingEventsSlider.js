@@ -8,6 +8,7 @@ import {ADMINBOOKING} from '../..';
 import {TouchableOpacity} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import {COLORS} from '../../../assets/constants/global_colors';
+import SlotModal from './slotModal';
 
 const {width: screenWidth} = Dimensions.get('window');
 
@@ -113,8 +114,6 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
   };
 
   const handleOpenModal = item => {
-    // console.log('Item:', item);
-    // console.log('working');
     setSelectedSlot(item);
     setModalVisible(true);
   };
