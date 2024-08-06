@@ -30,6 +30,7 @@
     "expo": "^51.0.21",
     "expo-constants": "~9.2.0",
     "expo-firebase-recaptcha": "^1.4.4",
+    "expo-module-scripts": "^3.5.2",
     "expo-modules-core": "^1.12.19",
     "firebase": "^10.12.2",
     "lodash": "^4.17.21",

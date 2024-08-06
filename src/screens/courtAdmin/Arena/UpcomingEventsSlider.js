@@ -77,6 +77,7 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
     );
 
     const finalData = findElementsWithSameProp(currentTimeData);
+    console.log('')
     setfilterData(finalData);
     setLoading(false);
   };
