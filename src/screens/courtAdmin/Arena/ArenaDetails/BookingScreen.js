@@ -468,14 +468,14 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: COLORS.WHITE,
   },
-
+ 
   slide: {
     backgroundColor: '#fff',
     borderRadius: 8,
     margin: 10,
     padding: 15,
   },
-
+ 
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -494,15 +494,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.verticalBar,
     marginHorizontal: 8,
   },
-
+ 
   text: {
     fontSize: 16,
     color: '#000000',
     padding: 5,
   },
-
+ 
   /* Modal Content For Cancel View */
-
+ 
   statusContainer: {
     borderWidth: 1,
     borderColor: 'green',
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     cursor: 'pointer',
     textAlign: 'right',
   },
-
+ 
   footerButtons: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
