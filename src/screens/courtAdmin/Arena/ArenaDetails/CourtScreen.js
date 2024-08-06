@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, Image, FlatList, ScrollView, Dimensions, 
 import React, { useState, useEffect} from 'react'
 import { StyleSheet } from 'react-native';
 import { IMAGES } from '../../../../assets/constants/global_images';
-import { createCourtSlot, createNewCourt, getcourtslotdata, getgroundDataById, getGroundslotdata, updatecourt, updateslotdata } from '../../../../firebase/firebaseFunction/groundDetails';
+import { createCourtSlot, createNewCourt, deleteSlotDetails, getCourtsForGround, getcourtslotdata, getgroundDataById, getGroundslotdata, updatecourt, updateslotdata } from '../../../../firebase/firebaseFunction/groundDetails';
 import { useNavigation, useRoute, useTheme } from '@react-navigation/native';
 import CommonTextInput from '../../../../components/molecules/CommonTextInput';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -13,6 +13,8 @@ import _ from "lodash";
 import { getTimeFormatted } from '../../../../utils/getHours';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { USER, USERLOGIN } from '../../..';
+import Collapsible from 'react-native-collapsible';
+import moment from 'moment';
 
 const CourtScreen = () => {
   const [tab, setTab] = useState("Add Court");
@@ -20,13 +22,13 @@ const CourtScreen = () => {
   const route = useRoute();
   const { groundID } = route.params || null;
   const navigation = useNavigation();
-  console.log("groundID Views", groundID)
+  //console.log("groundID Views", groundID)
   const [groundData, setGroundData] = useState();
   const [courtTime, setCourtTime] = useState([]);
-  console.log("courtTime---", courtTime)
+  //console.log("courtTime---", courtTime)
   const [eventData, setEventData] = useState([]);
   const [loader, setLoading] = useState(false);
-console.log("CourtScreeen groundData", groundData)
+//console.log("CourtScreeen groundData", groundData)
   const [createCourt, setCreateCourt] = useState({
     gametype: [],
     court_name: "",
@@ -119,7 +121,7 @@ console.log("availablecourt", availablecourt)
     const getUserData = async () => {
       try {
         const value = await AsyncStorage.getItem('uid');
-        console.log('value', value);
+        //console.log('value', value);
         if (value) {
           //const user = await userData(parsedValue?.user_id);
           setUid(JSON.parse(value));
@@ -136,20 +138,42 @@ console.log("availablecourt", availablecourt)
 
   /* GRN DATA FETCH */
   const grndData = async () => {
+   // console.log("Hi")
     if (groundID != null) {
+      // console.log("Hi123", groundID)
+      // setLoading(true);
+      // let groundres = await getgroundDataById(groundID);
+      // setLoading(false);
+      // console.log("gtrr33 groundres" , groundres, "gtrr33");
+      // setGroundData(groundres);
+      // setgametype(groundres?.game_type);
+      // setLoading(true);
+      // const slotDatas = await getGroundslotdata(groundID);
+      // setLoading(false);
+      // console.log("slotDatas",slotDatas, groundres, "slotDatas");
+
+      // setCourtslot(slotDatas);
+      // getCourttime(groundres, currentDate);
       setLoading(true);
+      console.log("groundId", groundID)
       let groundres = await getgroundDataById(groundID);
       setLoading(false);
-      //console.log(groundID, "gtrr33");
+     // console.log("gtrr33 groundres" , groundres, "gtrr33");
       setGroundData(groundres);
-      setgametype(groundres?.game_type);
-      setLoading(true);
-      const slotDatas = await getGroundslotdata(groundID);
-      setLoading(false);
-      //console.log(slotDatas, groundres, "slotDatas");
-
-      setCourtslot(slotDatas);
-      getCourttime(groundres, currentDate);
+            let court_details = await getCourtsForGround(groundID);
+       //     console.log("court_details", court_details)
+            let ground_details = { ...groundData, court_details };
+         //   console.log("ground_details", ground_details)
+            setGroundData(ground_details);
+            setgametype(ground_details?.game_type);
+      
+            const slotDatas = await getGroundslotdata(ground_details);
+      
+          //  console.log("My SLotsData",slotDatas);
+            setLoading(false);
+      
+            setCourtslot(slotDatas);
+            getCourttime(ground_details, currentDate);
     } else {
       console.log("grndData2", "check2 ");
     }
@@ -393,38 +417,47 @@ console.log("availablecourt", availablecourt)
       createSlots?.starttime == "" ||
       createSlots?.endtime == ""
     ) {
-    //  console.log("Hi123")
       setAddCourtTimingError(true);
+      ToastAndroid.show("Past time is not allowed");
     } else {
-      setLoading(true);
-      //console.log("Hi12345")
-      //console.log("selectedValue?.Courts", selectedValue?.Courts)
-      const courtDataBySlot = await getcourtevent(selectedValue?.Courts);
-    //  console.log("courtDataBySlot---------", courtDataBySlot.length, courtDataBySlot)
-      setLoading(false);
       const startT = `${createSlots.date}T${createSlots.starttime}`;
       const endT = `${createSlots.date}T${createSlots.endtime}`;
-      if (courtDataBySlot.length != 0) {
-       // console.log("Hi2222", courtDataBySlot)
-        const newStartTime = new Date(startT);
-        const newEndTime = new Date(endT);
-        const isExist = courtDataBySlot.filter((item) => {
-          return (
-            (new Date(item.start) < newStartTime &&
-              new Date(item.end) < newStartTime) == false &&
-            (new Date(item.start) > newEndTime &&
-              new Date(item.end) > newEndTime) == false
-          );
-        });
-        if (!isExist.length) {
+      const newStartTime = new Date(startT);
+      const newEndTime = new Date(endT);
+      const currentDateTime = new Date();
+      if (
+        newStartTime > newEndTime ||
+        newStartTime < currentDateTime ||
+        newEndTime < currentDateTime
+      ) {
+        ToastAndroid.show("Past time is not allowed");
+        return;
+      } else {
+        setLoading(true);
+        const courtDataBySlot = await getcourtevent(
+          selectedValue?.Courts
+        );
+        setLoading(false);
+
+        if (courtDataBySlot.length != 0) {
+          const isExist = courtDataBySlot.filter((item) => {
+            return (
+              (new Date(item.start) < newStartTime &&
+                new Date(item.end) < newStartTime) == false &&
+              (new Date(item.start) > newEndTime &&
+                new Date(item.end) > newEndTime) == false
+            );
+          });
+          if (!isExist.length) {
+            setSlotModalOpen(true);
+            setAddCourtTimingError(false);
+          } else {
+            setCreateEditSlotWarning(true);
+          }
+        } else {
           setSlotModalOpen(true);
           setAddCourtTimingError(false);
-        } else {
-          setCreateEditSlotWarning(true);
         }
-      } else {
-        setSlotModalOpen(true);
-        setAddCourtTimingError(false);
       }
     }
   };
@@ -444,7 +477,7 @@ console.log("availablecourt", availablecourt)
         selectedValue?.Courts,
         createSlots
       );
-     // console.log("data Created***11", data);
+      console.log("data---1213", data)
       setLoading(false);
       if (
         data?.data ==
@@ -460,7 +493,6 @@ console.log("availablecourt", availablecourt)
         selectedValue?.selectedEditslot,
         createSlots
       );
-    //  console.log("data updated***11", update);
       setLoading(false);
       if (update.status == "failure") {
         setupdateSlotWarning(true);
@@ -471,17 +503,17 @@ console.log("availablecourt", availablecourt)
 
     setCreateslots({
       price: "",
-      date:  new Date(),
+      date: new Date(),
       starttime: "",
       endtime: "",
       isActive: true,
     });
+    setValue(null)
     setSelectedValue({ ...selectedValue, Courts: "", selectedEditslot: "" });
-    setValue(null);
     grndData();
+    console.log("End Game");
     setSlotModalOpen(false);
   };
-
 
 
   /* Available Timing Sections */
@@ -541,7 +573,7 @@ console.log("availablecourt", availablecourt)
   const getCourttime = (groundData, date) => {
     let start;
     let end;
-console.log("groundData Data111", groundData, typeof date, date, "eventss")
+//console.log("groundData Data111", groundData, typeof date, date, "eventss")
     if (typeof date === "object") {
       start = `${date.getFullYear()}-${(date.getMonth() + 1)
         .toString()
@@ -562,7 +594,7 @@ console.log("groundData Data111", groundData, typeof date, date, "eventss")
     let dayend = new Date(end);
 
     let hourdiff = ((dayend - daystart) / (1000 * 60 * 60)).toFixed(1);
-console.log("days hourdiff", daystart, dayend, hourdiff, 'eventss')
+//console.log("days hourdiff", daystart, dayend, hourdiff, 'eventss')
     let eventss = [];
     let starttime = daystart;
 
@@ -630,7 +662,7 @@ console.log("eventss", en, 'Hi')
         return element;
       }
     });
-    console.log("eventss", eventarr)
+    //console.log("eventss", eventarr)
 
     setCourtTime(eventarr);
   };
@@ -697,7 +729,7 @@ console.log("eventss", en, 'Hi')
       );
       availablecourt.courtDetails = courtDetails;
       let courtNo;
-      console.log("availablecourt- COurtDetails",courtDetails, availablecourt)
+     // console.log("availablecourt- COurtDetails",courtDetails, availablecourt)
       if (typeof availablecourt?.Courts.match(/\d+/g) == null) {
         courtNo = availablecourt?.Courts.match(/\d+/g).join("");
       } else {
@@ -753,13 +785,13 @@ console.log("eventss", en, 'Hi')
       });
       const results = await Promise.all(promises);
       bookedDataList = results.flat();
-console.log("results", results)
+//console.log("results", results)
       const response = await createNewBlockEvent(Addcartdatas);
-console.log("response handle Booking", response)
+//console.log("response handle Booking", response)
       if (response?.status == "Success") {
         setblockModalOpen(false);
         handleReset();
-        ToastAndroid.show("Blocking Success");
+       // ToastAndroid.show("Blocking Success");
 
         grndData();
         //setblockModalOpen(false);
@@ -932,6 +964,107 @@ console.log("response handle Booking", response)
     setCourtTime([]);
   };
 
+  /* Update The Slots */
+  const handleSlotedit = async (value) => {
+    console.log("value one", value)
+    setLoading(true);
+    const courtDataBySlot = await getcourtevent(value.court_id);
+    setLoading(false);
+    if (courtDataBySlot.length != 0) {
+      const newStartTime = new Date(value.start);
+      const newEndTime = new Date(value.end);
+      const isExist = courtDataBySlot.filter((item) => {
+        return (
+          (new Date(item.start) < newStartTime &&
+            new Date(item.end) < newStartTime) == false &&
+          (new Date(item.start) > newEndTime &&
+            new Date(item.end) > newEndTime) == false
+        );
+      });
+
+      if (!isExist.length) {
+        setAddEdit("Update");
+        value.start = formatDateToISO(value.start);
+        value.end = formatDateToISO(value.end);
+
+        let court_value = courtItems?.filter(
+          (item) => item.value == value?.court_id
+        );
+        console.log("court_value123", court_value);
+        setSelectedValue({
+          ...selectedValue,
+          selectedEditslot: value?.slot_id,
+          Courts: court_value[0].value,
+        });
+        setValue(court_value[0].value);
+        setCreateslots({
+          date: value?.start.slice(0, 10),
+          starttime: value?.start?.slice(11, 16),
+          endtime: value?.end?.slice(11, 16),
+          price: value?.price,
+          isActive: value?.isActive,
+        });
+        setAnchorEl(null);
+
+        //handleChange("Slots");
+      } else {
+        setSloteditWarning(true);
+      }
+    } else {
+      setAddEdit("Update");
+      value.start = formatDateToISO(value.start);
+      value.end = formatDateToISO(value.end);
+
+      let court_value = courtItems?.filter(
+        (item) => item.value == value?.court_id
+      );
+console.log("court_value", court_value);
+      setSelectedValue({
+        ...selectedValue,
+        selectedEditslot: value?.slot_id,
+        Courts: court_value[0].value,
+      });
+setValue(court_value[0].value);
+      setCreateslots({
+        date: value?.start.slice(0, 10),
+        starttime: value?.start?.slice(11, 16),
+        endtime: value?.end?.slice(11, 16),
+        price: value?.price,
+        isActive: value?.isActive,
+      });
+      setAnchorEl(null);
+
+//      handleChange("Slots");
+    }
+  };
+
+
+  const handleSlotdelete = async (value) => {
+    setLoading(true);
+    const delSlot = await deleteSlotDetails(value);
+    setLoading(false);
+console.log("delSlot", delSlot)
+    if (delSlot == "deleted") {
+      grndData();
+    } else {
+      setSlotDelWarning(true);
+    }
+  };
+
+
+  function formatDateToISO(inputDate) {
+    const date = new Date(inputDate);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+
   function charToAlphabetPosition(char) {
     // Convert a single character to its alphabetical position
     return char.toLowerCase().charCodeAt(0) - "a".charCodeAt(0) + 1;
@@ -950,6 +1083,20 @@ console.log("response handle Booking", response)
     }
     return Number(result);
   }
+
+  const [activeSections, setActiveSections] = useState({});
+
+  const compareByDate = (a, b) => new Date(a.start) - new Date(a.start);
+
+  const toggleSection = (index) => {
+    setActiveSections((prevState) => ({
+      ...prevState,
+      [index]: !prevState[index],
+    }));
+  };
+
+
+
 
 
   const CourtCard = ({ item, handlemodal, handleEditCourt }) => {
@@ -1223,6 +1370,56 @@ console.log("response handle Booking", response)
       >
         <Text style={styles.addButtonTextRule}>Add</Text>
       </TouchableOpacity>
+      </View>
+      {/* New View of Add Slots */}
+      <View>
+      {groundData?.court_details?.length !== 0 && (
+        <>
+          {courtslot && Object.values(courtslot).map((item, index) => {
+            let sortslotdata = item?.slotData?.sort(compareByDate);
+            let activeSlotData = sortslotdata?.filter(item => item?.isActive);
+
+            return (
+              <View key={index} style={styles.cardSlot}>
+                <TouchableOpacity onPress={() => toggleSection(index)}>
+                  <View style={styles.cardHeaderSlot}>
+                    <View>
+                      {/* <Text style={styles.groundNameSlot}>{groundData.groundname}</Text> */}
+                      <Text style={styles.courtNameSlot}>{item.court_name}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                <Collapsible collapsed={!activeSections[index]}>
+                  {activeSlotData?.length ? <View style={styles.dividerSlot} /> : null}
+                  {activeSlotData?.map((slot, slotIndex) => {
+                    const startTimeFormatted = getTimeFormatted(slot.start);
+                    const endTimeFormatted = getTimeFormatted(slot.end);
+                    return (
+                      <View key={slotIndex} style={styles.slotDetailsSlot}>
+                        <View style={styles.slotTimeSlot}>
+                          <Text>{startTimeFormatted.formatedate}</Text>
+                          <Text>{`${startTimeFormatted.Time} - ${endTimeFormatted.Time}`}</Text>
+                        </View>
+                        <Text style={styles.slotPriceSlot}>{`₹${slot.price}`}</Text>
+                        <View style={styles.actionsSlot}>
+                          <TouchableOpacity onPress={() => handleSlotdelete(slot)}>
+                            {/* <Text>Delete</Text> */}
+                            <Image source={IMAGES.DeleteIcons} style={styles.actionIconSlot} />
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => handleSlotedit(slot)}>
+                          <Image source={IMAGES.EditIcons} style={styles.actionIconSlot} />
+                            {/* <Text>Edit</Text> */}
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </Collapsible>
+              </View>
+            );
+          })}
+        </>
+      )}
       </View>
      
     </View>
@@ -1946,6 +2143,57 @@ buttonContainerAvailable: {
     paddingHorizontal: 20,
     width: '48%',
     alignItems: 'center',
+  },
+
+  /* Add Slot Accordian */
+  cardSlot: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+  },
+  cardHeaderSlot: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  groundNameSlot: {
+    fontSize: 18,
+    fontWeight: '500',
+    color:'#000000'
+  },
+  courtNameSlot: {
+    fontSize: 12,
+    color: '#097E52',
+  },
+  dividerSlot: {
+    height: 1,
+    backgroundColor: '#ccc',
+    marginVertical: 10,
+  },
+  slotDetailsSlot: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  slotTimeSlot: {
+    flexDirection: 'column',
+  },
+  slotPriceSlot: {
+    color: '#097E52',
+    fontWeight: '500',
+  },
+  actionsSlot: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionIconSlot: {
+    width: 25,
+    height: 25,
+    marginLeft: 10,
   },
 
 })

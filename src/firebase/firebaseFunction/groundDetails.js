@@ -27,10 +27,13 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { GeoPoint } from "firebase/firestore";
-import { courtswithoutevents, getcourtevent } from "./eventDetails";
+import { courtswithoutevents, getcourtevent, getEventdetailsByCourt } from "./eventDetails";
 import { UpdateUserData, userData } from "./userDetails";
+import moment from "moment";
+import _ from "lodash";
 // import { toast } from "react-toastify";
 // import "react-toastify/dist/ReactToastify.css";
+
 
 const ids = {
   user: "user_id",
@@ -649,22 +652,56 @@ export const getCourtData = async (court_id) => {
   }
 };
 
-export const getGroundslotdata = async (ground_id) => {
-  const grounddata = await getgroundDataById(ground_id, "admin");
-  let result = {};
-  if (!grounddata?.court_details) {
-    console.log(result, "trrre");
-    return result;
-  }
+// export const getGroundslotdata = async (ground_id) => {
+//   const grounddata = await getgroundDataById(ground_id, "admin");
+//   let result = {};
+//   if (!grounddata?.court_details) {
+//     console.log(result, "trrre");
+//     return result;
+//   }
 
-  const promises = grounddata.court_details.map(async (item) => {
-    const courtSlotData = await getcourtslotdata(item?.court_id, "admin");
-    courtSlotData.court_name = item?.court_name;
-    courtSlotData.ground_name = grounddata.groundname;
-    result[item.court_id] = courtSlotData;
-  });
-  await Promise.all(promises);
-  return result;
+//   const promises = grounddata.court_details.map(async (item) => {
+//     const courtSlotData = await getcourtslotdata(item?.court_id, "admin");
+//     courtSlotData.court_name = item?.court_name;
+//     courtSlotData.ground_name = grounddata.groundname;
+//     result[item.court_id] = courtSlotData;
+//   });
+//   await Promise.all(promises);
+//   return result;
+// };
+
+export const getGroundslotdata = async (ground_details) => {
+  const courtIds = ground_details?.court_details?.map((item) => item.court_id);
+
+  const courtSlots = await fetchBulkData(
+    "masterslot",
+    "court_id",
+    "in",
+    courtIds,
+    { key: "start", order: "asc" },
+    null,
+    [
+      { key: "isActive", operator: "==", value: true },
+      {
+        key: "start",
+        operator: ">=",
+        value: moment().format("YYYY-MM-DDTHH:mm"),
+      },
+    ]
+  );
+
+  return ground_details.court_details.reduce((result, item) => {
+    const courtSlotData = courtSlots.filter(
+      (slot) => slot.court_id === item.court_id
+    );
+    if (courtSlotData) {
+      courtSlotData.court_name = item?.court_name;
+      courtSlotData.ground_name = ground_details.groundname;
+      courtSlotData.slotData = courtSlotData;
+      result[item.court_id] = courtSlotData;
+    }
+    return result;
+  }, {});
 };
 
 export const getcourtslotdata = async (court_id, user_type) => {
@@ -724,6 +761,74 @@ export const getcourtslotdata = async (court_id, user_type) => {
   }
 };
 
+
+export const getCourtsForGround = async (ground_id) => {
+  try {
+    let courts = await FetchData("courts", "ground_id", ground_id);
+    return courts;
+  } catch (error) {
+    return error;
+  }
+};
+
+// export const createCourtSlot = async (court_id, slot_details) => {
+//   // let solt_details = {
+//   //     price: "1000",
+//   //     court_id: "6jvTt3n5Md9BHclu1okS",
+//   //     end: "2024-01-06T10:19",
+//   //     start: "2024-01-04T10:19",
+//   // }
+
+//   delete slot_details?.starttime;
+//   delete slot_details?.endtime;
+//   delete slot_details?.date;
+
+//   slot_details.court_id = court_id;
+//   slot_details.createdAt = new Date();
+//   slot_details.isActive = true;
+
+//   console.log(slot_details, court_id, "gtrree");
+
+//   let availableSlots = await FetchData("masterslot", "court_id", court_id);
+
+//   const isSlotAvailable = isTimeSlotAvailable(slot_details, availableSlots);
+
+//   console.log(isSlotAvailable, availableSlots, court_id, "createCourtSlot");
+
+//   if (isSlotAvailable) {
+//     console.log("slot create", "gtr55");
+//     const data = await InsertData("masterslot", slot_details);
+//     return { status: "success", data: data };
+//   } else {
+//     return {
+//       status: "failure",
+//       data: "Slot overlaps with existing slots. Choose a different time.",
+//     };
+//   }
+// };
+
+// const isTimeSlotAvailable = (newSlot, existingSlots) => {
+//   const notSame = existingSlots.filter((item) => {
+//     return item.slot_id != newSlot.slot_id;
+//   });
+//   console.log(newSlot, existingSlots, "updateslotdata", notSame);
+
+//   const newStartTime = new Date(newSlot.start);
+//   const newEndTime = new Date(newSlot.end);
+//   const isExist = notSame.filter((item) => {
+//     return (
+//       item.isActive &&
+//       (new Date(item.start) < newStartTime &&
+//         new Date(item.end) < newStartTime) == false &&
+//       (new Date(item.start) > newEndTime && new Date(item.end) > newEndTime) ==
+//         false
+//     );
+//   });
+//   console.log(isExist, "updateslotdata", "courtDataBySlot");
+
+//   return isExist.length ? false : true;
+// };
+
 export const createCourtSlot = async (court_id, slot_details) => {
   // let solt_details = {
   //     price: "1000",
@@ -740,16 +845,29 @@ export const createCourtSlot = async (court_id, slot_details) => {
   slot_details.createdAt = new Date();
   slot_details.isActive = true;
 
-  console.log(slot_details, court_id, "gtrree");
+  let availableSlots = await fetchBulkData(
+    "masterslot",
+    "court_id",
+    "in",
+    [court_id],
+    { key: "start", order: "asc" },
+    null,
+    [
+      { key: "isActive", operator: "==", value: true },
+      {
+        key: "start",
+        operator: ">=",
+        value: moment(slot_details.start).format("YYYY-MM-DDTHH:mm"),
+      },
+      {
+        key: "end",
+        operator: "<=",
+        value: moment(slot_details.end).format("YYYY-MM-DDTHH:mm"),
+      },
+    ]
+  );
 
-  let availableSlots = await FetchData("masterslot", "court_id", court_id);
-
-  const isSlotAvailable = isTimeSlotAvailable(slot_details, availableSlots);
-
-  console.log(isSlotAvailable, availableSlots, court_id, "createCourtSlot");
-
-  if (isSlotAvailable) {
-    console.log("slot create", "gtr55");
+  if (availableSlots?.length === 0) {
     const data = await InsertData("masterslot", slot_details);
     return { status: "success", data: data };
   } else {
@@ -764,7 +882,6 @@ const isTimeSlotAvailable = (newSlot, existingSlots) => {
   const notSame = existingSlots.filter((item) => {
     return item.slot_id != newSlot.slot_id;
   });
-  console.log(newSlot, existingSlots, "updateslotdata", notSame);
 
   const newStartTime = new Date(newSlot.start);
   const newEndTime = new Date(newSlot.end);
@@ -777,10 +894,10 @@ const isTimeSlotAvailable = (newSlot, existingSlots) => {
         false
     );
   });
-  console.log(isExist, "updateslotdata", "courtDataBySlot");
 
   return isExist.length ? false : true;
 };
+
 
 export const updateslotdata = async (slot_id, slotdata) => {
   // slotdata.start = slotdata?.start;
@@ -811,43 +928,72 @@ export const updateslotdata = async (slot_id, slotdata) => {
   }
 };
 
+// export const deleteSlotDetails = async (slotData) => {
+//   const courtDataBySlot = await getcourtevent(slotData.court_id);
+//   // console.log(courtDataBySlot, slotData, "courtDataBySlot");
+//   if (courtDataBySlot.length != 0) {
+//     const courtEvvetns = await getcourtevent(slotData.court_id);
+//     // const isSlotAvailable = isTimeSlotAvailable(slotData, courtEvvetns);
+//     const newStartTime = new Date(slotData.start);
+//     const newEndTime = new Date(slotData.end);
+//     const isExist = courtEvvetns.filter((item) => {
+//       return (
+//         (new Date(item.start) < newStartTime &&
+//           new Date(item.end) < newStartTime) == false &&
+//         (new Date(item.start) > newEndTime &&
+//           new Date(item.end) > newEndTime) == false
+//       );
+//     });
+//     if (!isExist.length) {
+//       slotData.isActive = false;
+//       const deleteVar = await UpdateData(
+//         "masterslot",
+//         slotData,
+//         slotData.slot_id
+//       );
+//       console.log("deleteVar", "deleteVar", "courtDataBySlot");
+//       return "deleted";
+//     } else {
+//       return "not deleted";
+//     }
+//   } else {
+//     slotData.isActive = false;
+//     const deleteVar = await UpdateData(
+//       "masterslot",
+//       slotData,
+//       slotData.slot_id
+//     );
+//     console.log("deleteVar", "deleteVar", "courtDataBySlot");
+//     return "deleted";
+//   }
+// };
+
+
+
 export const deleteSlotDetails = async (slotData) => {
-  const courtDataBySlot = await getcourtevent(slotData.court_id);
-  // console.log(courtDataBySlot, slotData, "courtDataBySlot");
-  if (courtDataBySlot.length != 0) {
-    const courtEvvetns = await getcourtevent(slotData.court_id);
-    // const isSlotAvailable = isTimeSlotAvailable(slotData, courtEvvetns);
-    const newStartTime = new Date(slotData.start);
-    const newEndTime = new Date(slotData.end);
-    const isExist = courtEvvetns.filter((item) => {
-      return (
-        (new Date(item.start) < newStartTime &&
-          new Date(item.end) < newStartTime) == false &&
-        (new Date(item.start) > newEndTime &&
-          new Date(item.end) > newEndTime) == false
-      );
+  try {
+    const courtEvents = await getEventdetailsByCourt({
+      courtIds: [slotData.court_id],
+      otherFilters: [
+        { key: "start", operator: ">=", value: slotData.start },
+        { key: "end", operator: "<=", value: slotData.end },
+      ],
     });
-    if (!isExist.length) {
+
+    if (_.isEmpty(courtEvents.data)) {
       slotData.isActive = false;
       const deleteVar = await UpdateData(
         "masterslot",
         slotData,
         slotData.slot_id
       );
-      console.log("deleteVar", "deleteVar", "courtDataBySlot");
+
       return "deleted";
     } else {
       return "not deleted";
     }
-  } else {
-    slotData.isActive = false;
-    const deleteVar = await UpdateData(
-      "masterslot",
-      slotData,
-      slotData.slot_id
-    );
-    console.log("deleteVar", "deleteVar", "courtDataBySlot");
-    return "deleted";
+  } catch (err) {
+    return err;
   }
 };
 

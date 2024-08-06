@@ -37,6 +37,36 @@ export const createNewBlockEvent = async (event_data) => {
   }
 };
 
+export const getEventdetailsByCourt = async ({
+  courtIds,
+  order = { key: "start", dir: "asc" },
+  limitNumber = null,
+  otherFilters,
+}) => {
+  if (!otherFilters) {
+    return;
+  }
+  try {
+    if (courtIds != null) {
+      let data = await fetchBulkData(
+        "events",
+        "court_id",
+        "in",
+        courtIds,
+        order,
+        limitNumber,
+        otherFilters
+      );
+
+      return { status: "success", data: data };
+    } else {
+      return { status: "failure", data: "No Login User" };
+    }
+  } catch (error) {
+    return { status: "failure", data: error };
+  }
+};
+
 export const createNewEvent = async event_data => {
   // let event_data = {
   //     court_id: "CnkVReBw3zCwffn5boL9",
