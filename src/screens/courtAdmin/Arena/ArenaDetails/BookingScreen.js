@@ -8,21 +8,18 @@ import {
   Modal,
 } from 'react-native';
 
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
-import {getTimeFormatted} from '../../../../utils/getHours';
-import {COLORS} from '../../../../assets/constants/global_colors';
-import { getEventdetailsByType,separateConsecutiveSecondElements, } from '../../../../firebase/firebaseFunction/eventDetails';
+import { getTimeFormatted } from '../../../../utils/getHours';
+import { COLORS } from '../../../../assets/constants/global_colors';
+import { getEventdetailsByType, separateConsecutiveSecondElements, } from '../../../../firebase/firebaseFunction/eventDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
-import { data } from '../../../../testData/data';
-
-
 
 const BookingScreen = () => {
- 
+
   const [tab, setTab] = useState('Bookings');
   const [statusopen, setstatusopen] = useState(false);
   const [filterData, setFilterData] = useState([]);
@@ -44,8 +41,8 @@ const BookingScreen = () => {
         console.error('Error retrieving user data', error);
       }
     };
-    getUserData(); 
-    eventData(); 
+    getUserData();
+    eventData();
   }, []);
 
   const eventData = async () => {
@@ -54,10 +51,10 @@ const BookingScreen = () => {
     }
     let startDate = moment().format("YYYY-MM-DDTHH:mm");
     let endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
-    
+
     let statusValue = ["Accepted", "Awaiting"];
 
-    
+
     if (tab === "Cancelled") {
       statusValue = ["Cancelled", "Canceled"];
       startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
@@ -68,7 +65,7 @@ const BookingScreen = () => {
     } else if (tab !== "Bookings" && tab !== "Cancelled") {
       statusValue = [tab];
     }
-    
+
     const otherFilters = [
       { key: "status", operator: "in", value: statusValue },
       { key: "start", operator: ">=", value: startDate },
@@ -82,15 +79,35 @@ const BookingScreen = () => {
         null,
         otherFilters,
       );
-    
+
       // console.log('response----------------------',response?.data);
       const events = response?.data;
-    
+
       setdata(events);
-      setFilterData(events);
-    }   
+
+      const finalData = findElementsWithSameProp(response?.data);
+      console.log('finalData', finalData);
+      setFilterData(finalData);
+    }
   };
- 
+
+  function findElementsWithSameProp(arr) {
+    const prop1Map = new Map();
+
+    arr.forEach((element) => {
+      const prop1Value = element.BookId;
+      if (prop1Map.has(prop1Value)) {
+        prop1Map.get(prop1Value).push(element);
+      } else {
+        prop1Map.set(prop1Value, [element]);
+      }
+    });
+
+    const result = Array.from(prop1Map.values());
+
+    return result;
+  }
+
   const handleChange = value => {
     setTab(value);
 
@@ -101,28 +118,28 @@ const BookingScreen = () => {
       const finalData = tableData;
       setFilterData(finalData);
       //console.log('Bookings data length--------------', finalData.length);
-    } 
+    }
     else if (value == 'Completed') {
       const tableData = data?.filter(item => item.status === 'Completed');
 
       const finalData = tableData;
       setFilterData(finalData);
       //console.log('Completed data length--------------', finalData.length);
-    } 
+    }
     else if (value == 'On-Going') {
       const tableData = data?.filter(item => item.status === 'On-going');
       const finalData = tableData;
       // console.log('tableData', finalData);
       setFilterData(finalData);
       //console.log('On-Going data length--------------', finalData.length);
-    } 
+    }
     else if (value == 'Cancelled') {
       const tableData = data?.filter(
         item => item.status === 'Cancelled' || item.status === 'Canceled',
       );
       const finalData = tableData;
       setFilterData(finalData);
-     // console.log('Cancelled data length--------------', finalData.length);
+      // console.log('Cancelled data length--------------', finalData.length);
     }
   };
 
@@ -145,155 +162,6 @@ const BookingScreen = () => {
       });
       setstatusopen(true);
     }
-  };
-
-  const groupDataByGroundName = data => {
-    return data.reduce((acc, item) => {
-      const groundName = item.ground_name;
-      if (!acc[groundName]) {
-        acc[groundName] = [];
-      }
-      acc[groundName].push(item);
-      return acc;
-    }, {});
-  };
-
-  const getStatusColor = status => {
-    switch (status) {
-      case 'Awaiting':
-        return {backgroundColor: '#E4DDF4', color: '#7756C9', icon: 'clock'};
-      case 'Cancelled':
-        return {
-          backgroundColor: '#F2DEDE',
-          color: '#F50303',
-          icon: 'closecircleo',
-        };
-      case 'On-going':
-        return {backgroundColor: '#D9EDF7', color: '#45AEF4', icon: 'clock'};
-      case 'Completed':
-        return {
-          backgroundColor: '#D1F0D6',
-          color: '#097E52',
-          icon: 'checkcircleo',
-        };
-      case 'Accepted':
-        return {
-          backgroundColor: '#D1F0D6',
-          color: '#097E52',
-          icon: 'checkcircleo',
-        };
-      default:
-        return {backgroundColor: '#FFFFFF', color: '#000000', icon: ''};
-    }
-  };
-
-  const renderItem = ({item}) => {
-    // console.log('item',item);
-    const groupedData = groupDataByGroundName(data);
-    const {backgroundColor, color, icon} = getStatusColor(item.status);
-    return (
-      <View style={styles.slide}>
-
-        <View style={styles.header}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              color,
-              backgroundColor,
-              borderRadius: 5,
-              paddingHorizontal: 7,
-              paddingVertical: 5,
-              gap: 5,
-            }}>
-            {(item.status === 'Awaiting' || item.status === 'On-going') && (
-              <Feather name={icon} size={15} color={color} />
-            )}
-            {(item.status === 'Cancelled' ||
-              item.status === 'Completed' ||
-              item.status === 'Accepted') && (
-              <AntDesign name={icon} size={12} color={color} />
-
-            )}
-            <Text
-              style={[
-                {
-                  color,
-                  fontFamily: 'Outfit-Regular',
-                  fontSize: 13,
-                },
-              ]}>
-              {item.status}
-            </Text>
-          </View>
-          {tab === 'Bookings' && (
-            <TouchableOpacity onPress={() => handlestatusEdit(item)}>
-              <Entypo name="dots-three-vertical" size={20} color="#A8A8A8" />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <Text
-          style={[
-            {
-              color: '#097E52', //#097E52
-              fontFamily: 'Outfit-Medium',
-              fontSize: 16,
-              paddingBottom: 10,
-            },
-          ]}>
-          {item.user_name}
-        </Text>
-        <View style={styles.overallContainer}>
-          <View style={styles.groundDetailContainer}>
-            <Text
-              style={[
-                {
-                  color: '#192335',
-                  fontFamily: 'Outfit-Medium',
-                  fontSize: 16,
-                },
-              ]}>
-              {item.ground_name}
-            </Text>
-
-            <View style={styles.line}></View>
-            <Text
-              style={[
-                {
-                  color: '#097E52',
-                  fontFamily: 'Outfit-Medium',
-                  fontSize: 16,
-                },
-              ]}>
-              {item.court_name}
-            </Text>
-
-          </View>
-
-          <Text
-            style={[
-              {
-                color: '#212529',
-                fontFamily: 'Outfit-Medium',
-                fontSize: 16,
-                paddingBottom: 25,
-              },
-            ]}>
-            ${item.amount}
-          </Text>
-
-        </View>
-        <Text
-          style={[
-            styles.text,
-            {fontFamily: 'Outfit-Regular', color: '#192335'},
-
-          ]}>
-          {formatDateTime(item)}
-        </Text>
-      </View>
-    );
   };
 
   const formatDateTime = date => {
@@ -345,11 +213,148 @@ const BookingScreen = () => {
     return `${dayOfWeek}, ${month} ${day
       .toString()
       .padStart(2, '0')} | ${hours}:${minutes
-      .toString()
-      .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
-      .toString()
-      .padStart(2, '0')} ${ampm2}`;
+        .toString()
+        .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
+          .toString()
+          .padStart(2, '0')} ${ampm2}`;
   };
+
+  const groupByBookId = (data) => {
+    return data.reduce((acc, item) => {
+      if (!acc[item.BookId]) {
+        acc[item.BookId] = [];
+      }
+      acc[item.BookId].push(item);
+      
+      return acc;
+    }, {});
+  };
+
+  const renderItem = ({ item }) => {
+    const getStatusColor = status => {
+      switch (status) {
+        case 'Awaiting':
+          return { backgroundColor: '#E4DDF4', color: '#7756C9', icon: 'clock' };
+        case 'Cancelled':
+          return {
+            backgroundColor: '#F2DEDE',
+            color: '#F50303',
+            icon: 'closecircleo',
+          };
+        case 'On-going':
+          return { backgroundColor: '#D9EDF7', color: '#45AEF4', icon: 'clock' };
+        case 'Completed':
+          return {
+            backgroundColor: '#D1F0D6',
+            color: '#097E52',
+            icon: 'checkcircleo',
+          };
+        case 'Accepted':
+          return {
+            backgroundColor: '#D1F0D6',
+            color: '#097E52',
+            icon: 'checkcircleo',
+          };
+        default:
+          return { backgroundColor: '#FFFFFF', color: '#000000', icon: '' };
+      }
+    };
+    const { backgroundColor, color, icon } = getStatusColor(item[0].status);
+    const { BookId, user_name, ground_name, court_name, amount } = item[0];
+    const timings = item.map(i => formatDateTime(i));
+
+    return (
+      <View style={styles.slide}>
+        <View style={styles.header}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              color,
+              backgroundColor,
+              borderRadius: 5,
+              paddingHorizontal: 7,
+              paddingVertical: 5,
+              gap: 5,
+            }}>
+            {(item[0].status === 'Awaiting' || item[0].status === 'On-going') && (
+              <Feather name={icon} size={15} color={color} />
+            )}
+            {(item[0].status === 'Cancelled' ||
+              item[0].status === 'Completed' ||
+              item[0].status === 'Accepted') && (
+                <AntDesign name={icon} size={12} color={color} />
+              )}
+            <Text
+              style={{
+                color,
+                fontFamily: 'Outfit-Regular',
+                fontSize: 13,
+              }}>
+              {item[0].status}
+            </Text>
+          </View>
+          {tab === 'Bookings' && (
+            <TouchableOpacity onPress={() => handlestatusEdit(item[0])}>
+              <Entypo name="dots-three-vertical" size={20} color="#A8A8A8" />
+            </TouchableOpacity>
+          )}
+        </View>
+        <Text
+          style={{
+            color: '#097E52',
+            fontFamily: 'Outfit-Medium',
+            fontSize: 16,
+            paddingBottom: 10,
+          }}>
+          {user_name}
+        </Text>
+        <View style={styles.overallContainer}>
+          <View style={styles.groundDetailContainer}>
+            <Text
+              style={{
+                color: '#192335',
+                fontFamily: 'Outfit-Medium',
+                fontSize: 16,
+              }}>
+              {ground_name}
+            </Text>
+            <View style={styles.line}></View>
+            <Text
+              style={{
+                color: '#097E52',
+                fontFamily: 'Outfit-Medium',
+                fontSize: 16,
+              }}>
+              {court_name}
+            </Text>
+          </View>
+          <Text
+            style={{
+              color: '#212529',
+              fontFamily: 'Outfit-Medium',
+              fontSize: 16,
+              paddingBottom: 25,
+            }}>
+            ${amount}
+          </Text>
+        </View>
+        {/* <Text>{BookId}</Text> */}
+        {timings.map((timing, index) => (
+          <Text
+            key={index}
+            style={{
+              fontFamily: 'Outfit-Regular',
+              color: '#192335',
+            }}>
+            {timing}
+          </Text>
+        ))}
+      </View>
+    );
+  };
+
+  const groupedData = Object.values(groupByBookId(data));
 
   return (
     <View style={styles.container}>
@@ -366,7 +371,7 @@ const BookingScreen = () => {
               style={[
                 styles.tabText,
                 tab === tabName && styles.activeTabText,
-                {fontFamily: 'Outfit-Regular', fontSize: 14},
+                { fontFamily: 'Outfit-Regular', fontSize: 14 },
               ]}>
               {tabName}
             </Text>
@@ -376,10 +381,11 @@ const BookingScreen = () => {
       {/* {console.log('filterDataaaa', filterData)} */}
       {filterData.length !== 0 ? (
         <>
+
           <FlatList
-            data={filterData}
+            data={groupedData}
             renderItem={renderItem}
-            keyExtractor={(item, index) => index.toString()}
+            keyExtractor={(item) => item[0]?.BookId.toString()}
           />
         </>
       ) : (
@@ -390,7 +396,7 @@ const BookingScreen = () => {
             width: '100%',
             height: '100%',
           }}>
-          <Text style={{fontFamily: 'Outfit-Medium', color: COLORS.PRIMARY}}>
+          <Text style={{ fontFamily: 'Outfit-Medium', color: COLORS.PRIMARY }}>
             No {tab} bookings found.
           </Text>
         </View>
@@ -459,7 +465,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeTabButton: {
-    backgroundColor: COLORS.tabActiveColor,
+    backgroundColor: COLORS.BLACK,
   },
   tabText: {
     color: COLORS.BLACK,
@@ -558,5 +564,6 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 });
+
 
 export default BookingScreen;
