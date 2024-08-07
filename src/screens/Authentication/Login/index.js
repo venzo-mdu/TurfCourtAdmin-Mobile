@@ -10,6 +10,9 @@ import {
   TextInput,
   ToastAndroid,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Keyboard,
   View,
 } from 'react-native';
 import {ROLE, USERCREATE, USERBOOTOM, USERLOGIN} from '../..';
@@ -33,8 +36,10 @@ import {
 import {FetchDataById} from '../../../firebase/firebaseFunction/crud';
 import {hS, mS} from '../../../utils/metrics';
 //import { UserLoginScreenStyles } from '../../User/Create/styles';
-import {UserLoginScreenStyles} from '../Create/styles';
+import {UserLoginScreenStyles, UserOtpScreenStyles} from '../Create/styles';
 import PhoneInput from 'react-native-phone-number-input';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 //import AuthNavigation from '../../../navigation/AuthNavigation';
 
 const UserLoginScreen = () => {
@@ -47,7 +52,7 @@ const UserLoginScreen = () => {
   const [verificationId, setVerificationID] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [enterOTP, setEnterOTP] = useState(false);
-
+  
   const OTPref = useRef(null);
 
   const CloseEnterOTPFn = () => {
@@ -131,6 +136,13 @@ const UserLoginScreen = () => {
   const clearVerificationId = () => {
     setVerificationID('');
   };
+  const handleBackButtonPress = () => {
+    if (!enterOTP) {
+      navigation.goBack();
+    } else {
+      CloseEnterOTPFn();
+    }
+  };
 
   useEffect(() => {
     if (seconds > 0) {
@@ -170,6 +182,8 @@ const UserLoginScreen = () => {
   };
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView>
     <ImageBackground
       style={{width: '100%', height: '100%'}}
       source={IMAGES.LoginBgImage}
@@ -209,11 +223,16 @@ const UserLoginScreen = () => {
                 <PhoneInput
                   placeholder="Mobile Number"
                   placeholderColor="red"
-                  defaultValue={userPhone}
+                  textInputProps={{
+                    keyboardType: 'numeric',
+                    maxLength: 10,
+                  }}
+                  defaultValue={!enterOTP ? '' :userPhone}
                   defaultCode="IN"
                   layout="first"
                   onChangeFormattedText={val => {
                     if (val.replace(/\D/g, '').length <= 12) {
+                      // console.log('val',val);
                       setUserPhone(val);
                     } else {
                       ToastAndroid.show(
@@ -248,10 +267,14 @@ const UserLoginScreen = () => {
           ) : (
             <View style={UserLoginScreenStyles.otpBottom}>
               <View>
-                <Text
-                  style={[UserLoginScreenStyles.headingTxt, {paddingTop: 65}]}>
-                  6-digit Code
-                </Text>
+              <View style={UserOtpScreenStyles.title}>
+                      <TouchableOpacity onPress={handleBackButtonPress}>
+                        <Icon name="angle-left" size={32} color="#018352"/>
+                      </TouchableOpacity>
+                      <Text style={UserOtpScreenStyles.headingTxt}>
+                        6-digit Code
+                      </Text>
+                    </View>
                 <Text style={UserLoginScreenStyles.loginSubText}>
                   Please enter the code we’ve sent to{'\n'}
                   <Text style={UserLoginScreenStyles.phoneCodeText}>
@@ -318,6 +341,8 @@ const UserLoginScreen = () => {
         </View>
       </SafeAreaView>
     </ImageBackground>
+    </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
 
