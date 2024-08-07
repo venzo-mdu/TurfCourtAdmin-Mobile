@@ -127,7 +127,7 @@ const AdminHomeNavigation = () => {
         <>
           <Tab.Screen
             name={ADMINHOME}
-            component={IndexHome}
+            component={() => <IndexHome />}
             options={{
               tabBarLabel: ({focused}) => (
                 <Text
