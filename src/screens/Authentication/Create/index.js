@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useNavigation} from '@react-navigation/native';
-import React, {useEffect, useRef, useState} from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Image,
   ImageBackground,
@@ -13,29 +13,29 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {USERLOGIN, USERBOOTOM} from '../..';
-import {COLORS} from '../../../assets/constants/global_colors';
+import { USERLOGIN, USERBOOTOM } from '../..';
+import { COLORS } from '../../../assets/constants/global_colors';
 import {
   PoppinsMedium,
   PoppinsRegular,
   PoppinsSemiBold,
 } from '../../../assets/constants/global_fonts';
-import {IMAGES} from '../../../assets/constants/global_images';
-import {StatusBarCommon} from '../../../components';
-import {signin} from '../../../function/auth';
-import {hS, mS} from '../../../utils/metrics';
-import {UserLoginScreenStyles} from './styles';
+import { IMAGES } from '../../../assets/constants/global_images';
+import { StatusBarCommon } from '../../../components';
+import { signin } from '../../../function/auth';
+import { hS, mS } from '../../../utils/metrics';
+import { UserLoginScreenStyles } from './styles';
 import {
   mobilesignup,
   signinverifyotp,
   signupformobile,
 } from '../../../firebase/firebaseFunction/auth';
 import OTPTextInput from 'react-native-otp-textinput';
-import {FirebaseRecaptchaVerifierModal} from 'expo-firebase-recaptcha';
-import {firebaseConfig} from '../../../firebase/firebase';
+import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
+import { firebaseConfig } from '../../../firebase/firebase';
 import PhoneInput from 'react-native-phone-number-input';
-import {Dropdown} from 'react-native-element-dropdown';
-import {CheckBox} from 'react-native-elements';
+import { Dropdown } from 'react-native-element-dropdown';
+import { CheckBox } from 'react-native-elements';
 
 const UserCreateScreen = props => {
   const navigation = useNavigation();
@@ -59,8 +59,8 @@ const UserCreateScreen = props => {
   const OTPref = useRef(null);
 
   const data = [
-    {label: 'Yes', value: true},
-    {label: 'No', value: false},
+    { label: 'Yes', value: true },
+    { label: 'No', value: false },
   ];
 
   const CloseEnterOTPFn = () => {
@@ -183,9 +183,9 @@ const UserCreateScreen = props => {
   };
 
   return (
-    <ScrollView contentContainerStyle={{flexGrow: 1}}>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <ImageBackground
-        style={{width: '100%', height: '100%'}}
+        style={{ width: '100%', height: '100%' }}
         source={IMAGES.LoginBgImage}>
         <StatusBarCommon color={COLORS.PRIMARY} />
         <SafeAreaView style={UserLoginScreenStyles.safe}>
@@ -205,14 +205,14 @@ const UserCreateScreen = props => {
                 <Text style={UserLoginScreenStyles.loginSubText}>
                   Sign-Up to your account
                 </Text>
-                <View style={{paddingTop: '15%'}}>
+                <View style={{ paddingTop: '15%' }}>
                   <Text style={UserLoginScreenStyles.signUpViewText}>
                     User Name
                   </Text>
                   <View
                     style={[
                       UserLoginScreenStyles.phoneBox,
-                      {marginBottom: hS(30)},
+                      { marginBottom: hS(30) },
                     ]}>
                     <TextInput
                       value={userName}
@@ -238,7 +238,7 @@ const UserCreateScreen = props => {
                   <View
                     style={[
                       UserLoginScreenStyles.phoneBox,
-                      {marginBottom: hS(30)},
+                      { marginBottom: hS(30) },
                     ]}>
                     <TextInput
                       value={userEmail}
@@ -263,7 +263,7 @@ const UserCreateScreen = props => {
                   <Text style={UserLoginScreenStyles.signUpViewText}>
                     Mobile Number
                   </Text>
-                  <View style={{marginBottom: hS(30)}}>
+                  <View style={{ marginBottom: hS(30) }}>
                     <PhoneInput
                       placeholder="Mobile Number"
                       defaultValue={userPhone}
@@ -368,7 +368,7 @@ const UserCreateScreen = props => {
                   style={UserLoginScreenStyles.otpCloseBtn}>
                   <Image
                     source={IMAGES.CloseB}
-                    style={{width: hS(10), height: hS(10)}}
+                    style={{ width: hS(10), height: hS(10) }}
                     resizeMode="contain"
                   />
                 </TouchableOpacity>
@@ -377,9 +377,6 @@ const UserCreateScreen = props => {
 
                 <View>
                   <View style={UserLoginScreenStyles.welcomeContainer}>
-                    <Text style={UserLoginScreenStyles.headingTxt}>
-                      6-digit Code
-                    </Text>
                     <Text style={UserLoginScreenStyles.loginSubText}>
                       Please enter the code we’ve sent to \n{' '}
                       <Text style={UserLoginScreenStyles.phoneCodeText}>

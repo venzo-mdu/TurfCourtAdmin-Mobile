@@ -257,3 +257,17 @@ export const UserLoginScreenStyles = StyleSheet.create({
     fontFamily: 'Outfit-Medium',
   },
 });
+export const UserOtpScreenStyles = StyleSheet.create({
+  title:{
+    flexDirection: 'row',
+    marginVertical: 20,
+  },
+  headingTxt: {
+    lineHeight: 27.72,
+    fontSize: hS(24),
+    marginVertical: 5,
+    color: COLORS.PrimaryColor,
+    fontFamily: 'Outfit-Regular',
+    marginLeft:70
+  },
+});

@@ -10,6 +10,8 @@ import {IMAGES} from '../assets/constants/global_images';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {COLORS} from '../assets/constants/global_colors';
+import { ADMINARENA, ADMINHOME } from '../screens';
+import IndexHome from '../screens/courtAdmin/Home/indexHome';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -126,8 +128,8 @@ export default function AdminTopTabNavigation({route, navigation}) {
           shadowOpacity: 0,
           borderBottomWidth: 0,
         },
-        headerLeft: ({navigation}) => (
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => navigation.navigate(IndexHome)}>
             <Icon name="angle-left" size={32} color="#4CA181" />
           </TouchableOpacity>
         ),

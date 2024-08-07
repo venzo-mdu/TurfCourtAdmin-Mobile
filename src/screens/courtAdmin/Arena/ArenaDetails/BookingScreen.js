@@ -85,9 +85,11 @@ const BookingScreen = () => {
 
       setdata(events);
 
-      const finalData = findElementsWithSameProp(response?.data);
-      console.log('finalData', finalData);
-      setFilterData(finalData);
+      // const finalData = findElementsWithSameProp(response?.data);
+      // console.log('finalData', finalData);
+      // setFilterData(finalData);
+      const groupedData = Object.values(groupByBookId(response?.data));
+      setFilterData(groupedData);
     }
   };
 
@@ -110,27 +112,35 @@ const BookingScreen = () => {
 
   const handleChange = value => {
     setTab(value);
+    console.log('value',value);
 
     if (value == 'Bookings') {
+      console.log('hi');
       const tableData = data?.filter(
         item => item.status === 'Accepted' || item.status === 'Awaiting',
       );
       const finalData = tableData;
-      setFilterData(finalData);
+      console.log('Bookings data length--------------', tableData.length);
+
+      const groupedData = Object.values(groupByBookId(finalData));
+      setFilterData(groupedData);
       //console.log('Bookings data length--------------', finalData.length);
     }
     else if (value == 'Completed') {
       const tableData = data?.filter(item => item.status === 'Completed');
 
       const finalData = tableData;
-      setFilterData(finalData);
+      console.log('Completed data length--------------', tableData.length);
+      const groupedData = Object.values(groupByBookId(finalData));
+      setFilterData(groupedData);
       //console.log('Completed data length--------------', finalData.length);
     }
     else if (value == 'On-Going') {
       const tableData = data?.filter(item => item.status === 'On-going');
       const finalData = tableData;
       // console.log('tableData', finalData);
-      setFilterData(finalData);
+      const groupedData = Object.values(groupByBookId(finalData));
+      setFilterData(groupedData);
       //console.log('On-Going data length--------------', finalData.length);
     }
     else if (value == 'Cancelled') {
@@ -138,7 +148,8 @@ const BookingScreen = () => {
         item => item.status === 'Cancelled' || item.status === 'Canceled',
       );
       const finalData = tableData;
-      setFilterData(finalData);
+      const groupedData = Object.values(groupByBookId(finalData));
+      setFilterData(groupedData);
       // console.log('Cancelled data length--------------', finalData.length);
     }
   };
@@ -262,6 +273,8 @@ const BookingScreen = () => {
     const { backgroundColor, color, icon } = getStatusColor(item[0].status);
     const { BookId, user_name, ground_name, court_name, amount } = item[0];
     const timings = item.map(i => formatDateTime(i));
+    const total = item.reduce((acc, curr) => acc + (parseInt(curr.amount) || 0), 0); // Calculate total amount
+
 
     return (
       <View style={styles.slide}>
@@ -336,7 +349,7 @@ const BookingScreen = () => {
               fontSize: 16,
               paddingBottom: 25,
             }}>
-            ${amount}
+            {'₹' + total}
           </Text>
         </View>
         {/* <Text>{BookId}</Text> */}
@@ -353,9 +366,7 @@ const BookingScreen = () => {
       </View>
     );
   };
-
-  const groupedData = Object.values(groupByBookId(data));
-
+ 
   return (
     <View style={styles.container}>
       <View style={styles.tabContainer}>
@@ -383,7 +394,7 @@ const BookingScreen = () => {
         <>
 
           <FlatList
-            data={groupedData}
+            data={filterData}
             renderItem={renderItem}
             keyExtractor={(item) => item[0]?.BookId.toString()}
           />
@@ -527,6 +538,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 15,
+    paddingTop:5,
   },
   titleCancelView: {
     fontSize: 18,

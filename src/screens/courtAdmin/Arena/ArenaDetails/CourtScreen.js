@@ -1544,14 +1544,14 @@ console.log("delSlot", delSlot)
     >
       <View style={styles.modalCreateCourtOverlay}>
         <View style={styles.modalCreateCourtContainer}>
-          <View style={styles.headerCreateCourt}>
+          {/* <View style={styles.headerCreateCourt}> */}
             <Text style={styles.modalCreateCourtText}>
               Are you sure you want to Create a Court?
             </Text>
             <TouchableOpacity onPress={() => setModalOpen(false)}>
               <Text style={styles.closeCreateCourtButton}>X</Text>
             </TouchableOpacity>
-          </View>
+          {/* </View> */}
           <View style={styles.buttonCreateCourtContainer}>
             <TouchableOpacity
               style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
@@ -1645,15 +1645,16 @@ console.log("delSlot", delSlot)
     >
       <View style={styles.modalCreateCourtOverlay}>
         <View style={styles.modalCreateCourtContainer}>
-          <View style={styles.headerCreateCourt}>
+          {/* <View style={styles.headerCreateCourt}> */}
+          <TouchableOpacity onPress={() => setCreateSlotWarning(false)}>
+              <Text style={styles.closeCreateCourtButton}>X</Text>
+            </TouchableOpacity>
             <Text style={styles.modalCreateCourtText}>
             Cannot create slot as another slot already exists in the chosen
             time range.
             </Text>
-            <TouchableOpacity onPress={() => setCreateSlotWarning(false)}>
-              <Text style={styles.closeCreateCourtButton}>X</Text>
-            </TouchableOpacity>
-          </View>
+           
+          {/* </View> */}
           {/* <View style={styles.buttonCreateCourtContainer}>
             <TouchableOpacity
               style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
@@ -1963,7 +1964,9 @@ const styles = StyleSheet.create({
   },
   closeCreateCourtButton: {
     color: 'red',
-    fontSize: 16,
+    fontSize: 18,
+    cursor: 'pointer',
+    textAlign: 'right',
   },
   buttonCreateCourtContainer: {
     flexDirection: 'row',
