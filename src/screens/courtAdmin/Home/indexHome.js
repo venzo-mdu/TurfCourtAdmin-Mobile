@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ToastAndroid,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -32,8 +33,20 @@ import {COLORS} from '../../../assets/constants/global_colors';
 import UpcomingEventsSlider from '../Arena/UpcomingEventsSlider';
 import {IMAGES} from '../../../assets/constants/global_images';
 import {ADMINTOPTABNAVIGATION} from '../..';
-import {getgroundData} from '../../../firebase/firebaseFunction/groundDetails';
+import {
+  getEventdetailsByArenas,
+  getgroundData,
+  getgroundDataForOwner,
+} from '../../../firebase/firebaseFunction/groundDetails';
 import GroundEventsSlider from '../Arena/groundEventSlider';
+import moment from 'moment';
+import {findElementsWithSameProp} from '../../../utils/helpers';
+import _ from 'lodash';
+import Carousel from 'react-native-snap-carousel';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import SlotModal from '../Arena/slotModal';
+import {HomePageEventSlider} from '../../../components/homePageEventSlider';
+import Feather from 'react-native-vector-icons/Feather';
 
 const screenWidth = Dimensions.get('window').width;
 const responsivePadding = screenWidth * 0.03;
@@ -60,7 +73,16 @@ const IndexHome = () => {
   const route = useRoute();
   const {refresh} = route.params || {};
   const {refreshUpcoming} = route.params || {};
-  //console.log("selectedCity", selectedCity);
+
+  //New Changes from WEB
+  const [newGroundData, setNewGroundData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [noData, setNoData] = useState(false);
+  const [approvedBookings, setApprovedBookings] = useState([]);
+  const [waitingBookings, setWaitingBookings] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const groundDetailsView = groundData.filter(
     ground =>
@@ -74,13 +96,43 @@ const IndexHome = () => {
   );
   // console.log("filteredGrounds", filteredGrounds);
 
+  // const getgroundDetails = async () => {
+  //   let response = await getgroundData(userId);
+  //   setGrounddata1(response);
+  // };
+
   const getgroundDetails = async () => {
-    let response = await getgroundData(userId);
-    setGrounddata1(response);
+    try {
+      if (!loading && _.isEmpty(groundData) && !noData && userId != null) {
+        setLoading(true);
+
+        let response = await getgroundDataForOwner(userId);
+        setNoData(response?.length === 0);
+        setLoading(false);
+        const groundIds = response?.map(r => r.ground_id);
+        if (!_.isEmpty(groundIds)) {
+          await eventData(groundIds);
+        }
+
+        setNewGroundData(response);
+      }
+    } catch (err) {
+      console.log('Error: ', err);
+      if (Platform.OS === 'android') {
+        ToastAndroid.show(
+          'Unable to load data. Please contact TurfMama',
+          ToastAndroid.SHORT,
+        );
+      } else {
+        AlertIOS.alert('Unable to load data. Please contact TurfMama');
+      }
+    }
   };
 
   useEffect(() => {
-    getgroundDetails();
+    if (userId !== null) {
+      getgroundDetails();
+    }
   }, [userId]);
 
   useEffect(() => {
@@ -256,6 +308,68 @@ const IndexHome = () => {
     }
   };
 
+  const eventData = async groundIds => {
+    setLoading(true);
+
+    let startDate = moment().format('YYYY-MM-DDTHH:mm');
+    let endOfMonth = moment().endOf('month').format('YYYY-MM-DDTHH:mm');
+
+    let statusValue = ['Accepted', 'Awaiting'];
+
+    const otherFilters = [
+      {key: 'status', operator: 'in', value: statusValue},
+      {key: 'start', operator: '>=', value: startDate},
+      {key: 'end', operator: '<=', value: endOfMonth},
+    ];
+    if (otherFilters && otherFilters.length > 0) {
+      const response1 = await getEventdetailsByArenas({
+        groundIds: groundIds?.slice(0, 15),
+        otherFilters,
+        order: {key: 'start', dir: 'asc'},
+      });
+
+      const response2 = await getEventdetailsByArenas({
+        groundIds: groundIds?.slice(15, groundIds?.length),
+        otherFilters,
+        order: {key: 'start', dir: 'asc'},
+      });
+
+      const data = _.uniqBy(
+        [...response1?.data, ...response2?.data],
+        'event_id',
+      );
+
+      if (data) {
+        setApprovedBookings(
+          findElementsWithSameProp(
+            data.filter(item => item.status === 'Accepted'),
+          ),
+        );
+        setWaitingBookings(
+          findElementsWithSameProp(
+            data.filter(item => item.status === 'Awaiting'),
+          ),
+        );
+      }
+    }
+
+    setLoading(false);
+  };
+
+  const handleOpenModal = item => {
+    setSelectedSlot(item);
+    setModalVisible(true);
+  };
+
+  const renderItem = ({item, index}) => (
+    <HomePageEventSlider
+      key={index}
+      bookingItem={item}
+      type={'Accepted'}
+      showShort={true}
+    />
+  );
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <StatusBarCommon color={COLORS.PRIMARY} />
@@ -325,11 +439,60 @@ const IndexHome = () => {
           {/* {selectedCity ? <Text style={styles.selected}>Selected City: {selectedCity}</Text> : null} */}
         </View>
 
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            paddingBottom: 10,
+            paddingTop: 20,
+          }}>
+          <Text style={styles.title}>Upcoming Booking</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Text
+              style={{
+                fontFamily: 'Outfit-Regular',
+                fontSize: 16,
+                lineHeight: 20.16,
+                color: COLORS.PrimaryColor,
+              }}>
+              See All
+            </Text>
+            <Feather
+              name="chevron-right"
+              size={24}
+              color={COLORS.PrimaryColor}
+            />
+          </View>
+        </View>
+
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'green',
+            borderRadius: 8,
+          }}>
+          <Carousel
+            loop={true}
+            data={approvedBookings}
+            renderItem={renderItem}
+            sliderWidth={screenWidth}
+            itemWidth={screenWidth * 0.9}
+            // onSnapToItem={index => setActiveIndex(index)}
+          />
+        </View>
+        <View style={styles.pagination}>
+          <Text style={styles.paginationText}>
+            {activeIndex + 1} / {approvedBookings.length}
+          </Text>
+        </View>
+
         <ApprovalWaitingEventsSlider
           uid={userId}
-          refreshUpcoming={refreshUpcoming}
+          refreshUpcoming={approvedBookings}
         />
-        <UpcomingEventsSlider uid={userId} refreshUpcoming={refreshUpcoming} />
+        {/* <UpcomingEventsSlider uid={userId} refreshUpcoming={waitingBookings} /> */}
+
         {/* My Arena */}
         {groundData1.length > 0 ? (
           <>
@@ -507,6 +670,24 @@ const styles = StyleSheet.create({
     right: 0,
     width: 80,
     height: 80,
+  },
+  pagination: {
+    alignSelf: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    backgroundColor: '#000',
+    borderRadius: 14,
+    marginTop: 10,
+  },
+  paginationText: {
+    color: '#ffffff',
+    fontSize: 12,
+  },
+  title: {
+    fontSize: 16,
+    fontFamily: 'Outfit-Medium',
+    color: '#000',
   },
 });
 
