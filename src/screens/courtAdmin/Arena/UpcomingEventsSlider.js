@@ -33,7 +33,6 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
   const [selectedSlot, setSelectedSlot] = useState(null);
 
   // console.log("filterData Upcoming", filterData.length, filterData)
-  //console.log("selectedEventData Upcoming", selectedEventData)
   const [filter, setFilter] = useState({
     id: 'This Month',
     value: 'This Month',
@@ -77,7 +76,7 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
     );
 
     const finalData = findElementsWithSameProp(currentTimeData);
-    console.log('')
+    console.log('');
     setfilterData(finalData);
     setLoading(false);
   };

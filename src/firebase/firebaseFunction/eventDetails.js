@@ -7,31 +7,29 @@ import {
   FetchDataById,
   InsertData,
   UpdateData,
-  fetchBulkData
+  fetchBulkData,
 } from './crud';
 import {userData} from './userDetails';
 import {getgroundDataById, getreview} from './groundDetails';
 import {v4} from 'uuid';
 
-
-
-export const createNewBlockEvent = async (event_data) => {
+export const createNewBlockEvent = async event_data => {
   try {
     event_data?.map(async (item, Outerindex) => {
-      console.log(item,"item create");
-      let ground_data = await FetchDataById("ground_details", item?.ground_id);
-      console.log(ground_data,"ground_data create");
-      let user_data = await FetchDataById("user", item?.user_id);
-      console.log(user_data,"user_data create");
+      console.log(item, 'item create');
+      let ground_data = await FetchDataById('ground_details', item?.ground_id);
+      console.log(ground_data, 'ground_data create');
+      let user_data = await FetchDataById('user', item?.user_id);
+      console.log(user_data, 'user_data create');
       item.ground_name = ground_data?.groundname;
       item.user_name = user_data?.username;
       item.createdAt = new Date();
-      item.status = "Blocked";
+      item.status = 'Blocked';
       item.owner_id = ground_data?.owner;
-      await InsertData("events", item);
+      await InsertData('events', item);
     });
 
-    return { status: "Success" };
+    return {status: 'Success'};
   } catch (error) {
     return error;
   }
@@ -39,7 +37,7 @@ export const createNewBlockEvent = async (event_data) => {
 
 export const getEventdetailsByCourt = async ({
   courtIds,
-  order = { key: "start", dir: "asc" },
+  order = {key: 'start', dir: 'asc'},
   limitNumber = null,
   otherFilters,
 }) => {
@@ -49,21 +47,21 @@ export const getEventdetailsByCourt = async ({
   try {
     if (courtIds != null) {
       let data = await fetchBulkData(
-        "events",
-        "court_id",
-        "in",
+        'events',
+        'court_id',
+        'in',
         courtIds,
         order,
         limitNumber,
-        otherFilters
+        otherFilters,
       );
 
-      return { status: "success", data: data };
+      return {status: 'success', data: data};
     } else {
-      return { status: "failure", data: "No Login User" };
+      return {status: 'failure', data: 'No Login User'};
     }
   } catch (error) {
-    return { status: "failure", data: error };
+    return {status: 'failure', data: error};
   }
 };
 
@@ -128,39 +126,39 @@ export const createNewEvent = async event_data => {
 export const getEventdetailsByType = async (
   uid,
   usertype,
-  order = { key: "start", dir: "asc" },
+  order = {key: 'start', dir: 'asc'},
   limitNumber = null,
-  otherFilters
+  otherFilters,
 ) => {
   if (!otherFilters) {
     return;
   }
   try {
     const fieldName =
-      usertype === "owner"
-        ? "ground_id"
-        : usertype === "owners"
-        ? "owner_id"
-        : "user_id";
+      usertype === 'owner'
+        ? 'ground_id'
+        : usertype === 'owners'
+        ? 'owner_id'
+        : 'user_id';
     const fieldValue = uid;
     console.log('fieldName: ', fieldName, fieldValue);
     if (uid != null) {
       let data = await fetchBulkData(
-        "events",
+        'events',
         fieldName,
-        "==",
+        '==',
         fieldValue,
         order,
         limitNumber,
-        otherFilters
+        otherFilters,
       );
 
-      return { status: "success", data: data };
+      return {status: 'success', data: data};
     } else {
-      return { status: "failure", data: "No Login User" };
+      return {status: 'failure', data: 'No Login User'};
     }
   } catch (error) {
-    return { status: "failure", data: error };
+    return {status: 'failure', data: error};
   }
 };
 
@@ -170,7 +168,7 @@ export const getcourtevent = async court_id => {
       let events = await FetchData('events', 'court_id', court_id);
       // const filteredEvent = events?.filter(item => { return new Date(item?.start).toDateString() == new Date(date).toDateString() })
       if (events) {
-       // console.log('events', events, 'courtDataBySlot');
+        // console.log('events', events, 'courtDataBySlot');
 
         return events;
       } else {
