@@ -18,6 +18,7 @@ const CommonTextInput = ({label, value, onChangeText, keyboardType}) => {
 const styles = StyleSheet.create({
   container: {
     marginBottom: 20,
+    width:'100%',
   },
   label: {
     fontSize: 16,

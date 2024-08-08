@@ -111,8 +111,10 @@ function CustomTabBar({state, descriptors, navigation, stackNavigation}) {
   );
 }
 
-export default function AdminTopTabNavigation({route, navigation}) {
+export default function AdminTopTabNavigation({route, navigation,isAddArena}) {
+  console.log(isAddArena,'flase-----')
   const {groundID} = route.params || {};
+
   return (
     <Tab.Navigator
       initialRouteName="Add Arena"

@@ -289,7 +289,7 @@ const ProfileView = () => {
                         {/* <TouchableOpacity onPress={handleSave}>
                             <Text style={styles.saveButton}>Save Changes</Text>
                         </TouchableOpacity> */}
-                        <View style={{paddingTop:20, paddingButton:20}}>
+                        <View style={{paddingTop:20, paddingBottom:20,width:'100%'}}>
                         <TouchableOpacity
         style={styles.deactivateButtonDeactivateButton}
         onPress={() => setOpen(true)}
@@ -408,6 +408,7 @@ const styles = StyleSheet.create({
   buttonTextCartData: {
     color: '#FFFFFF',
     fontSize: 14,
+    marginVertical:8,
   },
   footerButtonsCartData: {
     flexDirection: 'row',
@@ -427,19 +428,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    width: '48%',
+    width: '100%',
     alignItems: 'center',
   },
   deactivateButtonDeactivateButton: {
     backgroundColor: '#E50000',
     padding: 10,
     borderRadius: 8,
-    width: Dimensions.get('window').width * 0.8,
   },
   buttonTextDeactivateButton: {
     color: '#FFFFFF',
     fontSize: 14,
     textAlign: 'center',
+    marginVertical:8,
   },
 
   /* Modal View Of Deactivate Account */

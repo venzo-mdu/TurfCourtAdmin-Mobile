@@ -6,6 +6,8 @@ import {
   FlatList,
   TouchableOpacity,
   Modal,
+  ActivityIndicator,
+  SafeAreaView
 } from 'react-native';
 
 import React, { useEffect, useState } from 'react';
@@ -18,13 +20,14 @@ import { getEventdetailsByType, separateConsecutiveSecondElements, } from '../..
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 
-const BookingScreen = () => {
+const BookingScreen = ({ groundID }) => {
 
   const [tab, setTab] = useState('Bookings');
   const [statusopen, setstatusopen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [filterData, setFilterData] = useState([]);
   const [uid, setUid] = useState('');
-  const [selectedEventData, setSelectedEventData] = useState();
+  const [selectedEventData, setSelectedEventData] = useState([]);
   const [data, setdata] = useState([]);
   const [finalData, setFinalData] = useState([]);
   const [nonfilter, setNonFilter] = useState([]);
@@ -49,6 +52,7 @@ const BookingScreen = () => {
     if (uid == null) {
       navigate("/login");
     }
+    console.log('groundID--------', groundID);
     let startDate = moment().format("YYYY-MM-DDTHH:mm");
     let endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
 
@@ -84,12 +88,15 @@ const BookingScreen = () => {
       const events = response?.data;
 
       setdata(events);
+   
+      
 
       // const finalData = findElementsWithSameProp(response?.data);
       // console.log('finalData', finalData);
       // setFilterData(finalData);
       const groupedData = Object.values(groupByBookId(response?.data));
       setFilterData(groupedData);
+      setLoading(true);
     }
   };
 
@@ -112,7 +119,7 @@ const BookingScreen = () => {
 
   const handleChange = value => {
     setTab(value);
-    console.log('value',value);
+    console.log('value', value);
 
     if (value == 'Bookings') {
       console.log('hi');
@@ -158,19 +165,21 @@ const BookingScreen = () => {
     if (tab == 'Bookings') {
       console.log('Hi');
       console.log('edit', data);
-      setSelectedEventData((prevSelectedEventData = []) => {
-        const isArray = Array.isArray(prevSelectedEventData);
-        const safePrevSelectedEventData = isArray ? prevSelectedEventData : [];
-        const isAlreadyPresent = safePrevSelectedEventData.some(
-          event => event.BookId === data.BookId,
-        );
+      setSelectedEventData(data);
+      // setstatusopen(true); 
+      // setSelectedEventData((prevSelectedEventData = []) => {
+      //   const isArray = Array.isArray(prevSelectedEventData);
+      //   const safePrevSelectedEventData = isArray ? prevSelectedEventData : [];
+      //   const isAlreadyPresent = safePrevSelectedEventData.some(
+      //     event => event.BookId === data.BookId,
+      //   );
 
-        if (!isAlreadyPresent) {
-          return [data];
-        }
+      //   if (!isAlreadyPresent) {
+      //     return [data];
+      //   }
 
-        return safePrevSelectedEventData;
-      });
+      //   return safePrevSelectedEventData;
+      // });
       setstatusopen(true);
     }
   };
@@ -230,13 +239,25 @@ const BookingScreen = () => {
           .padStart(2, '0')} ${ampm2}`;
   };
 
+  const groupTimingsByDate = timings => {
+    const grouped = timings.reduce((acc, timing) => {
+      const dateKey = timing.split(' | ')[0];
+      if (!acc[dateKey]) {
+        acc[dateKey] = [];
+      }
+      acc[dateKey].push(timing.split(' | ')[1]);
+      return acc;
+    }, {});
+    return grouped;
+  };
+
   const groupByBookId = (data) => {
     return data.reduce((acc, item) => {
       if (!acc[item.BookId]) {
         acc[item.BookId] = [];
       }
       acc[item.BookId].push(item);
-      
+
       return acc;
     }, {});
   };
@@ -273,8 +294,8 @@ const BookingScreen = () => {
     const { backgroundColor, color, icon } = getStatusColor(item[0].status);
     const { BookId, user_name, ground_name, court_name, amount } = item[0];
     const timings = item.map(i => formatDateTime(i));
+    const groupedTimings = groupTimingsByDate(timings);
     const total = item.reduce((acc, curr) => acc + (parseInt(curr.amount) || 0), 0); // Calculate total amount
-
 
     return (
       <View style={styles.slide}>
@@ -308,7 +329,7 @@ const BookingScreen = () => {
             </Text>
           </View>
           {tab === 'Bookings' && (
-            <TouchableOpacity onPress={() => handlestatusEdit(item[0])}>
+            <TouchableOpacity onPress={() => handlestatusEdit(item)}>
               <Entypo name="dots-three-vertical" size={20} color="#A8A8A8" />
             </TouchableOpacity>
           )}
@@ -352,23 +373,34 @@ const BookingScreen = () => {
             {'₹' + total}
           </Text>
         </View>
-        {/* <Text>{BookId}</Text> */}
-        {timings.map((timing, index) => (
-          <Text
-            key={index}
-            style={{
-              fontFamily: 'Outfit-Regular',
-              color: '#192335',
-            }}>
-            {timing}
-          </Text>
+        {Object.keys(groupedTimings).map((date, index) => (
+          <View key={index}>
+            <Text
+              style={{
+                fontFamily: 'Outfit-Regular',
+                color: '#192335',
+              }}>
+              {date}
+            </Text>
+            {groupedTimings[date].map((time, idx) => (
+              <Text
+                key={idx}
+                style={{
+                  fontFamily: 'Outfit-Regular',
+                  color: '#192335',
+                }}>
+                {time}
+              </Text>
+            ))}
+          </View>
         ))}
       </View>
     );
   };
- 
+
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.tabContainer}>
         {['Bookings', 'Completed', 'On-Going', 'Cancelled'].map(tabName => (
           <TouchableOpacity
@@ -390,27 +422,34 @@ const BookingScreen = () => {
         ))}
       </View>
       {/* {console.log('filterDataaaa', filterData)} */}
-      {filterData.length !== 0 ? (
-        <>
-
+      
+      {!loading ? (
+        <ActivityIndicator style={{
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+          height: '100%',
+        }}size="large"/>
+      ) : (
+        filterData.length !== 0 ? (
           <FlatList
             data={filterData}
             renderItem={renderItem}
             keyExtractor={(item) => item[0]?.BookId.toString()}
           />
-        </>
-      ) : (
-        <View
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: '100%',
-            height: '100%',
-          }}>
-          <Text style={{ fontFamily: 'Outfit-Medium', color: COLORS.PRIMARY }}>
-            No {tab} bookings found.
-          </Text>
-        </View>
+        ) : (
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              height: '100%',
+            }}>
+            <Text style={{ fontFamily: 'Outfit-Medium', color: COLORS.PRIMARY }}>
+              No {tab} bookings found.
+            </Text>
+          </View>
+        )
       )}
       <Modal visible={statusopen} transparent={true}>
 
@@ -423,19 +462,21 @@ const BookingScreen = () => {
               <Text style={styles.closeButtonCancelView}>x</Text>
             </TouchableOpacity>
             <Text style={styles.titleCancelView}>
-              Select the event to change the status
+              Select slots to Approve or reject
             </Text>
-            <View style={styles.statusContainer}>
+
+            <View style={styles.itemContainer}>
               {selectedEventData?.map((item, index) => {
                 let gttime = getTimeFormatted(item?.start);
                 return (
-                  <View key={index}>
+                  <View key={index} style={styles.statusContainer}>
                     <Text>{gttime.Time}</Text>
                     <Text>₹{item.amount}</Text>
                   </View>
                 );
               })}
             </View>
+
             <View style={styles.footerButtons}>
               <TouchableOpacity
                 onPress={() => {
@@ -454,7 +495,7 @@ const BookingScreen = () => {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -462,6 +503,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+    paddingVertical:20,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -485,14 +527,14 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: COLORS.WHITE,
   },
- 
+
   slide: {
     backgroundColor: '#fff',
     borderRadius: 8,
     margin: 10,
     padding: 15,
   },
- 
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -511,15 +553,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.verticalBar,
     marginHorizontal: 8,
   },
- 
+
   text: {
     fontSize: 16,
     color: '#000000',
     padding: 5,
   },
- 
+
   /* Modal Content For Cancel View */
- 
+
   statusContainer: {
     borderWidth: 1,
     borderColor: 'green',
@@ -538,7 +580,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 15,
-    paddingTop:5,
+    paddingTop: 5,
   },
   titleCancelView: {
     fontSize: 18,
@@ -552,13 +594,18 @@ const styles = StyleSheet.create({
     cursor: 'pointer',
     textAlign: 'right',
   },
- 
+
   footerButtons: {
+    width: Dimensions.get('window').width * 0.36,
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginVertical: 10,
-    paddingHorizontal: 80,
+    alignSelf: 'center',
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    gap:5,
   },
   paidButton: {
     backgroundColor: 'green',
