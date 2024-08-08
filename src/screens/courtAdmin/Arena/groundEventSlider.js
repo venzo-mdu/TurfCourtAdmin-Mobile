@@ -128,25 +128,9 @@ const GroungEventSlider = ({filteredGrounds, userId, onGroundsUpdated}) => {
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
-              paddingBottom: 10,
+              paddingBottom: 5,
             }}>
             <Text style={styles.HeadingTitle}>My Arena</Text>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text
-                style={{
-                  fontFamily: 'Outfit-Regular',
-                  fontSize: 16,
-                  lineHeight: 20.16,
-                  color: COLORS.PrimaryColor,
-                }}>
-                See All
-              </Text>
-              <Feather
-                name="chevron-right"
-                size={24}
-                color={COLORS.PrimaryColor}
-              />
-            </View>
           </View>
           <View style={{justifyContent: 'center', alignItems: 'center'}}>
             <Carousel

@@ -83,6 +83,7 @@ const IndexHome = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [activeWaitIndex, setActiveWaitIndex] = useState(0);
 
   const groundDetailsView = groundData.filter(
     ground =>
@@ -362,12 +363,25 @@ const IndexHome = () => {
   };
 
   const renderItem = ({item, index}) => (
-    <HomePageEventSlider
-      key={index}
-      bookingItem={item}
-      type={'Accepted'}
-      showShort={true}
-    />
+    <View style={{backgroundColor: '#', borderRadius: 8}}>
+      <HomePageEventSlider
+        key={index}
+        bookingItem={item}
+        type={'Accepted'}
+        showShort={true}
+      />
+    </View>
+  );
+
+  const renderItem1 = ({item, index}) => (
+    <View style={{backgroundColor: '#', borderRadius: 8}}>
+      <HomePageEventSlider
+        key={index}
+        bookingItem={item}
+        type={'Awaiting'}
+        showShort={true}
+      />
+    </View>
   );
 
   return (
@@ -439,68 +453,83 @@ const IndexHome = () => {
           {/* {selectedCity ? <Text style={styles.selected}>Selected City: {selectedCity}</Text> : null} */}
         </View>
 
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            paddingBottom: 10,
-            paddingTop: 20,
-          }}>
-          <Text style={styles.title}>Upcoming Booking</Text>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Text
+        {approvedBookings.length !== 0 ? (
+          <View>
+            <View
               style={{
-                fontFamily: 'Outfit-Regular',
-                fontSize: 16,
-                lineHeight: 20.16,
-                color: COLORS.PrimaryColor,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                paddingBottom: 10,
+                paddingTop: 20,
               }}>
-              See All
-            </Text>
-            <Feather
-              name="chevron-right"
-              size={24}
-              color={COLORS.PrimaryColor}
-            />
+              <Text style={styles.title}>Upcoming Booking</Text>
+            </View>
+            <View
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 8,
+              }}>
+              <Carousel
+                loop={true}
+                data={approvedBookings}
+                renderItem={renderItem}
+                sliderWidth={screenWidth}
+                itemWidth={screenWidth * 0.9}
+                onSnapToItem={index => setActiveIndex(index)}
+              />
+            </View>
+            <View style={styles.pagination}>
+              <Text style={styles.paginationText}>
+                {activeIndex + 1} / {approvedBookings.length}
+              </Text>
+            </View>
           </View>
-        </View>
+        ) : null}
 
-        <View
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'green',
-            borderRadius: 8,
-          }}>
-          <Carousel
-            loop={true}
-            data={approvedBookings}
-            renderItem={renderItem}
-            sliderWidth={screenWidth}
-            itemWidth={screenWidth * 0.9}
-            // onSnapToItem={index => setActiveIndex(index)}
-          />
-        </View>
-        <View style={styles.pagination}>
-          <Text style={styles.paginationText}>
-            {activeIndex + 1} / {approvedBookings.length}
-          </Text>
-        </View>
-
-        <ApprovalWaitingEventsSlider
-          uid={userId}
-          refreshUpcoming={approvedBookings}
-        />
-        {/* <UpcomingEventsSlider uid={userId} refreshUpcoming={waitingBookings} /> */}
+        {waitingBookings.length !== 0 ? (
+          <View>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                paddingBottom: 10,
+                paddingTop: 20,
+              }}>
+              <Text style={styles.title}>Awaiting Booking</Text>
+            </View>
+            <View
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 8,
+              }}>
+              <Carousel
+                loop={true}
+                data={waitingBookings}
+                renderItem={renderItem1}
+                sliderWidth={screenWidth}
+                itemWidth={screenWidth * 0.9}
+                onSnapToItem={index => setActiveWaitIndex(index)}
+              />
+            </View>
+            <View style={styles.pagination}>
+              <Text style={styles.paginationText}>
+                {activeWaitIndex + 1} / {waitingBookings.length}
+              </Text>
+            </View>
+          </View>
+        ) : null}
 
         {/* My Arena */}
-        {groundData1.length > 0 ? (
+        {newGroundData.length > 0 ? (
           <>
-            <GroundEventsSlider filteredGrounds={groundData1} userId={userId} />
+            <GroundEventsSlider
+              filteredGrounds={newGroundData}
+              userId={userId}
+            />
           </>
-        ) : (
-          <Text>No Arena</Text>
-        )}
+        ) : null}
         <TouchableOpacity
           onPress={handleCreateground}
           style={styles.addArenaButton}>
@@ -666,7 +695,7 @@ const styles = StyleSheet.create({
   addArenaButton: {
     position: 'absolute',
     alignSelf: 'flex-end',
-    bottom: 0,
+    bottom: 20,
     right: 0,
     width: 80,
     height: 80,
