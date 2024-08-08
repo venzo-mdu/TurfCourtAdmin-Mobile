@@ -111,9 +111,9 @@ function CustomTabBar({state, descriptors, navigation, stackNavigation}) {
   );
 }
 
-export default function AdminTopTabNavigation({route, navigation,isAddArena}) {
-  console.log(isAddArena,'flase-----')
+export default function AdminTopTabNavigation({route, navigation}) {
   const {groundID} = route.params || {};
+  // console.log('groundID',groundID);
 
   return (
     <Tab.Navigator
@@ -153,7 +153,7 @@ export default function AdminTopTabNavigation({route, navigation,isAddArena}) {
       <Tab.Screen
         name="Court"
         component={CourtScreen}
-        initialParams={{groundID}}
+        initialParams={{ groundID }}
         options={{tabBarLabel: 'Court'}}
         screenOptions={{
           headerStyle: {
@@ -167,7 +167,7 @@ export default function AdminTopTabNavigation({route, navigation,isAddArena}) {
       <Tab.Screen
         name="Booking"
         component={BookingScreen}
-        initialParams={{groundID}}
+        initialParams={{ groundID }}
         options={{tabBarLabel: 'Booking'}}
         screenOptions={{
           headerStyle: {

@@ -20,7 +20,8 @@ import { getEventdetailsByType, separateConsecutiveSecondElements, } from '../..
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 
-const BookingScreen = ({ groundID }) => {
+const BookingScreen = ({ route }) => {
+  const { groundID } = route?.params || {};
 
   const [tab, setTab] = useState('Bookings');
   const [statusopen, setstatusopen] = useState(false);
@@ -31,6 +32,8 @@ const BookingScreen = ({ groundID }) => {
   const [data, setdata] = useState([]);
   const [finalData, setFinalData] = useState([]);
   const [nonfilter, setNonFilter] = useState([]);
+  const [isSelected, setIsSelected] = useState(false);
+
 
 
   useEffect(() => {
@@ -52,22 +55,22 @@ const BookingScreen = ({ groundID }) => {
     if (uid == null) {
       navigate("/login");
     }
-    console.log('groundID--------', groundID);
     let startDate = moment().format("YYYY-MM-DDTHH:mm");
     let endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
+    let statusValue = ["Accepted", "Awaiting", "Cancelled", "Canceled", "Completed", "On-going"];
+    // console.log(tab, 'tab-----');
 
-    let statusValue = ["Accepted", "Awaiting"];
-
-
-    if (tab === "Cancelled") {
-      statusValue = ["Cancelled", "Canceled"];
-      startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
-    } else if (tab === "Completed") {
-      statusValue = [tab];
-      startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
-      endOfMonth = moment().format("YYYY-MM-DDTHH:mm");
-    } else if (tab !== "Bookings" && tab !== "Cancelled") {
-      statusValue = [tab];
+    // if (tab === "Cancelled") {
+    //   statusValue = ["Cancelled", "Canceled"];
+    //   startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
+    // } else if (tab === "Completed") {
+    //   statusValue = [tab];
+    //   startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
+    //   endOfMonth = moment().format("YYYY-MM-DDTHH:mm");
+    // } else 
+    if (tab == "Bookings") {
+      startDate = moment().format("YYYY-MM-DDTHH:mm");
+      endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
     }
 
     const otherFilters = [
@@ -84,38 +87,31 @@ const BookingScreen = ({ groundID }) => {
         otherFilters,
       );
 
-      // console.log('response----------------------',response?.data);
+      // console.log('response----------------------', response?.data);
       const events = response?.data;
+      let bookingsData;
+      if (tab === 'Completed') {
+        bookingsData = events.filter(item => item.status === 'Accepted' || item.status === 'Awaiting');
+      }
 
       setdata(events);
-   
-      
+      if (groundID) {
+        const filteredEvents = bookingsData.filter(item => item.ground_id === groundID);
+        setdata(filteredEvents);
+        const groupedData = Object.values(groupByBookId(filteredEvents));
+        setFilterData(groupedData);
+      }
+      else {
+        const groupedData = Object.values(groupByBookId(bookingsData));
+        setFilterData(groupedData);
+      }
 
-      // const finalData = findElementsWithSameProp(response?.data);
-      // console.log('finalData', finalData);
-      // setFilterData(finalData);
-      const groupedData = Object.values(groupByBookId(response?.data));
-      setFilterData(groupedData);
-      setLoading(true);
     }
   };
 
-  function findElementsWithSameProp(arr) {
-    const prop1Map = new Map();
-
-    arr.forEach((element) => {
-      const prop1Value = element.BookId;
-      if (prop1Map.has(prop1Value)) {
-        prop1Map.get(prop1Value).push(element);
-      } else {
-        prop1Map.set(prop1Value, [element]);
-      }
-    });
-
-    const result = Array.from(prop1Map.values());
-
-    return result;
-  }
+  const handleActiveColorChange = () => {
+    setIsSelected(!isSelected);
+  };
 
   const handleChange = value => {
     setTab(value);
@@ -465,17 +461,19 @@ const BookingScreen = ({ groundID }) => {
               Select slots to Approve or reject
             </Text>
 
-            <View style={styles.itemContainer}>
-              {selectedEventData?.map((item, index) => {
-                let gttime = getTimeFormatted(item?.start);
-                return (
-                  <View key={index} style={styles.statusContainer}>
-                    <Text>{gttime.Time}</Text>
-                    <Text>₹{item.amount}</Text>
-                  </View>
-                );
-              })}
-            </View>
+            <TouchableOpacity onPress={handleActiveColorChange}>
+              <View style={[styles.statusContainer, isSelected && styles.selectedContainer]}>
+                {selectedEventData?.map((item, index) => {
+                  let gttime = getTimeFormatted(item?.start);
+                  return (
+                    <View key={index}>
+                      <Text>{gttime.Time}</Text>
+                      <Text>₹{item.amount}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </TouchableOpacity>
 
             <View style={styles.footerButtons}>
               <TouchableOpacity

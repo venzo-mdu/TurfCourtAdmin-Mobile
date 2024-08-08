@@ -11,6 +11,7 @@ import {
 import _ from 'lodash';
 import {statusMap} from '../utils/statusMap';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import {COLORS} from '../assets/constants/global_colors';
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const months = [
@@ -194,7 +195,9 @@ export const HomePageEventSlider = ({
           </Text>
           {/* <Text style={styles.text}>Amount : {sumOfProp2}</Text> */}
         </View>
-
+      </View>
+      {/* {isAdmin && ( */}
+      <View>
         <View style={styles.dateContainer}>
           <Text style={styles.dateText}>
             {`${day}, ${month} ${date.toString().padStart(2, '0')}`}
@@ -206,17 +209,15 @@ export const HomePageEventSlider = ({
             backgroundColor: '#fff',
             height: 0.5,
           }}></View>
-        {isAdmin && (
-          <TouchableOpacity onPress={() => handleStatusEdit(bookingItem)}>
-            {/* <Image source={EditIcon} style={styles.editIcon} /> */}
-            <View style={styles.footer}>
-              <Text style={styles.text}>View</Text>
-              <Icon name="eye" size={20} color="#ffffff" />
-            </View>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity onPress={() => handleStatusEdit(bookingItem)}>
+          {/* <Image source={EditIcon} style={styles.editIcon} /> */}
+          <View style={styles.footer}>
+            <Text style={styles.text}>View</Text>
+            <Icon name="eye" size={20} color="#ffffff" />
+          </View>
+        </TouchableOpacity>
       </View>
-
+      {/* )} */}
       {statusOpen && (
         <Modal
           visible={statusOpen}
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
     padding: 10,
     height: 175,
     justifyContent: 'space-between',
-    // backgroundColor: '#fff',
+    backgroundColor: COLORS.PrimaryColor,
   },
   header: {
     // flexDirection: 'row',
@@ -328,11 +329,13 @@ const styles = StyleSheet.create({
     height: 20,
   },
   dateContainer: {
-    paddingTop: 10,
+    // paddingTop: 10,
     paddingBottom: 10,
   },
   dateText: {
+    color: 'white',
     fontSize: 14,
+    fontFamily: 'Outfit-Light',
     marginBottom: 4,
   },
   flexRow: {
@@ -341,7 +344,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timeText: {
-    // color: 'white',
+    color: 'white',
     fontSize: 14,
     fontFamily: 'Outfit-Light',
     paddingRight: 8,
