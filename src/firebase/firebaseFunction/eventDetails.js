@@ -212,9 +212,8 @@ export const updateEventData = async (event_id, updatedata) => {
 
 export const changeEventStatus = async (event_id, status) => {
   try {
-    console.log("handleupdatestatus", "jj", event_id, status);
-    let result = await UpdateData("events", { status: status }, event_id);
-    return { data: result, status: "success" };
+    let result = await UpdateData('events', {status: status}, event_id);
+    return {data: result, status: 'success'};
   } catch (error) {
     return error;
   }

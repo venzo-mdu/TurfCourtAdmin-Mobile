@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, TextInput, StyleSheet, Dimensions} from 'react-native';
+import {COLORS} from '../../assets/constants/global_colors';
 
 const CommonTextInput = ({label, value, onChangeText, keyboardType}) => {
   return (
@@ -18,7 +19,7 @@ const CommonTextInput = ({label, value, onChangeText, keyboardType}) => {
 const styles = StyleSheet.create({
   container: {
     marginBottom: 20,
-    width:'100%',
+    width: '100%',
   },
   label: {
     fontSize: 16,
@@ -30,10 +31,12 @@ const styles = StyleSheet.create({
   input: {
     height: 60,
     borderRadius: 12,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#fff',
     paddingHorizontal: 10,
     fontFamily: 'Outfit-Regular',
     fontSize: 20,
+    borderColor: COLORS.fieldBorderColor,
+    borderWidth: 1,
   },
 });
 
