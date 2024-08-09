@@ -213,7 +213,7 @@ export const updateEventData = async (event_id, updatedata) => {
 export const changeEventStatus = async (event_id, status) => {
   try {
     let result = await UpdateData('events', {status: status}, event_id);
-    return result;
+    return {data: result, status: 'success'};
   } catch (error) {
     return error;
   }

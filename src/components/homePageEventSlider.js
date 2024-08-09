@@ -7,11 +7,15 @@ import {
   Modal,
   StyleSheet,
   ScrollView,
+  FlatList,
 } from 'react-native';
 import _ from 'lodash';
 import {statusMap} from '../utils/statusMap';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {COLORS} from '../assets/constants/global_colors';
+import {changeEventStatus} from '../firebase/firebaseFunction/eventDetails';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomButton from './molecules/customButtom';
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const months = [
@@ -69,8 +73,11 @@ export const HomePageEventSlider = ({
     await changeEventStatus(selectedEventDatum?.event_id, props);
   };
 
-  const handleCancelBooking = value => {
-    setSelectedCancelEventData(prev => [...prev, value]);
+  const handleCancelBooking = item => {
+    setSelectedCancelEventData(prev => [...prev, item]);
+    if (item.status === 'Accepted') {
+      setCanBePaid(true);
+    }
   };
 
   const flattenedArray = bookingItem.flat();
@@ -221,7 +228,7 @@ export const HomePageEventSlider = ({
       {statusOpen && (
         <Modal
           visible={statusOpen}
-          transparent
+          transparent={true}
           onRequestClose={() => {
             setCancelEventInd([]);
             setSelectedCancelEventData([]);
@@ -230,10 +237,12 @@ export const HomePageEventSlider = ({
           }}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>
-                  Select slots to approve or reject
-                </Text>
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  right: 10,
+                }}>
                 <TouchableOpacity
                   onPress={() => {
                     setCancelEventInd([]);
@@ -241,50 +250,88 @@ export const HomePageEventSlider = ({
                     setStatusOpen(false);
                     setCanBePaid(false);
                   }}>
-                  <Text style={styles.closeText}>X</Text>
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={24}
+                    color={COLORS.PrimaryColor}
+                  />
                 </TouchableOpacity>
               </View>
-              <ScrollView contentContainerStyle={styles.slotContainer}>
-                {selectedEventData?.map((item, index) => {
-                  let gttime = getTimeFormatted(item?.start);
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  Select slots to approve or reject
+                </Text>
+              </View>
+              <FlatList
+                data={selectedEventData}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({item, index}) => {
+                  const gttime = getTimeFormatted(item?.start);
                   return (
                     <TouchableOpacity
-                      key={index}
                       style={[
-                        styles.slotButton,
-                        cancelEventInd.includes(index)
-                          ? styles.slotSelected
-                          : styles.slotUnselected,
+                        styles.button,
+                        cancelEventInd.includes(index) && styles.buttonSelected,
                       ]}
                       onPress={() => {
-                        setCancelEventInd(prev => [...prev, index]);
+                        setCancelEventInd(prev =>
+                          prev.includes(index)
+                            ? prev.filter(i => i !== index)
+                            : [...prev, index],
+                        );
                         handleCancelBooking(item);
                       }}>
-                      <Text>{gttime.Time}</Text>
-                      {item?.amount && <Text>&#8377; {item.amount}</Text>}
+                      <View
+                        style={{
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                        <Text
+                          style={[
+                            {
+                              fontFamily: 'Outfit-Regular',
+                              fontSize: 15,
+                              color: COLORS.PrimaryColor,
+                            },
+                            cancelEventInd.includes(index) &&
+                              styles.textSelected,
+                          ]}>
+                          {gttime.Time}
+                        </Text>
+                        {item?.amount && (
+                          <Text
+                            style={[
+                              styles.amount,
+                              cancelEventInd.includes(index) &&
+                                styles.textSelected,
+                            ]}>
+                            ₹ {item.amount}
+                          </Text>
+                        )}
+                      </View>
                     </TouchableOpacity>
                   );
-                })}
-              </ScrollView>
+                }}
+                numColumns={3}
+              />
               {canBePaid && (
                 <Text style={styles.warningText}>
                   An selected slot has already been accepted
                 </Text>
               )}
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.button,
-                    {backgroundColor: COLORS.PrimaryColor},
-                  ]}
-                  onPress={() => handleUpdateStatus('Accepted')}>
-                  <Text style={styles.buttonText}>Approve</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, {backgroundColor: 'red'}]}
-                  onPress={() => handleUpdateStatus('Rejected')}>
-                  <Text style={styles.buttonText}>Reject</Text>
-                </TouchableOpacity>
+                <CustomButton
+                  text={'Approve'}
+                  disabled={cancelEventInd.length === 0}
+                  onPress={() => handleUpdateStatus('Accepted')}
+                  style={styles.approveButton}
+                />
+                <CustomButton
+                  text={'Reject'}
+                  onPress={() => handleUpdateStatus('Cancelled')}
+                  disabled={cancelEventInd.length === 0}
+                  style={styles.rejectButton}
+                />
               </View>
             </View>
           </View>
@@ -296,9 +343,14 @@ export const HomePageEventSlider = ({
 
 const styles = StyleSheet.create({
   button: {
-    marginHorizontal: 10,
+    borderWidth: 1,
+    borderColor: COLORS.PrimaryColor,
+    backgroundColor: 'white',
     padding: 10,
+    margin: 5,
     borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   card: {
     borderRadius: 8,
@@ -384,19 +436,19 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '90%',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    marginVertical: 10,
   },
   modalTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 18,
+    fontFamily: 'Outfit-Medium',
+    color: '#192335',
   },
   closeText: {
     fontSize: 16,
@@ -411,7 +463,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginBottom: 4,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 20,
+    // justifyContent: 'space-between',
   },
   slotSelected: {
     borderColor: 'blue',
@@ -425,8 +478,10 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   buttonContainer: {
+    marginTop: 20,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 20,
   },
   approveButton: {
     backgroundColor: 'green',
@@ -437,6 +492,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
     padding: 8,
     borderRadius: 4,
+  },
+  buttonSelected: {
+    backgroundColor: COLORS.PrimaryColor,
+  },
+  textSelected: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 15,
+    color: COLORS.WHITE,
   },
 });
 

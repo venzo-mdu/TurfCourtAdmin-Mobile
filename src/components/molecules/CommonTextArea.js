@@ -29,27 +29,26 @@ const CommonTextArea = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 15,
+    marginBottom: 20,
     width: '100%',
   },
   label: {
     fontFamily: 'Outfit-Regular',
     fontSize: 16,
     fontWeight: '400',
-    marginBottom: 5,
+    marginBottom: 8,
     color: '#1B1B1B',
   },
   textArea: {
     fontFamily: 'Outfit-Regular',
     fontSize: 16,
     height: 100,
-    borderColor: '#ccc',
+    borderColor: COLORS.fieldBorderColor,
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 8,
     padding: 10,
     textAlignVertical: 'top',
     backgroundColor: '#ffffff',
-    // width: Dimensions.get('window').width * 0.75,
   },
 });
 
