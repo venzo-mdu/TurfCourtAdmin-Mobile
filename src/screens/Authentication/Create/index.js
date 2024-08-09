@@ -15,11 +15,6 @@ import {
 } from 'react-native';
 import {USERLOGIN, USERBOOTOM} from '../..';
 import {COLORS} from '../../../assets/constants/global_colors';
-import {
-  PoppinsMedium,
-  PoppinsRegular,
-  PoppinsSemiBold,
-} from '../../../assets/constants/global_fonts';
 import {IMAGES} from '../../../assets/constants/global_images';
 import {StatusBarCommon} from '../../../components';
 import {signin} from '../../../function/auth';
@@ -377,9 +372,6 @@ const UserCreateScreen = props => {
 
                 <View>
                   <View style={UserLoginScreenStyles.welcomeContainer}>
-                    <Text style={UserLoginScreenStyles.headingTxt}>
-                      6-digit Code
-                    </Text>
                     <Text style={UserLoginScreenStyles.loginSubText}>
                       Please enter the code we’ve sent to \n{' '}
                       <Text style={UserLoginScreenStyles.phoneCodeText}>
@@ -416,9 +408,8 @@ const UserCreateScreen = props => {
                   Resend OTP?
                   <Text
                     style={{
-                      fontFamily: PoppinsSemiBold,
+                      fontFamily: 'Outfit-Regular',
                       textDecorationLine: 'underline',
-                      fontWeight: '300',
                     }}
                     onPress={seconds === 0 ? CreateFn : null}>
                     {seconds ? formatTime(seconds) : 'Resend'}

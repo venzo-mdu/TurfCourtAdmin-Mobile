@@ -27,6 +27,7 @@ export const UserLoginScreenStyles = StyleSheet.create({
     borderTopRightRadius: 40,
   },
   logoContainer: {
+    height: 200,
     paddingVertical: 50,
     justifyContent: 'center',
     alignItems: 'center',
@@ -98,7 +99,7 @@ export const UserLoginScreenStyles = StyleSheet.create({
   sendOTPBoxTxt: {
     fontSize: mS(18),
     color: COLORS.WHITE,
-    fontFamily: PoppinsMedium,
+    fontFamily: 'Outfit-Medium',
   },
   pwdBox: {
     width: mS(54),
@@ -255,5 +256,18 @@ export const UserLoginScreenStyles = StyleSheet.create({
     fontSize: mS(18),
     color: '#097E52',
     fontFamily: 'Outfit-Medium',
+  },
+});
+export const UserOtpScreenStyles = StyleSheet.create({
+  title: {
+    flexDirection: 'row',
+    marginVertical: 20,
+  },
+  headingTxt: {
+    lineHeight: 27.72,
+    fontSize: hS(24),
+    marginVertical: 5,
+    color: COLORS.PrimaryColor,
+    fontFamily: 'Outfit-Regular',
   },
 });

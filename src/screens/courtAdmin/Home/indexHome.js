@@ -9,31 +9,34 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ToastAndroid,
+  ActivityIndicator,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SearchBar} from 'react-native-elements';
-import DatePicker from 'react-native-date-picker';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-const {WD, mS, hS} = require('../../../utils/metrics');
-import DropDownPicker from 'react-native-dropdown-picker';
 import {
   useFocusEffect,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
 import {Dimensions} from 'react-native';
-import CardSlider from '../Arena/CardSlider';
-import ApprovalWaitingEventsSlider from '../Arena/approvalWaitingEventsSlider';
 import {StatusBarCommon} from '../../../components';
 import {COLORS} from '../../../assets/constants/global_colors';
-import UpcomingEventsSlider from '../Arena/UpcomingEventsSlider';
 import {IMAGES} from '../../../assets/constants/global_images';
 import {ADMINTOPTABNAVIGATION} from '../..';
-import {getgroundData} from '../../../firebase/firebaseFunction/groundDetails';
+import {
+  getEventdetailsByArenas,
+  getgroundDataForOwner,
+} from '../../../firebase/firebaseFunction/groundDetails';
 import GroundEventsSlider from '../Arena/groundEventSlider';
+import moment from 'moment';
+import {findElementsWithSameProp} from '../../../utils/helpers';
+import _ from 'lodash';
+import Carousel from 'react-native-snap-carousel';
+import {HomePageEventSlider} from '../../../components/homePageEventSlider';
+import SlotApprovalModal from '../../../components/molecules/slotApprovalModel';
 
 const screenWidth = Dimensions.get('window').width;
 const responsivePadding = screenWidth * 0.03;
@@ -41,69 +44,60 @@ const responsivePadding = screenWidth * 0.03;
 const IndexHome = () => {
   const [userId, setUserId] = useState('');
   const [groundData, setGroundData] = useState([]);
-  const [groundData1, setGrounddata1] = useState([]);
-  const [groundRefresh, groundRefreshViews] = useState([]);
   const [uniqueCities, setUniqueCities] = useState([]);
   const [search, setSearch] = useState('');
   const [filteredCities, setFilteredCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState('');
   const [loader, setLoader] = useState(false);
   const [currentLocation, setCurrentLocation] = useState('');
-  const [date, setDate] = useState(new Date());
-  const [open, setOpen] = useState(false);
-  const [openDropList, setOpenDropList] = useState(false);
-  const [value, setValue] = useState(null);
   const [uniqueGameTypes, setUniqueGameTypes] = useState([]);
-  const [items, setItems] = useState([]);
   const navigation = useNavigation();
 
   const route = useRoute();
-  const {refresh} = route.params || {};
-  const {refreshUpcoming} = route.params || {};
-  //console.log("selectedCity", selectedCity);
 
-  const groundDetailsView = groundData.filter(
-    ground =>
-      ground.city.slice(1).toLowerCase() ===
-      selectedCity.slice(1).toLowerCase(),
-  );
-  //console.log("salemGrounds", groundDetailsView);
-
-  const filteredGrounds = groundDetailsView.filter(ground =>
-    ground.game_type.map(game => game.toLowerCase()).includes(value),
-  );
-  // console.log("filteredGrounds", filteredGrounds);
+  //New Changes from WEB
+  const [newGroundData, setNewGroundData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [noData, setNoData] = useState(false);
+  const [approvedBookings, setApprovedBookings] = useState([]);
+  const [waitingBookings, setWaitingBookings] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeWaitIndex, setActiveWaitIndex] = useState(0);
+  const [selectedEventData, setSelectedEventData] = useState();
+  const [statusopen, setstatusopen] = useState(false);
 
   const getgroundDetails = async () => {
-    let response = await getgroundData(userId);
-    setGrounddata1(response);
+    try {
+      if (!loading && _.isEmpty(groundData) && !noData && userId != null) {
+        setLoading(true);
+
+        let response = await getgroundDataForOwner(userId);
+        setNoData(response?.length === 0);
+        setLoading(false);
+        const groundIds = response?.map(r => r.ground_id);
+        if (!_.isEmpty(groundIds)) {
+          await eventData(groundIds);
+        }
+        setNewGroundData(response);
+      }
+    } catch (err) {
+      console.log('Error: ', err);
+      if (Platform.OS === 'android') {
+        ToastAndroid.show(
+          'Unable to load data. Please contact TurfMama',
+          ToastAndroid.SHORT,
+        );
+      } else {
+        AlertIOS.alert('Unable to load data. Please contact TurfMama');
+      }
+    }
   };
 
   useEffect(() => {
-    getgroundDetails();
-  }, [userId]);
-
-  useEffect(() => {
-    if (groundRefresh || groundRefreshViews) {
+    if (userId !== null) {
       getgroundDetails();
     }
-  }, [groundRefresh, groundRefreshViews]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (groundRefresh) {
-        getgroundDetails();
-      }
-    }, [groundRefresh]),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      if (groundRefreshViews) {
-        getgroundDetails();
-      }
-    }, [groundRefreshViews]),
-  );
+  }, [userId]);
 
   const getUserData = async () => {
     try {
@@ -115,25 +109,6 @@ const IndexHome = () => {
       console.error('Error retrieving user data', error);
     }
   };
-
-  const refreshGrounds = () => {
-    groundViewDatas();
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      if (refresh) {
-        groundViewDatas();
-      }
-    }, [refresh]),
-  );
-
-  const groundViewDatas = useCallback(async () => {
-    if (userId) {
-      const groundDatas = await getallgroundData(userId);
-      setGroundData(groundDatas);
-    }
-  }, [userId]);
 
   const uniqueCitiesData = useCallback(() => {
     const lowerCaseCities = groundData.map(item => item.city.toLowerCase());
@@ -157,10 +132,6 @@ const IndexHome = () => {
   }, []);
 
   useEffect(() => {
-    groundViewDatas();
-  }, [userId, groundViewDatas]);
-
-  useEffect(() => {
     uniqueCitiesData();
   }, [groundData, uniqueCitiesData]);
 
@@ -170,15 +141,6 @@ const IndexHome = () => {
       setSelectedCity(currentLocation);
     }
   }, [currentLocation]);
-
-  useEffect(() => {
-    // Map uniqueGameTypes to the format required by DropDownPicker
-    const mappedItems = uniqueGameTypes.map(game => ({
-      label: game,
-      value: game.toLowerCase(),
-    }));
-    setItems(mappedItems);
-  }, [uniqueGameTypes]);
 
   const updateSearch = searchText => {
     setSearch(searchText);
@@ -256,99 +218,274 @@ const IndexHome = () => {
     }
   };
 
+  const eventData = async groundIds => {
+    setLoading(true);
+
+    let startDate = moment().format('YYYY-MM-DDTHH:mm');
+    let endOfMonth = moment().endOf('month').format('YYYY-MM-DDTHH:mm');
+
+    let statusValue = ['Accepted', 'Awaiting'];
+
+    const otherFilters = [
+      {key: 'status', operator: 'in', value: statusValue},
+      {key: 'start', operator: '>=', value: startDate},
+      {key: 'end', operator: '<=', value: endOfMonth},
+    ];
+    if (otherFilters && otherFilters.length > 0) {
+      const response1 = await getEventdetailsByArenas({
+        groundIds: groundIds?.slice(0, 15),
+        otherFilters,
+        order: {key: 'start', dir: 'asc'},
+      });
+
+      const response2 = await getEventdetailsByArenas({
+        groundIds: groundIds?.slice(15, groundIds?.length),
+        otherFilters,
+        order: {key: 'start', dir: 'asc'},
+      });
+
+      const data = _.uniqBy(
+        [...response1?.data, ...response2?.data],
+        'event_id',
+      );
+
+      if (data) {
+        setApprovedBookings(
+          findElementsWithSameProp(
+            data.filter(item => item.status === 'Accepted'),
+          ),
+        );
+        setWaitingBookings(
+          findElementsWithSameProp(
+            data.filter(item => item.status === 'Awaiting'),
+          ),
+        );
+      }
+    }
+
+    setLoading(false);
+  };
+
+  const handleBookingClick = (index, item, status) => {
+    if (status === 'Accepted') {
+      setSelectedEventData(approvedBookings[index]);
+    } else if (status === 'Awaiting') {
+      setSelectedEventData(waitingBookings[index]);
+    }
+    setstatusopen(true);
+  };
+
+  const renderItem = ({item, index}) => (
+    <View style={{backgroundColor: '#', borderRadius: 8}}>
+      <HomePageEventSlider
+        key={index}
+        bookingItem={item}
+        type={'Accepted'}
+        showShort={true}
+      />
+    </View>
+  );
+
+  const renderItem1 = ({item, index}) => (
+    <View style={{backgroundColor: '#', borderRadius: 8}}>
+      <HomePageEventSlider
+        key={index}
+        bookingItem={item}
+        type={'Awaiting'}
+        showShort={true}
+      />
+    </View>
+  );
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <StatusBarCommon color={COLORS.PRIMARY} />
       <View style={styles.container}>
-        <View style={{width: '100%'}}>
-          <View style={styles.searchWrapper}>
-            <FontAwesome6
-              name="location-dot"
-              size={30}
-              color="#108257"
-              // style={styles.locationIcon}
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator
+              size={50}
+              color={COLORS.PRIMARY}
+              animating={loading}
             />
-            <SearchBar
-              placeholder="Search Cities..."
-              onChangeText={updateSearch}
-              value={search}
-              lightTheme
-              round
-              autoCorrect={false}
-              containerStyle={styles.searchContainer}
-              inputContainerStyle={styles.searchInputContainer}
-              inputStyle={styles.searchInput}
-              leftIconContainerStyle={styles.leftIconContainerStyle}
-              rightIconContainerStyle={styles.rightIconContainerStyle}
-              clearIcon={
-                search
-                  ? {
-                      name: 'close',
-                      type: 'font-awesome',
-                      color: 'red',
-                      onPress: () => setSearch(''),
-                      style: styles.rightIconStyle,
-                    }
-                  : null
-              }
-              searchIcon={
-                !search
-                  ? {
-                      name: 'search',
-                      type: 'font-awesome',
-                      color: 'black',
-                      style: styles.rightIconStyle,
-                    }
-                  : null
-              }
-            />
+            <Text>Loading...</Text>
           </View>
-          {filteredCities.length > 0 && search && (
-            <FlatList
-              data={filteredCities}
-              keyExtractor={item => item}
-              renderItem={({item}) => (
-                <TouchableOpacity onPress={() => selectCity(item)}>
-                  <View style={styles.searchItem}>
-                    <FontAwesome6
-                      name="location-dot"
-                      size={30}
-                      color="#108257"
-                      // style={styles.locationIcon}
-                    />
-                    <Text style={styles.item}>{item}</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
-            />
-          )}
-          {/* {selectedCity ? <Text style={styles.selected}>Selected City: {selectedCity}</Text> : null} */}
-        </View>
-
-        <ApprovalWaitingEventsSlider
-          uid={userId}
-          refreshUpcoming={refreshUpcoming}
-        />
-        <UpcomingEventsSlider uid={userId} refreshUpcoming={refreshUpcoming} />
-        {/* My Arena */}
-        {groundData1.length > 0 ? (
-          <>
-            <GroundEventsSlider filteredGrounds={groundData1} userId={userId} />
-          </>
         ) : (
-          <Text>No Arena</Text>
+          <>
+            <View style={{width: '100%'}}>
+              <View style={styles.searchWrapper}>
+                <FontAwesome6
+                  name="location-dot"
+                  size={30}
+                  color="#108257"
+                  // style={styles.locationIcon}
+                />
+                <SearchBar
+                  placeholder="Search Cities..."
+                  onChangeText={updateSearch}
+                  value={search}
+                  lightTheme
+                  round
+                  autoCorrect={false}
+                  containerStyle={styles.searchContainer}
+                  inputContainerStyle={styles.searchInputContainer}
+                  inputStyle={styles.searchInput}
+                  leftIconContainerStyle={styles.leftIconContainerStyle}
+                  rightIconContainerStyle={styles.rightIconContainerStyle}
+                  clearIcon={
+                    search
+                      ? {
+                          name: 'close',
+                          type: 'font-awesome',
+                          color: 'red',
+                          onPress: () => setSearch(''),
+                          style: styles.rightIconStyle,
+                        }
+                      : null
+                  }
+                  searchIcon={
+                    !search
+                      ? {
+                          name: 'search',
+                          type: 'font-awesome',
+                          color: 'black',
+                          style: styles.rightIconStyle,
+                        }
+                      : null
+                  }
+                />
+              </View>
+              {filteredCities.length > 0 && search && (
+                <FlatList
+                  data={filteredCities}
+                  keyExtractor={item => item}
+                  renderItem={({item}) => (
+                    <TouchableOpacity onPress={() => selectCity(item)}>
+                      <View style={styles.searchItem}>
+                        <FontAwesome6
+                          name="location-dot"
+                          size={30}
+                          color="#108257"
+                          // style={styles.locationIcon}
+                        />
+                        <Text style={styles.item}>{item}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                />
+              )}
+              {/* {selectedCity ? <Text style={styles.selected}>Selected City: {selectedCity}</Text> : null} */}
+            </View>
+
+            {approvedBookings.length !== 0 ? (
+              <View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    paddingBottom: 10,
+                    paddingTop: 20,
+                  }}>
+                  <Text style={styles.title}>Upcoming Booking</Text>
+                </View>
+                <View
+                  style={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: 8,
+                  }}>
+                  <Carousel
+                    loop={true}
+                    data={approvedBookings}
+                    renderItem={renderItem}
+                    sliderWidth={screenWidth}
+                    itemWidth={screenWidth * 0.9}
+                    onSnapToItem={index => setActiveIndex(index)}
+                  />
+                </View>
+                <View style={styles.pagination}>
+                  <Text style={styles.paginationText}>
+                    {activeIndex + 1} / {approvedBookings.length}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+
+            {waitingBookings.length !== 0 ? (
+              <View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    paddingBottom: 10,
+                    paddingTop: 20,
+                  }}>
+                  <Text style={styles.title}>Awaiting Booking</Text>
+                </View>
+                <View
+                  style={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: 8,
+                  }}>
+                  <Carousel
+                    loop={true}
+                    data={waitingBookings}
+                    renderItem={renderItem1}
+                    sliderWidth={screenWidth}
+                    itemWidth={screenWidth * 0.9}
+                    onSnapToItem={index => setActiveWaitIndex(index)}
+                    onPress={(index, item) =>
+                      handleBookingClick(index, item, 'Awaiting')
+                    }
+                  />
+                </View>
+                <View style={styles.pagination}>
+                  <Text style={styles.paginationText}>
+                    {activeWaitIndex + 1} / {waitingBookings.length}
+                  </Text>
+                </View>
+                {selectedEventData && (
+                  <SlotApprovalModal
+                    statusopen={statusopen}
+                    selectedEventData={selectedEventData}
+                    setSelectedEventData={setSelectedEventData}
+                    groundIds={newGroundData.map(g => g.ground_id)}
+                    eventData={eventData}
+                    setstatusopen={setstatusopen}
+                  />
+                )}
+              </View>
+            ) : null}
+
+            {/* My Arena */}
+            {newGroundData.length > 0 ? (
+              <>
+                <GroundEventsSlider
+                  filteredGrounds={newGroundData}
+                  userId={userId}
+                />
+              </>
+            ) : null}
+            <TouchableOpacity
+              onPress={handleCreateground}
+              style={styles.addArenaButton}>
+              <Image source={IMAGES.AddArenaButton} />
+            </TouchableOpacity>
+          </>
         )}
-        <TouchableOpacity
-          onPress={handleCreateground}
-          style={styles.addArenaButton}>
-          <Image source={IMAGES.AddArenaButton} />
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+  },
   scrollContainer: {
     flexGrow: 1,
   },
@@ -503,10 +640,28 @@ const styles = StyleSheet.create({
   addArenaButton: {
     position: 'absolute',
     alignSelf: 'flex-end',
-    bottom: 0,
+    bottom: 20,
     right: 0,
     width: 80,
     height: 80,
+  },
+  pagination: {
+    alignSelf: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    backgroundColor: '#000',
+    borderRadius: 14,
+    marginTop: 10,
+  },
+  paginationText: {
+    color: '#ffffff',
+    fontSize: 12,
+  },
+  title: {
+    fontSize: 16,
+    fontFamily: 'Outfit-Medium',
+    color: '#000',
   },
 });
 

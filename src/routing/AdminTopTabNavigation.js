@@ -10,6 +10,8 @@ import {IMAGES} from '../assets/constants/global_images';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {COLORS} from '../assets/constants/global_colors';
+import { ADMINARENA, ADMINHOME } from '../screens';
+import IndexHome from '../screens/courtAdmin/Home/indexHome';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -111,6 +113,8 @@ function CustomTabBar({state, descriptors, navigation, stackNavigation}) {
 
 export default function AdminTopTabNavigation({route, navigation}) {
   const {groundID} = route.params || {};
+  // console.log('groundID',groundID);
+
   return (
     <Tab.Navigator
       initialRouteName="Add Arena"
@@ -126,8 +130,8 @@ export default function AdminTopTabNavigation({route, navigation}) {
           shadowOpacity: 0,
           borderBottomWidth: 0,
         },
-        headerLeft: ({navigation}) => (
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => navigation.navigate(IndexHome)}>
             <Icon name="angle-left" size={32} color="#4CA181" />
           </TouchableOpacity>
         ),
@@ -149,7 +153,7 @@ export default function AdminTopTabNavigation({route, navigation}) {
       <Tab.Screen
         name="Court"
         component={CourtScreen}
-        initialParams={{groundID}}
+        initialParams={{ groundID }}
         options={{tabBarLabel: 'Court'}}
         screenOptions={{
           headerStyle: {
@@ -163,7 +167,7 @@ export default function AdminTopTabNavigation({route, navigation}) {
       <Tab.Screen
         name="Booking"
         component={BookingScreen}
-        initialParams={{groundID}}
+        initialParams={{ groundID }}
         options={{tabBarLabel: 'Booking'}}
         screenOptions={{
           headerStyle: {

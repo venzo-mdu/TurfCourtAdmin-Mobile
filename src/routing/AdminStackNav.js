@@ -94,7 +94,7 @@ const AdminStackNav = ({route}) => {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate('profile', {refreshProfiles: true})
+                navigation.goBack()
               }>
               <Icon name="angle-left" size={32} color="#4CA181" />
             </TouchableOpacity>

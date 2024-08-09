@@ -30,6 +30,7 @@ import IndexHome from '../screens/courtAdmin/Home/indexHome';
 import IndexProfile from '../screens/courtAdmin/Profile/indexProfile';
 import {COLORS} from '../assets/constants/global_colors';
 import BookingScreen from '../screens/courtAdmin/Arena/ArenaDetails/BookingScreen';
+import ProfileView from '../screens/courtAdmin/Profile/ProfileView';
 enableScreens(true);
 const Tab = createBottomTabNavigator();
 
@@ -127,7 +128,7 @@ const AdminHomeNavigation = () => {
         <>
           <Tab.Screen
             name={ADMINHOME}
-            component={IndexHome}
+            component={() => <IndexHome />}
             options={{
               tabBarLabel: ({focused}) => (
                 <Text
@@ -244,7 +245,7 @@ const AdminHomeNavigation = () => {
           />
           <Tab.Screen
             name={ADMINPROFILE}
-            component={IndexProfile}
+            component={ProfileView}
             options={{
               headerTitle: 'Profile',
               headerTitleAlign: 'center',

@@ -87,8 +87,8 @@ const IndexProfile = ({navigation}) => {
           />
           <Text style={styles.menuText}>My Profile</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={handleBooking}>
-          {/* <Icon name="book" size={20} color="#108257" /> */}
+        {/* <TouchableOpacity style={styles.menuItem} onPress={handleBooking}>
+          <Icon name="book" size={20} color="#108257" /> 
           <Image
             source={IMAGES.MyBookingIcons}
             style={styles.profileMenuIcons}
@@ -96,13 +96,13 @@ const IndexProfile = ({navigation}) => {
           <Text style={styles.menuText}>My Booking</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem} onPress={handleFav}>
-          {/* <Icon name="heart" size={20} color="#108257" /> */}
+           <Icon name="heart" size={20} color="#108257" /> 
           <Image
             source={IMAGES.MyFavoriteIcons}
             style={styles.profileMenuIcons}
           />
           <Text style={styles.menuText}>My Favorite</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       <View style={{paddingTop: 30}}>
         <TouchableOpacity onPress={handleLogout}>
