@@ -9,14 +9,14 @@ import {
   ActivityIndicator,
   SafeAreaView
 } from 'react-native';
-
+import DropDownPicker from 'react-native-dropdown-picker';
 import React, { useEffect, useState } from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
 import { getTimeFormatted } from '../../../../utils/getHours';
 import { COLORS } from '../../../../assets/constants/global_colors';
-import { getEventdetailsByType, separateConsecutiveSecondElements, } from '../../../../firebase/firebaseFunction/eventDetails';
+import { getEventdetailsByType, changeEventStatus } from '../../../../firebase/firebaseFunction/eventDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 
@@ -33,7 +33,16 @@ const BookingScreen = ({ route }) => {
   const [finalData, setFinalData] = useState([]);
   const [nonfilter, setNonFilter] = useState([]);
   const [isSelected, setIsSelected] = useState(false);
-
+  const [canBePaid, setCanBePaid] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [filterItems, setFilterItems] = useState([]);
+  const [items, setItems] = useState([
+    {label: 'Last Month', value: 'Last Month'},
+    {label: 'This Month', value: 'This Month'},
+    {label: 'Next Month', value: 'Next Month'},
+]);
+const today = moment().startOf('day');
 
 
   useEffect(() => {
@@ -55,10 +64,10 @@ const BookingScreen = ({ route }) => {
     if (uid == null) {
       navigate("/login");
     }
-    let startDate = moment().format("YYYY-MM-DDTHH:mm");
+    let startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
     let endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
     let statusValue = ["Accepted", "Awaiting", "Cancelled", "Canceled", "Completed", "On-going"];
-    // console.log(tab, 'tab-----');
+    console.log(tab, 'tab-----');
 
     // if (tab === "Cancelled") {
     //   statusValue = ["Cancelled", "Canceled"];
@@ -68,10 +77,10 @@ const BookingScreen = ({ route }) => {
     //   startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
     //   endOfMonth = moment().format("YYYY-MM-DDTHH:mm");
     // } else 
-    if (tab == "Bookings") {
-      startDate = moment().format("YYYY-MM-DDTHH:mm");
-      endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
-    }
+    // if (tab == "Bookings") {
+    //   startDate = moment().format("YYYY-MM-DDTHH:mm");
+    //   endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
+    // }
 
     const otherFilters = [
       { key: "status", operator: "in", value: statusValue },
@@ -89,21 +98,36 @@ const BookingScreen = ({ route }) => {
 
       // console.log('response----------------------', response?.data);
       const events = response?.data;
-      let bookingsData;
-      if (tab === 'Completed') {
-        bookingsData = events.filter(item => item.status === 'Accepted' || item.status === 'Awaiting');
-      }
-
       setdata(events);
+      let bookingsData;
+      // if (tab === 'Bookings') {
+      //   bookingsData = events.filter(item => ((item.status === 'Accepted' || item.status === 'Awaiting')));
+      //   const groupedData = Object.values(groupByBookId(bookingsData));
+      //   setFilterData(groupedData);
+      //   setLoading(true);
+      // }
+      // console.log('bookingsData',bookingsData);
       if (groundID) {
-        const filteredEvents = bookingsData.filter(item => item.ground_id === groundID);
+        const filteredEvents = events.filter(item => item.ground_id === groundID);
         setdata(filteredEvents);
         const groupedData = Object.values(groupByBookId(filteredEvents));
         setFilterData(groupedData);
+        setLoading(true);
       }
       else {
+        console.log('hi');
+
+        let bookingsData = events.filter(item => {
+          const eventStartDate = moment(item.start); 
+          return (eventStartDate.isSameOrAfter(today) && 
+                  (item.status === 'Accepted' || item.status === 'Awaiting'));
+        });
+        
+        console.log('bookingsDataaaaa',bookingsData);
+
         const groupedData = Object.values(groupByBookId(bookingsData));
         setFilterData(groupedData);
+        setLoading(true);
       }
 
     }
@@ -113,15 +137,42 @@ const BookingScreen = ({ route }) => {
     setIsSelected(!isSelected);
   };
 
+  function checkSamePropertyValue(array) {
+    return array.reduce((acc, obj) => acc && obj.status !== "Accepted", true);
+  }
+
+  const handleUpdateStatus = async (props) => {
+    if (checkSamePropertyValue(selectedEventData)) {
+      const mapcosnt = selectedEventData.map(
+        async (selectedEventData) => {
+          await updateBooking(selectedEventData, props);
+        }
+      );
+      console.log('updateBooking',updateBooking);
+      setstatusopen(false);
+      // setCancelEventind([]);
+      selectedEventData([]);
+      // await eventData(groundIds);
+    } else {
+      setCanBePaid(true);
+    }
+  };
+
+  const updateBooking = async (selectedEventDatum, props) => {
+    await changeEventStatus(selectedEventDatum?.event_id, props);
+  };
+
   const handleChange = value => {
     setTab(value);
     console.log('value', value);
 
     if (value == 'Bookings') {
       console.log('hi');
-      const tableData = data?.filter(
-        item => item.status === 'Accepted' || item.status === 'Awaiting',
-      );
+      const tableData = data.filter(item => {
+        const eventStartDate = moment(item.start); 
+        return (eventStartDate.isSameOrAfter(today) && 
+                (item.status === 'Accepted' || item.status === 'Awaiting'));
+      });
       const finalData = tableData;
       console.log('Bookings data length--------------', tableData.length);
 
@@ -162,20 +213,6 @@ const BookingScreen = ({ route }) => {
       console.log('Hi');
       console.log('edit', data);
       setSelectedEventData(data);
-      // setstatusopen(true); 
-      // setSelectedEventData((prevSelectedEventData = []) => {
-      //   const isArray = Array.isArray(prevSelectedEventData);
-      //   const safePrevSelectedEventData = isArray ? prevSelectedEventData : [];
-      //   const isAlreadyPresent = safePrevSelectedEventData.some(
-      //     event => event.BookId === data.BookId,
-      //   );
-
-      //   if (!isAlreadyPresent) {
-      //     return [data];
-      //   }
-
-      //   return safePrevSelectedEventData;
-      // });
       setstatusopen(true);
     }
   };
@@ -417,7 +454,15 @@ const BookingScreen = ({ route }) => {
           </TouchableOpacity>
         ))}
       </View>
-      {/* {console.log('filterDataaaa', filterData)} */}
+      {/* <DropDownPicker
+                    open={open}
+                    value={value}
+                    items={filterItems}
+                    setOpen={setOpen}
+                    setValue={setValue}
+                    setItems={setItems}
+                    placeholder={'This Month'}
+                /> */}
       
       {!loading ? (
         <ActivityIndicator style={{
@@ -460,33 +505,32 @@ const BookingScreen = ({ route }) => {
             <Text style={styles.titleCancelView}>
               Select slots to Approve or reject
             </Text>
-
-            <TouchableOpacity onPress={handleActiveColorChange}>
-              <View style={[styles.statusContainer, isSelected && styles.selectedContainer]}>
+          
+              <View style={styles.itemContainer}>
                 {selectedEventData?.map((item, index) => {
                   let gttime = getTimeFormatted(item?.start);
                   return (
-                    <View key={index}>
-                      <Text>{gttime.Time}</Text>
-                      <Text>₹{item.amount}</Text>
-                    </View>
+                    <TouchableOpacity onPress={handleActiveColorChange}>
+                    <View key={index} style={styles.statusContainer}>
+                    <Text>{gttime.Time}</Text>
+                    <Text>₹{item.amount}</Text>
+                  </View>
+                  </TouchableOpacity>
                   );
                 })}
               </View>
-            </TouchableOpacity>
-
             <View style={styles.footerButtons}>
               <TouchableOpacity
                 onPress={() => {
-                  // action for Paid Button
+                  handleUpdateStatus("Accepted")
                 }}>
-                <Text style={styles.paidButton}>Paid</Text>
+                <Text style={styles.paidButton}>Approve</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
-                  // action for cancel Button
+                  handleUpdateStatus("Cancelled")
                 }}>
-                <Text style={styles.cancelButton}>Canceled</Text>
+                <Text style={styles.cancelButton}>Cancelled</Text>
               </TouchableOpacity>
 
             </View>
@@ -501,7 +545,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    paddingVertical:20,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -594,16 +637,12 @@ const styles = StyleSheet.create({
   },
 
   footerButtons: {
-    width: Dimensions.get('window').width * 0.36,
+    width: Dimensions.get('window').width * 0.9,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
     marginVertical: 10,
-    alignSelf: 'center',
-  },
-  itemContainer: {
-    flexDirection: 'row',
-    gap:5,
+    paddingHorizontal: 80,
   },
   paidButton: {
     backgroundColor: 'green',
@@ -619,6 +658,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     fontSize: 14,
     padding: 10,
+  },
+  selectedContainer: {
+    backgroundColor: 'green',
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    gap:5,
   },
 });
 

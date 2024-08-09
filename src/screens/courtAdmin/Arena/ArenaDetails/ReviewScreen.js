@@ -19,6 +19,7 @@ import {
   OutfitMedium
 } from '../../../../assets/constants/global_fonts';
 import { COLORS } from '../../../../assets/constants/global_colors';
+import { getreview,updatereivew } from '../../../../firebase/firebaseFunction/groundDetails';
 
 const GroundReviews = () => {  
   const overallRating = 2.5;
@@ -65,13 +66,43 @@ const GroundReviews = () => {
   ];
   const [allReviewsVisible, setAllReviewsVisible] = useState(false);
   const [visible, setModalVisible] = useState(false);
-  const openModal = () => {
-    setModalVisible(true);
+  const [reviewDatas, setReviewDatas] = useState();
+  const [selectReply, setSelectedReply] = useState();
+  const [count, setCount] = useState(2);
+  const [open, setOpen] = useState(false);
+  const [reply, setReply] = useState("");
+ 
+
+  // useEffect(() => {
+  //   reviewData();
+  // }, []);
+
+  const reviewData = async () => {
+    let response = await getreview(groundId);
+    if (response?.status == "success") {
+      setReviewDatas(response?.data);
+    }
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
+  const handleReply = async (data) => {
+    setSelectedReply(data);
+    if (data?.adminreply != "") {
+      setReply(data?.adminreply);
+    } else {
+      setReply("");
+    }
+    setOpen(true);
   };
+
+  const handleReplySubmit = async () => {
+    selectReply.adminreply = reply;
+    const res = await updatereivew(selectReply?.review_id, selectReply);
+    if (res?.status == "success") {
+      setOpen(false);
+      setReply("");
+    }
+  };
+
   const renderStars = rating => {
     const stars = [];
     for (let i = 0.5; i <= 5; i++) {
@@ -133,20 +164,22 @@ const GroundReviews = () => {
         <View style={{ marginLeft: '20%' }}>
           <Text style={styles.title}>{item.reviewTitle}</Text>
           <Text style={styles.content}>{item.reviewContent}</Text>
+          <View style={styles.reviewImagesContainer}>
           <View style={styles.imagesContainer}>
-
             {item.reviewImage &&
               item.reviewImage.map((image, index) => (
 
                 <Image
                   key={index}
-                  source={{ uri: 'https://firebasestorage.googleapis.com/v0/b/venzoturfbooking.appspot.com/o/reviewImages%2F6Ip56SzHQycRTqwN6nOl7iMZd193%2FReview_IMG_1714384426641?alt=media&token=5b480293-d5c1-4c86-a618-7ea564e2a592%22,%22https://firebasestorage.googleapis.com/v0/b/venzoturfbooking.appspot.com/o/reviewImages%2F6Ip56SzHQycRTqwN6nOl7iMZd193%2FReview_IMG_1714384433278?alt=media&token=3172e9a9-fa6c-423d-94a0-e51710ec082d%22],%22reviewContent%22:%22If' }}
+                  source={{ uri:image }}
                   style={styles.reviewImage}
                 />
               ))}
+              </View>
+               <Text style={styles.sentOn}> Sent on {formattedDate}</Text>
           </View>
           <TouchableOpacity
-            onPress={openModal}
+            // onPress={openModal}
           >
             <Text style={styles.replyTextColor}>Reply</Text>
           </TouchableOpacity>
@@ -278,9 +311,13 @@ const styles = StyleSheet.create({
     color: COLORS.reviewNametext,
     textTransform: 'capitalize',
   },
-
   date: {
     fontSize: 16,
+    fontFamily: OutfitRegular,
+    color: COLORS.reviewNametext,
+  },
+  sentOn:{
+    fontSize: 12,
     fontFamily: OutfitRegular,
     color: COLORS.reviewNametext,
   },
@@ -313,6 +350,9 @@ const styles = StyleSheet.create({
   imagesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+  },
+  reviewImagesContainer:{
+    flexDirection: 'column',
   },
   reviewImage: {
     width: 100,
