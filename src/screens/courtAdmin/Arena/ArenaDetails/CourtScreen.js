@@ -60,6 +60,7 @@ console.log("availablecourt", availablecourt)
   const [courtslot, setCourtslot] = useState();
   const tabs = ["Add Court", "Add Court Time", "Available Timings"];
   const [gametype, setgametype] = useState([]);
+  console.log("gametype", gametype)
   //const [blockmodalopen, setblockModalOpen] = useState(false);
   const [blockerrormodalopen, setblockerrorModalOpen] = useState(false);
   const [unblockerrormodalopen, setunblockerrorModalOpen] = useState(false);
@@ -105,6 +106,7 @@ console.log("availablecourt", availablecourt)
   const [courtItems, setCourtItems] = useState([]);
   //console.log("courtItemsValus", courtItems);
   const [open, setOpen] = useState(false);
+  const [openAvailable, setOpenAvailable] = useState(false);
   const [value, setValue] = useState(null);
   const [blockmodalopen, setblockModalOpen] = useState(false);
   const [valueAvailable, setValueAvailable] = useState(null);
@@ -115,6 +117,9 @@ console.log("availablecourt", availablecourt)
       {label: "Cricket", value: "w8SLqfDdGeXXnfA74Ckf"}
   ]);
   //console.log("valuessssss", value)
+  const ITEM_HEIGHT = 40;
+  const calculatedHeight = Math.min(courtItems.length * ITEM_HEIGHT, Dimensions.get('window').height / 1);
+
 
 
     /* UID */
@@ -156,16 +161,17 @@ console.log("availablecourt", availablecourt)
       // getCourttime(groundres, currentDate);
       setLoading(true);
       console.log("groundId", groundID)
-      let groundres = await getgroundDataById(groundID);
+      let groundres = await getgroundDataById(groundID,"admin",uid);
       setLoading(false);
-     // console.log("gtrr33 groundres" , groundres, "gtrr33");
+      console.log("gtrr33 groundres" , groundres, "gtrr33");
       setGroundData(groundres);
+      setgametype(groundres?.game_type);
             let court_details = await getCourtsForGround(groundID);
        //     console.log("court_details", court_details)
             let ground_details = { ...groundData, court_details };
-         //   console.log("ground_details", ground_details)
-            setGroundData(ground_details);
-            setgametype(ground_details?.game_type);
+            console.log("ground_details", ground_details)
+            // setGroundData(ground_details);
+            // setgametype(ground_details?.game_type);
       
             const slotDatas = await getGroundslotdata(ground_details);
       
@@ -182,7 +188,7 @@ console.log("availablecourt", availablecourt)
   useEffect(() => {
     grndData();
    // console.log("gtrr334");
-  }, []);
+  }, [uid]);
 
   /* Choose The Game Options */
   const handleGameclick = (value) => {
@@ -365,6 +371,7 @@ console.log("availablecourt", availablecourt)
  /* Got the DropDown Value Of Court Slot */
    useEffect(() => {
     if (groundData?.court_details) {
+      console.log("groundData?.court_details", groundData?.court_details)
       const items = groundData?.court_details.map((court, index) => ({
         id: index + 1,
         value: court?.court_id,
@@ -959,7 +966,7 @@ console.log("eventss", en, 'Hi')
       Courts: "",
       date: currentDate,
     });
-
+setValueAvailable(null);
     setAccordionOpen(false);
     setCourtTime([]);
   };
@@ -1221,6 +1228,10 @@ console.log("delSlot", delSlot)
                     setValue={setValue}
                     setItems={setItems}
                     placeholder={'Select Court'}
+                    //maxHeight={500}
+                       maxHeight={calculatedHeight}  
+      zIndex={1000}  
+      zIndexInverse={3000}  
                 />
       {AddCourtTimingError && selectedValue.Courts === "" && (
         <Text style={styles.errorText}>*Select appropriate values</Text>
@@ -1429,13 +1440,16 @@ console.log("delSlot", delSlot)
     <View>
     <Text style={styles.labelSlot}>Courts</Text>
       <DropDownPicker
-                    open={open}
+                    open={openAvailable}
                     value={valueAvailable}
                     items={courtItems}
-                    setOpen={setOpen}
+                    setOpen={setOpenAvailable}
                     setValue={setValueAvailable}
                     setItems={setItems}
                     placeholder={'Select Court'}
+                      maxHeight={calculatedHeight}  // Dynamic height based on the number of items
+      zIndex={1000}  // Ensure dropdown is above other elements
+      zIndexInverse={3000}  // Adjust for any issues with overlapping
                 />
       {AddCourtTimingError && availablecourt.Courts === "" && (
         <Text style={styles.errorText}>*Select appropriate values</Text>
