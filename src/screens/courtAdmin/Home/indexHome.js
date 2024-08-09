@@ -10,32 +10,24 @@ import {
   StyleSheet,
   ScrollView,
   ToastAndroid,
+  ActivityIndicator,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SearchBar} from 'react-native-elements';
-import DatePicker from 'react-native-date-picker';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-const {WD, mS, hS} = require('../../../utils/metrics');
-import DropDownPicker from 'react-native-dropdown-picker';
 import {
   useFocusEffect,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
 import {Dimensions} from 'react-native';
-import CardSlider from '../Arena/CardSlider';
-import ApprovalWaitingEventsSlider from '../Arena/approvalWaitingEventsSlider';
 import {StatusBarCommon} from '../../../components';
 import {COLORS} from '../../../assets/constants/global_colors';
-import UpcomingEventsSlider from '../Arena/UpcomingEventsSlider';
 import {IMAGES} from '../../../assets/constants/global_images';
 import {ADMINTOPTABNAVIGATION} from '../..';
 import {
   getEventdetailsByArenas,
-  getgroundData,
   getgroundDataForOwner,
 } from '../../../firebase/firebaseFunction/groundDetails';
 import GroundEventsSlider from '../Arena/groundEventSlider';
@@ -43,10 +35,8 @@ import moment from 'moment';
 import {findElementsWithSameProp} from '../../../utils/helpers';
 import _ from 'lodash';
 import Carousel from 'react-native-snap-carousel';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import SlotModal from '../Arena/slotModal';
 import {HomePageEventSlider} from '../../../components/homePageEventSlider';
-import Feather from 'react-native-vector-icons/Feather';
+import SlotApprovalModal from '../../../components/molecules/slotApprovalModel';
 
 const screenWidth = Dimensions.get('window').width;
 const responsivePadding = screenWidth * 0.03;
@@ -54,25 +44,16 @@ const responsivePadding = screenWidth * 0.03;
 const IndexHome = () => {
   const [userId, setUserId] = useState('');
   const [groundData, setGroundData] = useState([]);
-  const [groundData1, setGrounddata1] = useState([]);
-  const [groundRefresh, groundRefreshViews] = useState([]);
   const [uniqueCities, setUniqueCities] = useState([]);
   const [search, setSearch] = useState('');
   const [filteredCities, setFilteredCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState('');
   const [loader, setLoader] = useState(false);
   const [currentLocation, setCurrentLocation] = useState('');
-  const [date, setDate] = useState(new Date());
-  const [open, setOpen] = useState(false);
-  const [openDropList, setOpenDropList] = useState(false);
-  const [value, setValue] = useState(null);
   const [uniqueGameTypes, setUniqueGameTypes] = useState([]);
-  const [items, setItems] = useState([]);
   const navigation = useNavigation();
 
   const route = useRoute();
-  const {refresh} = route.params || {};
-  const {refreshUpcoming} = route.params || {};
 
   //New Changes from WEB
   const [newGroundData, setNewGroundData] = useState([]);
@@ -80,27 +61,10 @@ const IndexHome = () => {
   const [noData, setNoData] = useState(false);
   const [approvedBookings, setApprovedBookings] = useState([]);
   const [waitingBookings, setWaitingBookings] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeWaitIndex, setActiveWaitIndex] = useState(0);
-
-  const groundDetailsView = groundData.filter(
-    ground =>
-      ground.city.slice(1).toLowerCase() ===
-      selectedCity.slice(1).toLowerCase(),
-  );
-  //console.log("salemGrounds", groundDetailsView);
-
-  const filteredGrounds = groundDetailsView.filter(ground =>
-    ground.game_type.map(game => game.toLowerCase()).includes(value),
-  );
-  // console.log("filteredGrounds", filteredGrounds);
-
-  // const getgroundDetails = async () => {
-  //   let response = await getgroundData(userId);
-  //   setGrounddata1(response);
-  // };
+  const [selectedEventData, setSelectedEventData] = useState();
+  const [statusopen, setstatusopen] = useState(false);
 
   const getgroundDetails = async () => {
     try {
@@ -114,7 +78,6 @@ const IndexHome = () => {
         if (!_.isEmpty(groundIds)) {
           await eventData(groundIds);
         }
-
         setNewGroundData(response);
       }
     } catch (err) {
@@ -136,28 +99,6 @@ const IndexHome = () => {
     }
   }, [userId]);
 
-  useEffect(() => {
-    if (groundRefresh || groundRefreshViews) {
-      getgroundDetails();
-    }
-  }, [groundRefresh, groundRefreshViews]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (groundRefresh) {
-        getgroundDetails();
-      }
-    }, [groundRefresh]),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      if (groundRefreshViews) {
-        getgroundDetails();
-      }
-    }, [groundRefreshViews]),
-  );
-
   const getUserData = async () => {
     try {
       const value = await AsyncStorage.getItem('uid');
@@ -168,25 +109,6 @@ const IndexHome = () => {
       console.error('Error retrieving user data', error);
     }
   };
-
-  const refreshGrounds = () => {
-    groundViewDatas();
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      if (refresh) {
-        groundViewDatas();
-      }
-    }, [refresh]),
-  );
-
-  const groundViewDatas = useCallback(async () => {
-    if (userId) {
-      const groundDatas = await getallgroundData(userId);
-      setGroundData(groundDatas);
-    }
-  }, [userId]);
 
   const uniqueCitiesData = useCallback(() => {
     const lowerCaseCities = groundData.map(item => item.city.toLowerCase());
@@ -210,10 +132,6 @@ const IndexHome = () => {
   }, []);
 
   useEffect(() => {
-    groundViewDatas();
-  }, [userId, groundViewDatas]);
-
-  useEffect(() => {
     uniqueCitiesData();
   }, [groundData, uniqueCitiesData]);
 
@@ -223,15 +141,6 @@ const IndexHome = () => {
       setSelectedCity(currentLocation);
     }
   }, [currentLocation]);
-
-  useEffect(() => {
-    // Map uniqueGameTypes to the format required by DropDownPicker
-    const mappedItems = uniqueGameTypes.map(game => ({
-      label: game,
-      value: game.toLowerCase(),
-    }));
-    setItems(mappedItems);
-  }, [uniqueGameTypes]);
 
   const updateSearch = searchText => {
     setSearch(searchText);
@@ -357,9 +266,13 @@ const IndexHome = () => {
     setLoading(false);
   };
 
-  const handleOpenModal = item => {
-    setSelectedSlot(item);
-    setModalVisible(true);
+  const handleBookingClick = (index, item, status) => {
+    if (status === 'Accepted') {
+      setSelectedEventData(approvedBookings[index]);
+    } else if (status === 'Awaiting') {
+      setSelectedEventData(waitingBookings[index]);
+    }
+    setstatusopen(true);
   };
 
   const renderItem = ({item, index}) => (
@@ -388,159 +301,191 @@ const IndexHome = () => {
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <StatusBarCommon color={COLORS.PRIMARY} />
       <View style={styles.container}>
-        <View style={{width: '100%'}}>
-          <View style={styles.searchWrapper}>
-            <FontAwesome6
-              name="location-dot"
-              size={30}
-              color="#108257"
-              // style={styles.locationIcon}
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator
+              size={50}
+              color={COLORS.PRIMARY}
+              animating={loading}
             />
-            <SearchBar
-              placeholder="Search Cities..."
-              onChangeText={updateSearch}
-              value={search}
-              lightTheme
-              round
-              autoCorrect={false}
-              containerStyle={styles.searchContainer}
-              inputContainerStyle={styles.searchInputContainer}
-              inputStyle={styles.searchInput}
-              leftIconContainerStyle={styles.leftIconContainerStyle}
-              rightIconContainerStyle={styles.rightIconContainerStyle}
-              clearIcon={
-                search
-                  ? {
-                      name: 'close',
-                      type: 'font-awesome',
-                      color: 'red',
-                      onPress: () => setSearch(''),
-                      style: styles.rightIconStyle,
-                    }
-                  : null
-              }
-              searchIcon={
-                !search
-                  ? {
-                      name: 'search',
-                      type: 'font-awesome',
-                      color: 'black',
-                      style: styles.rightIconStyle,
-                    }
-                  : null
-              }
-            />
+            <Text>Loading...</Text>
           </View>
-          {filteredCities.length > 0 && search && (
-            <FlatList
-              data={filteredCities}
-              keyExtractor={item => item}
-              renderItem={({item}) => (
-                <TouchableOpacity onPress={() => selectCity(item)}>
-                  <View style={styles.searchItem}>
-                    <FontAwesome6
-                      name="location-dot"
-                      size={30}
-                      color="#108257"
-                      // style={styles.locationIcon}
-                    />
-                    <Text style={styles.item}>{item}</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
-            />
-          )}
-          {/* {selectedCity ? <Text style={styles.selected}>Selected City: {selectedCity}</Text> : null} */}
-        </View>
-
-        {approvedBookings.length !== 0 ? (
-          <View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                paddingBottom: 10,
-                paddingTop: 20,
-              }}>
-              <Text style={styles.title}>Upcoming Booking</Text>
-            </View>
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 8,
-              }}>
-              <Carousel
-                loop={true}
-                data={approvedBookings}
-                renderItem={renderItem}
-                sliderWidth={screenWidth}
-                itemWidth={screenWidth * 0.9}
-                onSnapToItem={index => setActiveIndex(index)}
-              />
-            </View>
-            <View style={styles.pagination}>
-              <Text style={styles.paginationText}>
-                {activeIndex + 1} / {approvedBookings.length}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-
-        {waitingBookings.length !== 0 ? (
-          <View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                paddingBottom: 10,
-                paddingTop: 20,
-              }}>
-              <Text style={styles.title}>Awaiting Booking</Text>
-            </View>
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 8,
-              }}>
-              <Carousel
-                loop={true}
-                data={waitingBookings}
-                renderItem={renderItem1}
-                sliderWidth={screenWidth}
-                itemWidth={screenWidth * 0.9}
-                onSnapToItem={index => setActiveWaitIndex(index)}
-              />
-            </View>
-            <View style={styles.pagination}>
-              <Text style={styles.paginationText}>
-                {activeWaitIndex + 1} / {waitingBookings.length}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-
-        {/* My Arena */}
-        {newGroundData.length > 0 ? (
+        ) : (
           <>
-            <GroundEventsSlider
-              filteredGrounds={newGroundData}
-              userId={userId}
-            />
+            <View style={{width: '100%'}}>
+              <View style={styles.searchWrapper}>
+                <FontAwesome6
+                  name="location-dot"
+                  size={30}
+                  color="#108257"
+                  // style={styles.locationIcon}
+                />
+                <SearchBar
+                  placeholder="Search Cities..."
+                  onChangeText={updateSearch}
+                  value={search}
+                  lightTheme
+                  round
+                  autoCorrect={false}
+                  containerStyle={styles.searchContainer}
+                  inputContainerStyle={styles.searchInputContainer}
+                  inputStyle={styles.searchInput}
+                  leftIconContainerStyle={styles.leftIconContainerStyle}
+                  rightIconContainerStyle={styles.rightIconContainerStyle}
+                  clearIcon={
+                    search
+                      ? {
+                          name: 'close',
+                          type: 'font-awesome',
+                          color: 'red',
+                          onPress: () => setSearch(''),
+                          style: styles.rightIconStyle,
+                        }
+                      : null
+                  }
+                  searchIcon={
+                    !search
+                      ? {
+                          name: 'search',
+                          type: 'font-awesome',
+                          color: 'black',
+                          style: styles.rightIconStyle,
+                        }
+                      : null
+                  }
+                />
+              </View>
+              {filteredCities.length > 0 && search && (
+                <FlatList
+                  data={filteredCities}
+                  keyExtractor={item => item}
+                  renderItem={({item}) => (
+                    <TouchableOpacity onPress={() => selectCity(item)}>
+                      <View style={styles.searchItem}>
+                        <FontAwesome6
+                          name="location-dot"
+                          size={30}
+                          color="#108257"
+                          // style={styles.locationIcon}
+                        />
+                        <Text style={styles.item}>{item}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                />
+              )}
+              {/* {selectedCity ? <Text style={styles.selected}>Selected City: {selectedCity}</Text> : null} */}
+            </View>
+
+            {approvedBookings.length !== 0 ? (
+              <View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    paddingBottom: 10,
+                    paddingTop: 20,
+                  }}>
+                  <Text style={styles.title}>Upcoming Booking</Text>
+                </View>
+                <View
+                  style={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: 8,
+                  }}>
+                  <Carousel
+                    loop={true}
+                    data={approvedBookings}
+                    renderItem={renderItem}
+                    sliderWidth={screenWidth}
+                    itemWidth={screenWidth * 0.9}
+                    onSnapToItem={index => setActiveIndex(index)}
+                  />
+                </View>
+                <View style={styles.pagination}>
+                  <Text style={styles.paginationText}>
+                    {activeIndex + 1} / {approvedBookings.length}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+
+            {waitingBookings.length !== 0 ? (
+              <View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    paddingBottom: 10,
+                    paddingTop: 20,
+                  }}>
+                  <Text style={styles.title}>Awaiting Booking</Text>
+                </View>
+                <View
+                  style={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: 8,
+                  }}>
+                  <Carousel
+                    loop={true}
+                    data={waitingBookings}
+                    renderItem={renderItem1}
+                    sliderWidth={screenWidth}
+                    itemWidth={screenWidth * 0.9}
+                    onSnapToItem={index => setActiveWaitIndex(index)}
+                    onPress={(index, item) =>
+                      handleBookingClick(index, item, 'Awaiting')
+                    }
+                  />
+                </View>
+                <View style={styles.pagination}>
+                  <Text style={styles.paginationText}>
+                    {activeWaitIndex + 1} / {waitingBookings.length}
+                  </Text>
+                </View>
+                {selectedEventData && (
+                  <SlotApprovalModal
+                    statusopen={statusopen}
+                    selectedEventData={selectedEventData}
+                    setSelectedEventData={setSelectedEventData}
+                    groundIds={newGroundData.map(g => g.ground_id)}
+                    eventData={eventData}
+                    setstatusopen={setstatusopen}
+                  />
+                )}
+              </View>
+            ) : null}
+
+            {/* My Arena */}
+            {newGroundData.length > 0 ? (
+              <>
+                <GroundEventsSlider
+                  filteredGrounds={newGroundData}
+                  userId={userId}
+                />
+              </>
+            ) : null}
+            <TouchableOpacity
+              onPress={handleCreateground}
+              style={styles.addArenaButton}>
+              <Image source={IMAGES.AddArenaButton} />
+            </TouchableOpacity>
           </>
-        ) : null}
-        <TouchableOpacity
-          onPress={handleCreateground}
-          style={styles.addArenaButton}>
-          <Image source={IMAGES.AddArenaButton} />
-        </TouchableOpacity>
+        )}
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+  },
   scrollContainer: {
     flexGrow: 1,
   },

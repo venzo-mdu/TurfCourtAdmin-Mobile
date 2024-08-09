@@ -194,18 +194,8 @@ const UpdateData = async (collectionName, updateValues, docId) => {
     const docRef = doc(db, collectionName, docId);
 
     const data = await updateDoc(docRef, updateValues);
-    // console.log(
-    //   collectionName,
-    //   updateValues,
-    //   docId,
-    //   data,
-    //   docRef,
-    //   "update",
-    //   "check"
-    // );
-    // const docSnapshot = await getDoc(docRef);
     console.log(data, 'zzzz', 'courtDataBySlot');
-    return data;
+    return {data: data, status: 'success'};
   } catch (error) {
     console.log(error, 'yyyyy');
     return error;

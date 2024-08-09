@@ -14,6 +14,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import {ROLE, USERCREATE, USERBOOTOM, USERLOGIN} from '../..';
 import {COLORS} from '../../../assets/constants/global_colors';
@@ -39,6 +40,7 @@ import {hS, mS} from '../../../utils/metrics';
 import {UserLoginScreenStyles, UserOtpScreenStyles} from '../Create/styles';
 import PhoneInput from 'react-native-phone-number-input';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Entypo from 'react-native-vector-icons/Entypo';
 
 //import AuthNavigation from '../../../navigation/AuthNavigation';
 
@@ -46,13 +48,13 @@ const UserLoginScreen = () => {
   const navigation = useNavigation();
 
   const [userPhone, setUserPhone] = useState('');
-
+  const [loader, setLoader] = useState(false);
   const recaptchaVerifier = useRef(null);
 
   const [verificationId, setVerificationID] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [enterOTP, setEnterOTP] = useState(false);
-  
+
   const OTPref = useRef(null);
 
   const CloseEnterOTPFn = () => {
@@ -78,13 +80,13 @@ const UserLoginScreen = () => {
   const LoginFn = async () => {
     if (verificationCode?.length == 6) {
       const response = await loginverifyOtp(verificationCode, verificationId);
-      console.log('response---',response,verificationCode,verificationId);
+      console.log('response---', response, verificationCode, verificationId);
 
-    // ToastAndroid.show(response?.msg, ToastAndroid.SHORT);
+      // ToastAndroid.show(response?.msg, ToastAndroid.SHORT);
 
       if (!response.error) {
         if (response?.data?.user_id != '' && response?.data != null) {
-        // const userdata = await FetchDataById('user', response.data.user_id);
+          // const userdata = await FetchDataById('user', response.data.user_id);
 
           const res = response?.data;
           console.log('res Vies', res);
@@ -184,164 +186,173 @@ const UserLoginScreen = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView>
-    <ImageBackground
-      style={{width: '100%', height: '100%'}}
-      source={IMAGES.LoginBgImage}
-      resizeMode="cover">
-      <StatusBarCommon color={COLORS.PRIMARY} />
-      <SafeAreaView style={UserLoginScreenStyles.safe}>
-        {/* recaptchaVerifier */}
-        <FirebaseRecaptchaVerifierModal
-          ref={recaptchaVerifier}
-          firebaseConfig={firebaseConfig}
-        />
-        <View style={UserLoginScreenStyles.logoContainer}>
-          <Image source={IMAGES.logoImage} resizeMode="contain" />
-        </View>
-        <View style={UserLoginScreenStyles.loginContainer}>
-          {!enterOTP ? (
-            <>
-              <Text
-                style={[UserLoginScreenStyles.headingTxt, {paddingTop: 65}]}>
-                Login
-              </Text>
-              <Text style={[UserLoginScreenStyles.loginSubText]}>
-                Login to your account
-              </Text>
-              <View style={{paddingBottom: '15%'}}>
-                <Text
-                  style={{
-                    paddingTop: '20%',
-                    paddingBottom: 10,
-                    fontFamily: 'Outfit-Regular',
-                    fontSize: hS(16),
-                    lineHeight: 20.16,
-                    color: '#1b1b1b',
-                  }}>
-                  Mobile Number
-                </Text>
-                <PhoneInput
-                  placeholder="Mobile Number"
-                  placeholderColor="red"
-                  textInputProps={{
-                    keyboardType: 'numeric',
-                    maxLength: 10,
-                  }}
-                  defaultValue={!enterOTP ? '' :userPhone}
-                  defaultCode="IN"
-                  layout="first"
-                  onChangeFormattedText={val => {
-                    if (val.replace(/\D/g, '').length <= 12) {
-                      // console.log('val',val);
-                      setUserPhone(val);
-                    } else {
-                      ToastAndroid.show(
-                        'Phone number should not exceed 10 digits',
-                        ToastAndroid.SHORT,
-                      );
-                    }
-                  }}
-                  containerStyle={UserLoginScreenStyles.phoneInputContainer}
-                  textContainerStyle={
-                    UserLoginScreenStyles.phoneInputTextContainer
-                  }
-                  textInputStyle={{
-                    paddingBottom: 8,
-                    color: COLORS.BLACK,
-                    fontSize: hS(16),
-                    fontFamily: 'Outfit-Regular',
-                  }}
-                />
-              </View>
-              <View>
-                <TouchableOpacity
-                  activeOpacity={0.75}
-                  onPress={SendOTPFn}
-                  style={UserLoginScreenStyles.loginBox}>
-                  <Text style={UserLoginScreenStyles.loginTxt}>
-                    {verificationId == '' ? 'Get OTP' : 'Login'}
+        <ImageBackground
+          style={{width: '100%', height: '100%'}}
+          source={IMAGES.LoginBgImage}
+          resizeMode="cover">
+          <StatusBarCommon color={COLORS.PRIMARY} />
+          <SafeAreaView style={UserLoginScreenStyles.safe}>
+            {/* recaptchaVerifier */}
+            <FirebaseRecaptchaVerifierModal
+              ref={recaptchaVerifier}
+              firebaseConfig={firebaseConfig}
+            />
+            <View style={UserLoginScreenStyles.logoContainer}>
+              <Image source={IMAGES.logoImage} resizeMode="contain" />
+            </View>
+            <View style={UserLoginScreenStyles.loginContainer}>
+              {!enterOTP ? (
+                <>
+                  <Text
+                    style={[
+                      UserLoginScreenStyles.headingTxt,
+                      {paddingTop: 65},
+                    ]}>
+                    Login
                   </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          ) : (
-            <View style={UserLoginScreenStyles.otpBottom}>
-              <View>
-              <View style={UserOtpScreenStyles.title}>
-                      <TouchableOpacity onPress={handleBackButtonPress}>
-                        <Icon name="angle-left" size={32} color="#018352"/>
-                      </TouchableOpacity>
+                  <Text style={[UserLoginScreenStyles.loginSubText]}>
+                    Login to your account
+                  </Text>
+                  <View style={{paddingBottom: '15%'}}>
+                    <Text
+                      style={{
+                        paddingTop: '20%',
+                        paddingBottom: 10,
+                        fontFamily: 'Outfit-Regular',
+                        fontSize: hS(16),
+                        lineHeight: 20.16,
+                        color: '#1b1b1b',
+                      }}>
+                      Mobile Number
+                    </Text>
+                    <PhoneInput
+                      placeholder="Mobile Number"
+                      placeholderColor="red"
+                      textInputProps={{
+                        keyboardType: 'numeric',
+                        maxLength: 10,
+                      }}
+                      defaultValue={!enterOTP ? '' : userPhone}
+                      defaultCode="IN"
+                      layout="first"
+                      onChangeFormattedText={val => {
+                        if (val.replace(/\D/g, '').length <= 12) {
+                          // console.log('val',val);
+                          setUserPhone(val);
+                        } else {
+                          ToastAndroid.show(
+                            'Phone number should not exceed 10 digits',
+                            ToastAndroid.SHORT,
+                          );
+                        }
+                      }}
+                      containerStyle={UserLoginScreenStyles.phoneInputContainer}
+                      textContainerStyle={
+                        UserLoginScreenStyles.phoneInputTextContainer
+                      }
+                      textInputStyle={{
+                        paddingBottom: 8,
+                        color: COLORS.BLACK,
+                        fontSize: hS(16),
+                        fontFamily: 'Outfit-Regular',
+                      }}
+                    />
+                  </View>
+                  <View>
+                    <TouchableOpacity
+                      activeOpacity={0.75}
+                      onPress={SendOTPFn}
+                      style={UserLoginScreenStyles.loginBox}>
+                      <Text style={UserLoginScreenStyles.loginTxt}>
+                        {verificationId == '' ? 'Get OTP' : 'Login'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              ) : (
+                <View style={UserLoginScreenStyles.otpBottom}>
+                  <View>
+                    <View style={UserOtpScreenStyles.title}>
                       <Text style={UserOtpScreenStyles.headingTxt}>
                         6-digit Code
                       </Text>
                     </View>
-                <Text style={UserLoginScreenStyles.loginSubText}>
-                  Please enter the code we’ve sent to{'\n'}
-                  <Text style={UserLoginScreenStyles.phoneCodeText}>
-                    {userPhone}
-                  </Text>
-                </Text>
-                <OTPTextInput
-                  ref={OTPref}
-                  containerStyle={{
-                    marginVertical: hS(16),
-                  }}
-                  autoFocus={true}
-                  handleTextChange={e => setVerificationCode(e)}
-                  inputCount={6}
-                  textInputStyle={{
-                    fontSize: 20,
-                    backgroundColor: '#F9F9F6',
-                    borderColor: 'F1F2F7',
-                    borderWidth: 1.5,
-                    borderRadius: 14,
-                    width: 48,
-                    height: 48,
-                    margin: 0,
-                    paddingTop: 10,
-                    borderBottomWidth: 1.5,
-                  }}
-                />
-              </View>
+                    <Text style={UserLoginScreenStyles.loginSubText}>
+                      Please enter the code we’ve sent to{'\n'}
+                      <View style={{flexDirection: 'row', gap: 5}}>
+                        <View style={{paddingTop: 10}}>
+                          <Text style={UserLoginScreenStyles.phoneCodeText}>
+                            {userPhone}
+                          </Text>
+                        </View>
+                        <View style={{paddingTop: 10}}>
+                          <TouchableOpacity onPress={handleBackButtonPress}>
+                            <Entypo name="edit" size={20} color="#018352" />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </Text>
+                    <OTPTextInput
+                      ref={OTPref}
+                      containerStyle={{
+                        marginVertical: hS(16),
+                      }}
+                      autoFocus={true}
+                      handleTextChange={e => setVerificationCode(e)}
+                      inputCount={6}
+                      textInputStyle={{
+                        fontSize: 20,
+                        backgroundColor: '#F9F9F6',
+                        borderColor: 'F1F2F7',
+                        borderWidth: 1.5,
+                        borderRadius: 14,
+                        width: 48,
+                        height: 48,
+                        margin: 0,
+                        paddingTop: 10,
+                        borderBottomWidth: 1.5,
+                      }}
+                    />
+                  </View>
 
-              <Text style={UserLoginScreenStyles.otpResendTxt}>
-                Resend Code in {}
+                  <Text style={UserLoginScreenStyles.otpResendTxt}>
+                    Resend Code in {}
+                    <Text
+                      style={{
+                        fontFamily: 'Outfit-Medium',
+                        color: '#000',
+                      }}
+                      onPress={seconds === 0 ? SendOTPFn : null}>
+                      {seconds ? formatTime(seconds) : ' Resend'}
+                    </Text>
+                  </Text>
+
+                  <TouchableOpacity
+                    activeOpacity={0.75}
+                    onPress={LoginFn}
+                    style={UserLoginScreenStyles.loginBox}>
+                    <Text style={UserLoginScreenStyles.loginTxt}>Login</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <View style={UserLoginScreenStyles.lineContainer}>
+                <View style={UserLoginScreenStyles.line} />
+                <Text style={UserLoginScreenStyles.lineText}>OR</Text>
+                <View style={UserLoginScreenStyles.line} />
+              </View>
+              <Text style={UserLoginScreenStyles.bottomaskTxt1}>
+                Don't have an Account ?{' '}
                 <Text
-                  style={{
-                    fontFamily: 'Outfit-Medium',
-                    color: '#000',
-                  }}
-                  onPress={seconds === 0 ? SendOTPFn : null}>
-                  {seconds ? formatTime(seconds) : ' Resend'}
+                  onPress={signupFn}
+                  style={UserLoginScreenStyles.bottomaskTxt2}>
+                  Sign up
                 </Text>
               </Text>
-
-              <TouchableOpacity
-                activeOpacity={0.75}
-                onPress={LoginFn}
-                style={UserLoginScreenStyles.loginBox}>
-                <Text style={UserLoginScreenStyles.loginTxt}>Login</Text>
-              </TouchableOpacity>
             </View>
-          )}
-
-          <View style={UserLoginScreenStyles.lineContainer}>
-            <View style={UserLoginScreenStyles.line} />
-            <Text style={UserLoginScreenStyles.lineText}>OR</Text>
-            <View style={UserLoginScreenStyles.line} />
-          </View>
-          <Text style={UserLoginScreenStyles.bottomaskTxt1}>
-            Don't have an Account ?{' '}
-            <Text
-              onPress={signupFn}
-              style={UserLoginScreenStyles.bottomaskTxt2}>
-              Sign up
-            </Text>
-          </Text>
-        </View>
-      </SafeAreaView>
-    </ImageBackground>
-    </KeyboardAvoidingView>
+          </SafeAreaView>
+        </ImageBackground>
+      </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 };
