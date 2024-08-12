@@ -1,43 +1,18 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  FlatList,
-  ScrollView,
-  Dimensions,
-  Modal,
-  Switch,
-  ToastAndroid,
-} from 'react-native';
-import React, {useState, useEffect} from 'react';
-import {StyleSheet} from 'react-native';
-import {IMAGES} from '../../../../assets/constants/global_images';
-import {
-  createCourtSlot,
-  createNewCourt,
-  deleteSlotDetails,
-  getCourtsForGround,
-  getcourtslotdata,
-  getgroundDataById,
-  getGroundslotdata,
-  updatecourt,
-  updateslotdata,
-} from '../../../../firebase/firebaseFunction/groundDetails';
-import {useNavigation, useRoute, useTheme} from '@react-navigation/native';
+import { View, Text, TouchableOpacity, Image, FlatList, ScrollView, Dimensions, Modal, Switch, ToastAndroid } from 'react-native'
+import React, { useState, useEffect} from 'react'
+import { StyleSheet } from 'react-native';
+import { IMAGES } from '../../../../assets/constants/global_images';
+import { createCourtSlot, createNewCourt, deleteSlotDetails, getCourtsForGround, getcourtslotdata, getgroundDataById, getGroundslotdata, updatecourt, updateslotdata } from '../../../../firebase/firebaseFunction/groundDetails';
+import { useNavigation, useRoute, useTheme } from '@react-navigation/native';
 import CommonTextInput from '../../../../components/molecules/CommonTextInput';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DatePicker from 'react-native-date-picker';
 import DropDownPicker from 'react-native-dropdown-picker';
-import {
-  changeEventStatus,
-  createNewBlockEvent,
-  getcourtevent,
-} from '../../../../firebase/firebaseFunction/eventDetails';
-import _ from 'lodash';
-import {getTimeFormatted} from '../../../../utils/getHours';
+import { changeEventStatus, createNewBlockEvent, getcourtevent } from '../../../../firebase/firebaseFunction/eventDetails';
+import _ from "lodash";
+import { getTimeFormatted } from '../../../../utils/getHours';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {USER, USERLOGIN} from '../../..';
+import { USER, USERLOGIN } from '../../..';
 import Collapsible from 'react-native-collapsible';
 import moment from 'moment';
 import {COLORS} from '../../../../assets/constants/global_colors';
@@ -45,10 +20,10 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import CommonTextInputError from '../../../../components/molecules/commomTextInputError';
 
 const CourtScreen = () => {
-  const [tab, setTab] = useState('Add Court');
+  const [tab, setTab] = useState("Add Court");
   const [uid, setUid] = useState([]);
   const route = useRoute();
-  const {groundID} = route.params || null;
+  const { groundID } = route.params || null;
   const navigation = useNavigation();
   //console.log("groundID Views", groundID)
   const [groundData, setGroundData] = useState();
@@ -56,28 +31,28 @@ const CourtScreen = () => {
   //console.log("courtTime---", courtTime)
   const [eventData, setEventData] = useState([]);
   const [loader, setLoading] = useState(false);
-  //console.log("CourtScreeen groundData", groundData)
+//console.log("CourtScreeen groundData", groundData)
   const [createCourt, setCreateCourt] = useState({
     gametype: [],
-    court_name: '',
-    default_amount: '',
+    court_name: "",
+    default_amount: "",
   });
 
   const [editcourtdata, setEditcourtdata] = useState();
 
   const [selectedValue, setSelectedValue] = useState({
-    Courts: '',
-    selectedEditslot: '',
+    Courts: "",
+    selectedEditslot: "",
   });
 
   //console.log("selectedValues", selectedValue)
-  // const currentDate = new Date().toISOString().split("T")[0];
-  const currentDate = new Date();
+ // const currentDate = new Date().toISOString().split("T")[0];
+ const currentDate = new Date();
   const [availablecourt, setAvailablecourt] = useState({
-    Courts: '',
+    Courts: "",
     date: new Date(),
   });
-  console.log('availablecourt', availablecourt);
+console.log("availablecourt", availablecourt)
   const [modalOpen, setModalOpen] = useState(false);
   const [AddCourtError, setAddCourtError] = useState(false);
   const [AddCourtTimingError, setAddCourtTimingError] = useState(false);
@@ -86,18 +61,19 @@ const CourtScreen = () => {
   const [CreateEditSlotWarning, setCreateEditSlotWarning] = useState(false);
   const [updateSlotWarning, setupdateSlotWarning] = useState(false);
   const [courtslot, setCourtslot] = useState();
-  const tabs = ['Add Court', 'Add Court Time', 'Available Timings'];
+  const tabs = ["Add Court", "Add Court Time", "Available Timings"];
   const [gametype, setgametype] = useState([]);
-  console.log('gametype', gametype);
+  console.log("gametype", gametype)
   //const [blockmodalopen, setblockModalOpen] = useState(false);
   const [blockerrormodalopen, setblockerrorModalOpen] = useState(false);
   const [unblockerrormodalopen, setunblockerrorModalOpen] = useState(false);
   const [unblockmodalopen, setunblockModalOpen] = useState(false);
 
+  
   const iconsss = {
     Cricket: IMAGES.Cricket,
     Badminton: IMAGES.Badmiton,
-    'Table Tennis': IMAGES.TableTennis,
+    "Table Tennis": IMAGES.TableTennis,
     Football: IMAGES.Football,
     Volleyball: IMAGES.Cricket,
     Hockey: IMAGES.Badmiton,
@@ -110,21 +86,21 @@ const CourtScreen = () => {
   const [changestatusmodal, setChangestatusmodal] = useState(false);
   const [SlotDelWarning, setSlotDelWarning] = useState(false);
   const [SloteditWarning, setSloteditWarning] = useState(false);
-  const [addEdit, setAddEdit] = useState('Add');
+  const [addEdit, setAddEdit] = useState("Add");
   const [selectcourt, setSelectcourt] = useState();
   const [OpenSlotRes, setOpenSlotRes] = useState();
   const [SlotToEdit, setSlotToEdit] = useState();
   const [AnchorEl, setAnchorEl] = useState();
   const [AccordionOpen, setAccordionOpen] = useState(false);
   const [createSlots, setCreateslots] = useState({
-    price: '',
+    price: "",
     date: new Date(),
     starttime: '',
     endtime: '',
     isActive: true,
   });
-  // console.log("createSlots", createSlots);
-  /* Slot Timing States */
+ // console.log("createSlots", createSlots);
+/* Slot Timing States */
   const [openCourtDropdown, setOpenCourtDropdown] = useState(false);
   const [openDatePicker, setOpenDatePicker] = useState(false);
   const [openAvailableDatePicker, setOpenAvailableDatePicker] = useState(false);
@@ -138,40 +114,39 @@ const CourtScreen = () => {
   const [blockmodalopen, setblockModalOpen] = useState(false);
   const [valueAvailable, setValueAvailable] = useState(null);
   const [items, setItems] = useState([
-    {label: 'Apple', value: 'apple'},
-    {label: 'Banana', value: 'banana'},
-    {label: 'Pear', value: 'pear'},
-    {label: 'Cricket', value: 'w8SLqfDdGeXXnfA74Ckf'},
+      {label: 'Apple', value: 'apple'},
+      {label: 'Banana', value: 'banana'},
+      {label: 'Pear', value: 'pear'},
+      {label: "Cricket", value: "w8SLqfDdGeXXnfA74Ckf"}
   ]);
   //console.log("valuessssss", value)
   const ITEM_HEIGHT = 40;
-  const calculatedHeight = Math.min(
-    courtItems.length * ITEM_HEIGHT,
-    Dimensions.get('window').height / 1,
-  );
+  const calculatedHeight = Math.min(courtItems.length * ITEM_HEIGHT, Dimensions.get('window').height / 1);
 
-  /* UID */
-  const getUserData = async () => {
-    try {
-      const value = await AsyncStorage.getItem('uid');
-      //console.log('value', value);
-      if (value) {
-        //const user = await userData(parsedValue?.user_id);
-        setUid(JSON.parse(value));
+
+
+    /* UID */
+    const getUserData = async () => {
+      try {
+        const value = await AsyncStorage.getItem('uid');
+        //console.log('value', value);
+        if (value) {
+          //const user = await userData(parsedValue?.user_id);
+          setUid(JSON.parse(value));
+        }
+      } catch (error) {
+        console.error('Error retrieving user data', error);
       }
-    } catch (error) {
-      console.error('Error retrieving user data', error);
-    }
-  };
-
-  useEffect(() => {
-    getUserData();
-    // getLocation();
-  }, []);
+    };
+  
+    useEffect(() => {
+      getUserData();
+      // getLocation();
+    }, []);
 
   /* GRN DATA FETCH */
   const grndData = async () => {
-    // console.log("Hi")
+   // console.log("Hi")
     if (groundID != null) {
       // console.log("Hi123", groundID)
       // setLoading(true);
@@ -188,49 +163,49 @@ const CourtScreen = () => {
       // setCourtslot(slotDatas);
       // getCourttime(groundres, currentDate);
       setLoading(true);
-      console.log('groundId', groundID);
-      let groundres = await getgroundDataById(groundID, 'admin', uid);
+      console.log("groundId", groundID)
+      let groundres = await getgroundDataById(groundID,"admin",uid);
       setLoading(false);
-      console.log('gtrr33 groundres', groundres, 'gtrr33');
+      console.log("gtrr33 groundres" , groundres, "gtrr33");
       setGroundData(groundres);
       setgametype(groundres?.game_type);
-      let court_details = await getCourtsForGround(groundID);
-      //     console.log("court_details", court_details)
-      let ground_details = {...groundData, court_details};
-      console.log('ground_details', ground_details);
-      // setGroundData(ground_details);
-      // setgametype(ground_details?.game_type);
-
-      const slotDatas = await getGroundslotdata(ground_details);
-
-      //  console.log("My SLotsData",slotDatas);
-      setLoading(false);
-
-      setCourtslot(slotDatas);
-      getCourttime(ground_details, currentDate);
+            let court_details = await getCourtsForGround(groundID);
+       //     console.log("court_details", court_details)
+            let ground_details = { ...groundData, court_details };
+            console.log("ground_details", ground_details)
+            // setGroundData(ground_details);
+            // setgametype(ground_details?.game_type);
+      
+            const slotDatas = await getGroundslotdata(ground_details);
+      
+          //  console.log("My SLotsData",slotDatas);
+            setLoading(false);
+      
+            setCourtslot(slotDatas);
+            getCourttime(ground_details, currentDate);
     } else {
-      console.log('grndData2', 'check2 ');
+      console.log("grndData2", "check2 ");
     }
   };
 
   useEffect(() => {
     grndData();
-    // console.log("gtrr334");
+   // console.log("gtrr334");
   }, [uid]);
 
   /* Choose The Game Options */
-  const handleGameclick = value => {
+  const handleGameclick = (value) => {
     let availablegame = createCourt?.gametype;
     if (availablegame?.includes(value)) {
-      let subarr = availablegame.filter(item => item != value);
-      setCreateCourt({...createCourt, gametype: subarr});
-      // console.log(subarr, "availablegame");
+      let subarr = availablegame.filter((item) => item != value);
+      setCreateCourt({ ...createCourt, gametype: subarr });
+     // console.log(subarr, "availablegame");
     } else {
-      setCreateCourt(prevData => ({
+      setCreateCourt((prevData) => ({
         ...prevData,
         gametype: [...(prevData.gametype || []), value],
       }));
-      // console.log(availablegame, "availablegame");
+     // console.log(availablegame, "availablegame");
     }
   };
 
@@ -238,17 +213,18 @@ const CourtScreen = () => {
   const handleAddCourt = async () => {
     //console.log("Hi One")
     if (
-      createCourt.court_name == '' ||
-      createCourt.default_amount == '' ||
+      createCourt.court_name == "" ||
+      createCourt.default_amount == "" ||
       createCourt.gametype.length == 0
     ) {
       setAddCourtError(true);
     } else {
-      // console.log("Hi Two")
+     // console.log("Hi Two")
       setModalOpen(true);
       setAddCourtError(false);
     }
   };
+
 
   /* Create Court Confirmation Function */
   const handleCreateCourt = async () => {
@@ -257,14 +233,14 @@ const CourtScreen = () => {
       editcourtdata.default_amount = createCourt.default_amount;
       editcourtdata.gametype = createCourt.gametype;
 
-      //  console.log(editcourtdata?.court_id, editcourtdata, "gtre43");
+    //  console.log(editcourtdata?.court_id, editcourtdata, "gtre43");
       setLoading(true);
       await updatecourt(editcourtdata, editcourtdata?.court_id);
       setLoading(false);
       setCreateCourt({
         gametype: [],
-        court_name: '',
-        default_amount: '',
+        court_name: "",
+        default_amount: "",
       });
     } else {
       setLoading(true);
@@ -272,8 +248,8 @@ const CourtScreen = () => {
       setLoading(false);
       setCreateCourt({
         gametype: [],
-        court_name: '',
-        default_amount: '',
+        court_name: "",
+        default_amount: "",
       });
     }
     grndData();
@@ -281,16 +257,16 @@ const CourtScreen = () => {
   };
 
   /* Handle Switch Change Court Status Funtions */
-
-  const handlemodal = async props => {
-    //  console.log(props, "4", "gtr55");
-    // console.log(props, "gtr55");
+  
+  const handlemodal = async (props) => {
+  //  console.log(props, "4", "gtr55");
+   // console.log(props, "gtr55");
     setSelectcourt(props);
     setChangestatusmodal(true);
   };
 
   const handleswitchChange = async () => {
-    //    console.log(selectcourt);
+//    console.log(selectcourt);
     selectcourt.isactive = selectcourt?.isactive ? false : true;
     setLoading(true);
     await updatecourt(selectcourt, selectcourt?.court_id);
@@ -300,8 +276,8 @@ const CourtScreen = () => {
   };
 
   /* Handle Court Status Items Edit and Update Function */
-  const handleEditCourt = async item => {
-    //  console.log("gtre332", item);
+  const handleEditCourt = async (item) => {
+  //  console.log("gtre332", item);
     setEditcourtdata(item);
     setCreateCourt({
       gametype: item?.gametype,
@@ -311,24 +287,25 @@ const CourtScreen = () => {
     //handleChange("Add Court");
   };
 
-  const IOSSwitch = props => {
-    const {colors} = useTheme();
+  const IOSSwitch = (props) => {
+    const { colors } = useTheme();
     return (
       <Switch
-        trackColor={{false: '#767577', true: colors.primary}}
-        thumbColor={props.value ? '#f4f3f4' : '#f4f3f4'}
+        trackColor={{ false: "#767577", true: colors.primary }}
+        thumbColor={props.value ? "#f4f3f4" : "#f4f3f4"}
         ios_backgroundColor="#3e3e3e"
         {...props}
       />
     );
   };
 
+
   /* Add Time Slot  */
   // const handleCourtChange = async (value) => {
   // // console.log("value handleCourtChange", value);
   // //   setSelectedValue((prev) => ({ ...prev, Courts: value }));
   // console.log("Selected value in handleCourtChange:", value);
-
+  
   // // Ensure `value` is a string or the appropriate value type
   // if (typeof value === 'string' || typeof value === 'number') {
   //   setSelectedValue(prev => ({ ...prev, Courts: value }));
@@ -337,17 +314,17 @@ const CourtScreen = () => {
   // }
   // };
 
-  const formatDateValues = date => {
+  const formatDateValues = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
-  const handleDateChange = async value => {
-    //console.log("value", value);
-    //  value = value.target.value;
-    // console.log("value123", value);
+  const handleDateChange = async (value) => {
+  //console.log("value", value);
+  //  value = value.target.value;
+     // console.log("value123", value);
     const today = new Date();
     const selectedDate = new Date(value);
 
@@ -355,14 +332,14 @@ const CourtScreen = () => {
     selectedDate.setHours(0, 0, 0, 0);
 
     if (selectedDate.getTime() < today.getTime()) {
-      alert('Please select a future date.');
+      alert("Please select a future date.");
     } else {
-      // setCreateslots({ ...createSlots, date: value });
-      const formattedDate = formatDateValues(value);
-      setCreateslots(prevSlots => ({
-        ...prevSlots,
-        date: formattedDate,
-      }));
+     // setCreateslots({ ...createSlots, date: value });
+     const formattedDate = formatDateValues(value);
+     setCreateslots((prevSlots) => ({
+      ...prevSlots,
+      date: formattedDate,
+    }));
     }
   };
 
@@ -371,7 +348,7 @@ const CourtScreen = () => {
       createSlots.date.toDateString() === new Date().toDateString() &&
       date.getHours() < new Date().getHours()
     ) {
-      Alert.alert('Past time is not allowed');
+      Alert.alert("Past time is not allowed");
     } else {
       setCreateslots({
         ...createSlots,
@@ -393,11 +370,11 @@ const CourtScreen = () => {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   };
-
-  /* Got the DropDown Value Of Court Slot */
-  useEffect(() => {
+  
+ /* Got the DropDown Value Of Court Slot */
+   useEffect(() => {
     if (groundData?.court_details) {
-      console.log('groundData?.court_details', groundData?.court_details);
+      console.log("groundData?.court_details", groundData?.court_details)
       const items = groundData?.court_details.map((court, index) => ({
         id: index + 1,
         value: court?.court_id,
@@ -411,13 +388,14 @@ const CourtScreen = () => {
   useEffect(() => {
     // Update selectedValue.Courts when value changes
     if (value !== null) {
-      setSelectedValue(prev => ({
+      setSelectedValue((prev) => ({
         ...prev,
         Courts: value,
       }));
-    } else if (valueAvailable !== null) {
+    }
+    else if(valueAvailable !== null){
       //console.log("valueAvailable",valueAvailable)
-      setAvailablecourt(prev => ({
+      setAvailablecourt((prev) => ({
         ...prev,
         Courts: valueAvailable,
       }));
@@ -425,31 +403,32 @@ const CourtScreen = () => {
     }
   }, [value, valueAvailable]);
 
-  //   useEffect(()=>{
-  //     if(valueAvailable !== null){
-  //      console.log("valueAvailable",valueAvailable)
-  //      setAvailablecourt((prev) => ({
-  //        ...prev,
-  //        Courts: value,
-  //      }));
-  //      handleavailablecourt(valueAvailable);
-  //    }
+//   useEffect(()=>{
+//     if(valueAvailable !== null){
+//      console.log("valueAvailable",valueAvailable)
+//      setAvailablecourt((prev) => ({
+//        ...prev,
+//        Courts: value,
+//      }));
+//      handleavailablecourt(valueAvailable);
+//    }
 
-  //  },[valueAvailable])
+//  },[valueAvailable])
 
   //console.log("availableCourts", availablecourt, valueAvailable)
+
 
   /* Add Funciton of SLot */
   const handleAddCourtSlot = async () => {
     if (
-      selectedValue?.Courts == '' ||
-      createSlots?.price == '' ||
-      createSlots?.date == '' ||
-      createSlots?.starttime == '' ||
-      createSlots?.endtime == ''
+      selectedValue?.Courts == "" ||
+      createSlots?.price == "" ||
+      createSlots?.date == "" ||
+      createSlots?.starttime == "" ||
+      createSlots?.endtime == ""
     ) {
       setAddCourtTimingError(true);
-      ToastAndroid.show('Past time is not allowed');
+      ToastAndroid.show("Past time is not allowed");
     } else {
       const startT = `${createSlots.date}T${createSlots.starttime}`;
       const endT = `${createSlots.date}T${createSlots.endtime}`;
@@ -461,15 +440,17 @@ const CourtScreen = () => {
         newStartTime < currentDateTime ||
         newEndTime < currentDateTime
       ) {
-        ToastAndroid.show('Past time is not allowed');
+        ToastAndroid.show("Past time is not allowed");
         return;
       } else {
         setLoading(true);
-        const courtDataBySlot = await getcourtevent(selectedValue?.Courts);
+        const courtDataBySlot = await getcourtevent(
+          selectedValue?.Courts
+        );
         setLoading(false);
 
         if (courtDataBySlot.length != 0) {
-          const isExist = courtDataBySlot.filter(item => {
+          const isExist = courtDataBySlot.filter((item) => {
             return (
               (new Date(item.start) < newStartTime &&
                 new Date(item.end) < newStartTime) == false &&
@@ -498,16 +479,19 @@ const CourtScreen = () => {
     createSlots.court_id = selectedValue?.Courts;
 
     if (
-      selectedValue?.selectedEditslot == '' ||
+      selectedValue?.selectedEditslot == "" ||
       selectedValue?.selectedEditslot == undefined
     ) {
       setLoading(true);
-      const data = await createCourtSlot(selectedValue?.Courts, createSlots);
-      console.log('data---1213', data);
+      const data = await createCourtSlot(
+        selectedValue?.Courts,
+        createSlots
+      );
+      console.log("data---1213", data)
       setLoading(false);
       if (
         data?.data ==
-        'Slot overlaps with existing slots. Choose a different time.'
+        "Slot overlaps with existing slots. Choose a different time."
       ) {
         setCreateSlotWarning(true);
       } else {
@@ -517,10 +501,10 @@ const CourtScreen = () => {
       setLoading(true);
       const update = await updateslotdata(
         selectedValue?.selectedEditslot,
-        createSlots,
+        createSlots
       );
       setLoading(false);
-      if (update.status == 'failure') {
+      if (update.status == "failure") {
         setupdateSlotWarning(true);
       } else {
         setupdateSlotWarning(false);
@@ -528,23 +512,24 @@ const CourtScreen = () => {
     }
 
     setCreateslots({
-      price: '',
+      price: "",
       date: new Date(),
-      starttime: '',
-      endtime: '',
+      starttime: "",
+      endtime: "",
       isActive: true,
     });
-    setValue(null);
-    setSelectedValue({...selectedValue, Courts: '', selectedEditslot: ''});
+    setValue(null)
+    setSelectedValue({ ...selectedValue, Courts: "", selectedEditslot: "" });
     grndData();
-    console.log('End Game');
+    console.log("End Game");
     setSlotModalOpen(false);
   };
 
+
   /* Available Timing Sections */
-  const handleavailablecourt = async value => {
-    // setAvailablecourt({ ...availablecourt, Courts: value });
-    // console.log("data HandleAvailCOurt123", !_.isEmpty(availablecourt.date) && !_.isEmpty(value))
+  const handleavailablecourt = async (value) => {
+   // setAvailablecourt({ ...availablecourt, Courts: value });
+   // console.log("data HandleAvailCOurt123", !_.isEmpty(availablecourt.date) && !_.isEmpty(value))
     if (!_.isEmpty(availablecourt.date) && !_.isEmpty(value)) {
       setAccordionOpen(true);
       setLoading(true);
@@ -559,34 +544,31 @@ const CourtScreen = () => {
     }
   };
 
-  const handleavialbleDateChange = async value => {
+  const handleavialbleDateChange = async (value) => {
     //value = value.target.value;
-    //console.log("HI")
+//console.log("HI")
     const today = new Date();
     const selectedDate = new Date(value);
     today.setHours(0, 0, 0, 0);
     selectedDate.setHours(0, 0, 0, 0);
-    //   console.log("HI12", selectedDate)
+ //   console.log("HI12", selectedDate)
     if (selectedDate.getTime() < today.getTime()) {
-      //   console.log("HI1223", selectedDate.getTime())
-      alert('Please select a future date.');
+   //   console.log("HI1223", selectedDate.getTime())
+      alert("Please select a future date.");
     } else {
       const formattedDate = formatDateValues(value);
       //console.log("formattedDate", formattedDate, availablecourt.Courts, value)
-      console.log(
-        'New Values',
-        !_.isEmpty(formattedDate) && !_.isEmpty(availablecourt.Courts),
-      );
+      console.log("New Values", !_.isEmpty(formattedDate) && !_.isEmpty(availablecourt.Courts))
       if (!_.isEmpty(formattedDate) && !_.isEmpty(availablecourt.Courts)) {
         //console.log("HI123", availablecourt)
         setAccordionOpen(true);
         setLoading(true);
-
-        setAvailablecourt(prevSlots => ({
-          ...prevSlots,
-          date: formattedDate,
-        }));
-        // setAvailablecourt({ ...availablecourt, date: value });
+     
+        setAvailablecourt((prevSlots) => ({
+         ...prevSlots,
+         date: formattedDate,
+       }));
+       // setAvailablecourt({ ...availablecourt, date: value });
         //console.log('eventss', groundData, value)
         getCourttime(groundData, formattedDate);
         setLoading(false);
@@ -601,16 +583,16 @@ const CourtScreen = () => {
   const getCourttime = (groundData, date) => {
     let start;
     let end;
-    //console.log("groundData Data111", groundData, typeof date, date, "eventss")
-    if (typeof date === 'object') {
+//console.log("groundData Data111", groundData, typeof date, date, "eventss")
+    if (typeof date === "object") {
       start = `${date.getFullYear()}-${(date.getMonth() + 1)
         .toString()
-        .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${
+        .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}T${
         groundData?.start_time
       }`;
       end = `${date.getFullYear()}-${(date.getMonth() + 1)
         .toString()
-        .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${
+        .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}T${
         groundData?.end_time
       }`;
     } else {
@@ -622,7 +604,7 @@ const CourtScreen = () => {
     let dayend = new Date(end);
 
     let hourdiff = ((dayend - daystart) / (1000 * 60 * 60)).toFixed(1);
-    //console.log("days hourdiff", daystart, dayend, hourdiff, 'eventss')
+//console.log("days hourdiff", daystart, dayend, hourdiff, 'eventss')
     let eventss = [];
     let starttime = daystart;
 
@@ -630,10 +612,10 @@ const CourtScreen = () => {
       let en;
 
       en = {
-        backgroundColor: '#fff',
-        bordercolor: '#339A49',
-        textColor: '#339A49',
-        zIndex: '1',
+        backgroundColor: "#fff",
+        bordercolor: "#339A49",
+        textColor: "#339A49",
+        zIndex: "1",
         selected: false,
         isbooked: false,
         isblocked: false,
@@ -641,35 +623,35 @@ const CourtScreen = () => {
       en.start = new Date(starttime.getTime() + 1);
       en.end = new Date(starttime.getTime() + 60 * 60 * 1000);
       eventss.push(en);
-      console.log('eventss', en, 'Hi');
+console.log("eventss", en, 'Hi')
       starttime = new Date(en.end.getTime() + 1);
     }
     eventss?.map(
-      court =>
+      (court) =>
         eventData.length &&
-        eventData?.map(event => {
+        eventData?.map((event) => {
           let date1 = new Date(event?.start);
           let date2 = new Date(court?.start);
           if (
             Math.abs(date1.getTime() - date2.getTime()) <= 1000 &&
-            event.status == 'Blocked'
+            event.status == "Blocked"
           ) {
             court.isblocked = true;
-            court.backgroundColor = '#EEF0F3';
-            court.textColor = '#ff0000';
-            court.bordercolor = '#ff0000';
+            court.backgroundColor = "#EEF0F3";
+            court.textColor = "#ff0000";
+            court.bordercolor = "#ff0000";
           } else if (
             Math.abs(date1.getTime() - date2.getTime()) <= 1000 &&
-            event.status != 'Canceled' &&
-            event.status != 'Cancelled' &&
-            event.status != 'Unblocked'
+            event.status != "Canceled" &&
+            event.status != "Cancelled" &&
+            event.status != "Unblocked"
           ) {
             court.isbooked = true;
-            court.backgroundColor = '#EEF0F3';
-            court.textColor = '#64627C';
-            court.bordercolor = '#64627C';
+            court.backgroundColor = "#EEF0F3";
+            court.textColor = "#64627C";
+            court.bordercolor = "#64627C";
           }
-        }),
+        })
     );
     let eventarr = eventss.map((element, index) => {
       if (
@@ -679,10 +661,10 @@ const CourtScreen = () => {
         element = {
           ...element,
 
-          color: '#FFF',
-          backgroundColor: '#FFF',
-          bordercolor: '#00b4d8',
-          textColor: '#00b4d8',
+          color: "#FFF",
+          backgroundColor: "#FFF",
+          bordercolor: "#00b4d8",
+          textColor: "#00b4d8",
         };
 
         return element;
@@ -695,13 +677,15 @@ const CourtScreen = () => {
     setCourtTime(eventarr);
   };
 
+
+  
   const handlebooking = (value, index) => {
     const updatedCourtTime = [...courtTime];
 
     const currentTime = new Date();
     const currentTimehour = new Date().getHours();
     if (value.start <= new Date().getHours()) {
-      alert('This booking time has already passed.');
+      alert("This booking time has already passed.");
       return;
     } else {
       if (value.isblocked) {
@@ -709,28 +693,28 @@ const CourtScreen = () => {
           ...updatedCourtTime[index],
           mapIndex: index,
           selected: !updatedCourtTime[index].selected,
-          color: !updatedCourtTime[index].selected ? '#FFF' : '#ff0000',
+          color: !updatedCourtTime[index].selected ? "#FFF" : "#ff0000",
           bordercolor: !updatedCourtTime[index].selected
-            ? '#339A49'
-            : '#ff0000',
+            ? "#339A49"
+            : "#ff0000",
           backgroundColor: !updatedCourtTime[index].selected
-            ? '#339A49'
-            : '#EEF0F3',
-          textColor: !updatedCourtTime[index].selected ? '#FFF' : '#ff0000',
+            ? "#339A49"
+            : "#EEF0F3",
+          textColor: !updatedCourtTime[index].selected ? "#FFF" : "#ff0000",
         };
       } else {
         updatedCourtTime[index] = {
           ...updatedCourtTime[index],
           mapIndex: index,
           selected: !updatedCourtTime[index].selected,
-          color: !updatedCourtTime[index].selected ? '#FFF' : '#339A49',
+          color: !updatedCourtTime[index].selected ? "#FFF" : "#339A49",
           bordercolor: !updatedCourtTime[index].selected
-            ? '#339A49'
-            : '#339A49',
+            ? "#339A49"
+            : "#339A49",
           backgroundColor: !updatedCourtTime[index].selected
-            ? '#339A49'
-            : '#FFF',
-          textColor: !updatedCourtTime[index].selected ? '#FFF' : '#339A49',
+            ? "#339A49"
+            : "#FFF",
+          textColor: !updatedCourtTime[index].selected ? "#FFF" : "#339A49",
         };
       }
       setCourtTime(updatedCourtTime);
@@ -742,29 +726,34 @@ const CourtScreen = () => {
       navigation.navigate(USERLOGIN);
       return;
     }
-    let data = courtTime?.filter(item => item?.selected == true);
+    let data = courtTime?.filter((item) => item?.selected == true);
     if (
-      availablecourt?.Courts != '' &&
-      availablecourt?.date != '' &&
+      availablecourt?.Courts != "" &&
+      availablecourt?.date != "" &&
       data.length != 0
     ) {
       availablecourt.selectedSlot = data;
       let Addcartdatas = [];
       const courtDetails = groundData?.court_details?.filter(
-        item => item.court_id == availablecourt?.Courts,
+        (item) => item.court_id == availablecourt?.Courts
       );
       availablecourt.courtDetails = courtDetails;
       let courtNo;
-      // console.log("availablecourt- COurtDetails",courtDetails, availablecourt)
+     // console.log("availablecourt- COurtDetails",courtDetails, availablecourt)
       if (typeof availablecourt?.Courts.match(/\d+/g) == null) {
-        courtNo = availablecourt?.Courts.match(/\d+/g).join('');
+        courtNo = availablecourt?.Courts.match(/\d+/g).join("");
       } else {
-        courtNo = stringToAlphabetPositions(availablecourt?.Courts.slice(0, 5));
+        courtNo = stringToAlphabetPositions(
+          availablecourt?.Courts.slice(0, 5)
+        );
       }
-      console.log('courtNo', courtNo);
-      let courtslot = await getcourtslotdata(availablecourt?.Courts, 'user');
+      console.log("courtNo", courtNo);
+      let courtslot = await getcourtslotdata(
+        availablecourt?.Courts,
+        "user"
+      );
 
-      data.forEach(slot => {
+      data.forEach((slot) => {
         let cartItem = {
           court_id: availablecourt?.Courts,
           court_name: courtDetails[0]?.court_name,
@@ -772,18 +761,18 @@ const CourtScreen = () => {
           user_id: uid,
           // amount: courtDetails[0]?.default_amount,
           start: `${availablecourt?.date}T${new Date(
-            slot.start,
-          ).toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
+            slot.start
+          ).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
             hour12: false,
           })}`,
           end: `${availablecourt?.date}T${new Date(slot.end).toLocaleTimeString(
-            'en-US',
-            {hour: '2-digit', minute: '2-digit', hour12: false},
+            "en-US",
+            { hour: "2-digit", minute: "2-digit", hour12: false }
           )}`,
         };
-        let currentslot = courtslot?.slotData?.find(item => {
+        let currentslot = courtslot?.slotData?.find((item) => {
           return (
             (new Date(item.start) < new Date(cartItem.start) &&
               new Date(item.end) < new Date(cartItem.start)) == false &&
@@ -798,30 +787,30 @@ const CourtScreen = () => {
         Addcartdatas.push(cartItem);
       });
       let bookedDataList = [];
-      const promises = Addcartdatas.map(async item => {
+      const promises = Addcartdatas.map(async (item) => {
         let dat = await getcourtevent(item.court_id);
-        let bookedData = dat?.filter(data => data?.start === item.start);
+        let bookedData = dat?.filter((data) => data?.start === item.start);
 
         return bookedData;
       });
       const results = await Promise.all(promises);
       bookedDataList = results.flat();
-      //console.log("results", results)
+//console.log("results", results)
       const response = await createNewBlockEvent(Addcartdatas);
-      //console.log("response handle Booking", response)
-      if (response?.status == 'Success') {
+//console.log("response handle Booking", response)
+      if (response?.status == "Success") {
         setblockModalOpen(false);
         handleReset();
-        // ToastAndroid.show("Blocking Success");
+       // ToastAndroid.show("Blocking Success");
 
         grndData();
         //setblockModalOpen(false);
       } else {
-        toast.error('Blocking Failed', {
-          position: 'top-right',
+        toast.error("Blocking Failed", {
+          position: "top-right",
           autoClose: 2000,
         });
-        console.error('book fail');
+        console.error("book fail");
       }
       // }
     }
@@ -832,12 +821,12 @@ const CourtScreen = () => {
       navigation.navigate(USERLOGIN);
       return;
     }
-    let data = courtTime?.filter(item => item?.selected == true);
-    let blockeddata = data?.filter(item => item?.isblocked == true);
+    let data = courtTime?.filter((item) => item?.selected == true);
+    let blockeddata = data?.filter((item) => item?.isblocked == true);
 
     if (
-      availablecourt?.Courts != 'Select court' &&
-      availablecourt?.date != '' &&
+      availablecourt?.Courts != "Select court" &&
+      availablecourt?.date != "" &&
       // availablecourt?.gameType != "Select game" &&
       data.length != 0
     ) {
@@ -847,7 +836,7 @@ const CourtScreen = () => {
         setblockModalOpen(true);
       }
     } else {
-      console.error('select appropriate values');
+      console.error("select appropriate values");
     }
   };
 
@@ -857,12 +846,12 @@ const CourtScreen = () => {
       return;
     }
 
-    let data = courtTime?.filter(item => item?.selected == true);
-    let unblockeddata = data?.filter(item => item?.isblocked == false);
+    let data = courtTime?.filter((item) => item?.selected == true);
+    let unblockeddata = data?.filter((item) => item?.isblocked == false);
 
     if (
-      availablecourt?.Courts != 'Select court' &&
-      availablecourt?.date != '' &&
+      availablecourt?.Courts != "Select court" &&
+      availablecourt?.date != "" &&
       // availablecourt?.gameType != "Select game" &&
       data.length != 0
     ) {
@@ -872,36 +861,42 @@ const CourtScreen = () => {
         setunblockModalOpen(true);
       }
     } else {
-      console.error('select appropriate values');
+      console.error("select appropriate values");
     }
   };
+
 
   const handleUnblock = async () => {
     if (uid == null) {
       navigation.navigate(USERLOGIN);
       return;
     }
-    let data = courtTime?.filter(item => item?.selected == true);
+    let data = courtTime?.filter((item) => item?.selected == true);
     if (
-      availablecourt?.Courts != '' &&
-      availablecourt?.date != '' &&
+      availablecourt?.Courts != "" &&
+      availablecourt?.date != "" &&
       data.length != 0
     ) {
       availablecourt.selectedSlot = data;
       let Addcartdatas = [];
       const courtDetails = groundData?.court_details?.filter(
-        item => item.court_id == availablecourt?.Courts,
+        (item) => item.court_id == availablecourt?.Courts
       );
       availablecourt.courtDetails = courtDetails;
       let courtNo;
       if (typeof availablecourt?.Courts.match(/\d+/g) == null) {
-        courtNo = availablecourt?.Courts.match(/\d+/g).join('');
+        courtNo = availablecourt?.Courts.match(/\d+/g).join("");
       } else {
-        courtNo = stringToAlphabetPositions(availablecourt?.Courts.slice(0, 5));
+        courtNo = stringToAlphabetPositions(
+          availablecourt?.Courts.slice(0, 5)
+        );
       }
-      let courtslot = await getcourtslotdata(availablecourt?.Courts, 'user');
+      let courtslot = await getcourtslotdata(
+        availablecourt?.Courts,
+        "user"
+      );
 
-      data.forEach(slot => {
+      data.forEach((slot) => {
         let cartItem = {
           court_id: availablecourt?.Courts.value,
           court_name: courtDetails[0]?.court_name,
@@ -909,18 +904,18 @@ const CourtScreen = () => {
           user_id: uid,
           // amount: courtDetails[0]?.default_amount,
           start: `${availablecourt?.date}T${new Date(
-            slot.start,
-          ).toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
+            slot.start
+          ).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
             hour12: false,
           })}`,
           end: `${availablecourt?.date}T${new Date(slot.end).toLocaleTimeString(
-            'en-US',
-            {hour: '2-digit', minute: '2-digit', hour12: false},
+            "en-US",
+            { hour: "2-digit", minute: "2-digit", hour12: false }
           )}`,
         };
-        let currentslot = courtslot?.slotData?.find(item => {
+        let currentslot = courtslot?.slotData?.find((item) => {
           return (
             (new Date(item.start) < new Date(cartItem.start) &&
               new Date(item.end) < new Date(cartItem.start)) == false &&
@@ -936,34 +931,34 @@ const CourtScreen = () => {
       });
 
       let bookedDataList = [];
-      const promises = Addcartdatas.map(async item => {
+      const promises = Addcartdatas.map(async (item) => {
         let dat = await getcourtevent(item.court_id);
-        let bookedData = dat?.filter(data => data?.start === item.start);
+        let bookedData = dat?.filter((data) => data?.start === item.start);
 
         return bookedData;
       });
       const results = await Promise.all(promises);
       bookedDataList = results.flat();
 
-      const mapcosnt = bookedDataList.map(async datum => {
-        await changeEventStatus(datum?.event_id, 'Unblocked');
+      const mapcosnt = bookedDataList.map(async (datum) => {
+        await changeEventStatus(datum?.event_id, "Unblocked");
       });
 
       if (mapcosnt?.length) {
         handleReset();
-        toast.success('Unblocking Success', {
-          position: 'top-right',
+        toast.success("Unblocking Success", {
+          position: "top-right",
           autoClose: 2000,
         });
         grndData();
         setunblockModalOpen(false);
       } else {
-        toast.error('Unblocking Failed', {
-          position: 'top-right',
+        toast.error("Unblocking Failed", {
+          position: "top-right",
           autoClose: 2000,
         });
         setunblockModalOpen(false);
-        console.error('Unblocking fail');
+        console.error("Unblocking fail");
       }
       // }
     }
@@ -971,24 +966,24 @@ const CourtScreen = () => {
 
   const handleReset = () => {
     setAvailablecourt({
-      Courts: '',
+      Courts: "",
       date: currentDate,
     });
-    setValueAvailable(null);
+setValueAvailable(null);
     setAccordionOpen(false);
     setCourtTime([]);
   };
 
   /* Update The Slots */
-  const handleSlotedit = async value => {
-    console.log('value one', value);
+  const handleSlotedit = async (value) => {
+    console.log("value one", value)
     setLoading(true);
     const courtDataBySlot = await getcourtevent(value.court_id);
     setLoading(false);
     if (courtDataBySlot.length != 0) {
       const newStartTime = new Date(value.start);
       const newEndTime = new Date(value.end);
-      const isExist = courtDataBySlot.filter(item => {
+      const isExist = courtDataBySlot.filter((item) => {
         return (
           (new Date(item.start) < newStartTime &&
             new Date(item.end) < newStartTime) == false &&
@@ -998,14 +993,14 @@ const CourtScreen = () => {
       });
 
       if (!isExist.length) {
-        setAddEdit('Update');
+        setAddEdit("Update");
         value.start = formatDateToISO(value.start);
         value.end = formatDateToISO(value.end);
 
         let court_value = courtItems?.filter(
-          item => item.value == value?.court_id,
+          (item) => item.value == value?.court_id
         );
-        console.log('court_value123', court_value);
+        console.log("court_value123", court_value);
         setSelectedValue({
           ...selectedValue,
           selectedEditslot: value?.slot_id,
@@ -1026,20 +1021,20 @@ const CourtScreen = () => {
         setSloteditWarning(true);
       }
     } else {
-      setAddEdit('Update');
+      setAddEdit("Update");
       value.start = formatDateToISO(value.start);
       value.end = formatDateToISO(value.end);
 
       let court_value = courtItems?.filter(
-        item => item.value == value?.court_id,
+        (item) => item.value == value?.court_id
       );
-      console.log('court_value', court_value);
+console.log("court_value", court_value);
       setSelectedValue({
         ...selectedValue,
         selectedEditslot: value?.slot_id,
         Courts: court_value[0].value,
       });
-      setValue(court_value[0].value);
+setValue(court_value[0].value);
       setCreateslots({
         date: value?.start.slice(0, 10),
         starttime: value?.start?.slice(11, 16),
@@ -1049,37 +1044,40 @@ const CourtScreen = () => {
       });
       setAnchorEl(null);
 
-      //      handleChange("Slots");
+//      handleChange("Slots");
     }
   };
 
-  const handleSlotdelete = async value => {
+
+  const handleSlotdelete = async (value) => {
     setLoading(true);
     const delSlot = await deleteSlotDetails(value);
     setLoading(false);
-    console.log('delSlot', delSlot);
-    if (delSlot == 'deleted') {
+console.log("delSlot", delSlot)
+    if (delSlot == "deleted") {
       grndData();
     } else {
       setSlotDelWarning(true);
     }
   };
 
+
   function formatDateToISO(inputDate) {
     const date = new Date(inputDate);
 
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
+
   function charToAlphabetPosition(char) {
     // Convert a single character to its alphabetical position
-    return char.toLowerCase().charCodeAt(0) - 'a'.charCodeAt(0) + 1;
+    return char.toLowerCase().charCodeAt(0) - "a".charCodeAt(0) + 1;
   }
 
   function stringToAlphabetPositions(inputString) {
@@ -1087,7 +1085,7 @@ const CourtScreen = () => {
     inputString = inputString.toLowerCase();
 
     // Convert each character to its alphabetical position and concatenate them
-    let result = '';
+    let result = "";
     for (let i = 0; i < inputString.length; i++) {
       if (inputString[i].match(/[a-z]/)) {
         result += charToAlphabetPosition(inputString[i]);
@@ -1100,18 +1098,22 @@ const CourtScreen = () => {
 
   const compareByDate = (a, b) => new Date(a.start) - new Date(a.start);
 
-  const toggleSection = index => {
-    setActiveSections(prevState => ({
+  const toggleSection = (index) => {
+    setActiveSections((prevState) => ({
       ...prevState,
       [index]: !prevState[index],
     }));
   };
 
-  const CourtCard = ({item, handlemodal, handleEditCourt}) => {
-    const {colors} = useTheme();
 
+
+
+
+  const CourtCard = ({ item, handlemodal, handleEditCourt }) => {
+    const { colors } = useTheme();
+  
     return (
-      <View style={[styles.cardCourtCard, {backgroundColor: colors.card}]}>
+      <View style={[styles.cardCourtCard, { backgroundColor: colors.card }]}>
         <View style={styles.rowCourtCard}>
           <View>
             <Text style={styles.courtNameCourtCard}>{item.court_name}</Text>
@@ -1123,7 +1125,7 @@ const CourtScreen = () => {
             <Icon name="ellipsis-v" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
-        <View style={[styles.rowCourtCard, {paddingTop: 40}]}>
+        <View style={[styles.rowCourtCard, { paddingTop: 40 }]}>
           <Text style={styles.priceCourtCard}>INR {item.default_amount}</Text>
           <View style={styles.rowCourtCard}>
             <Text style={styles.blockCourtTextCourtCard}>Block Court</Text>
@@ -1156,7 +1158,9 @@ const CourtScreen = () => {
         />
       )}
     </TouchableOpacity>
+
   );
+
 
   return (
     <ScrollView style={styles.scrollContainer}>
@@ -1404,64 +1408,42 @@ const CourtScreen = () => {
                       item => item?.isActive,
                     );
 
+            return (
+              <View key={index} style={styles.cardSlot}>
+                <TouchableOpacity onPress={() => toggleSection(index)}>
+                  <View style={styles.cardHeaderSlot}>
+                    <View>
+                      {/* <Text style={styles.groundNameSlot}>{groundData.groundname}</Text> */}
+                      <Text style={styles.courtNameSlot}>{item.court_name}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                <Collapsible collapsed={!activeSections[index]}>
+                  {activeSlotData?.length ? <View style={styles.dividerSlot} /> : null}
+                  {activeSlotData?.map((slot, slotIndex) => {
+                    const startTimeFormatted = getTimeFormatted(slot.start);
+                    const endTimeFormatted = getTimeFormatted(slot.end);
                     return (
-                      <View key={index} style={styles.cardSlot}>
-                        <TouchableOpacity onPress={() => toggleSection(index)}>
-                          <View style={styles.cardHeaderSlot}>
-                            <View>
-                              {/* <Text style={styles.groundNameSlot}>{groundData.groundname}</Text> */}
-                              <Text style={styles.courtNameSlot}>
-                                {item.court_name}
-                              </Text>
-                            </View>
-                          </View>
-                        </TouchableOpacity>
-                        <Collapsible collapsed={!activeSections[index]}>
-                          {activeSlotData?.length ? (
-                            <View style={styles.dividerSlot} />
-                          ) : null}
-                          {activeSlotData?.map((slot, slotIndex) => {
-                            const startTimeFormatted = getTimeFormatted(
-                              slot.start,
-                            );
-                            const endTimeFormatted = getTimeFormatted(slot.end);
-                            return (
-                              <View
-                                key={slotIndex}
-                                style={styles.slotDetailsSlot}>
-                                <View style={styles.slotTimeSlot}>
-                                  <Text>{startTimeFormatted.formatedate}</Text>
-                                  <Text>{`${startTimeFormatted.Time} - ${endTimeFormatted.Time}`}</Text>
-                                </View>
-                                <Text
-                                  style={
-                                    styles.slotPriceSlot
-                                  }>{`₹${slot.price}`}</Text>
-                                <View style={styles.actionsSlot}>
-                                  <TouchableOpacity
-                                    onPress={() => handleSlotdelete(slot)}>
-                                    {/* <Text>Delete</Text> */}
-                                    <Image
-                                      source={IMAGES.DeleteIcons}
-                                      style={styles.actionIconSlot}
-                                    />
-                                  </TouchableOpacity>
-                                  <TouchableOpacity
-                                    onPress={() => handleSlotedit(slot)}>
-                                    <Image
-                                      source={IMAGES.EditIcons}
-                                      style={styles.actionIconSlot}
-                                    />
-                                    {/* <Text>Edit</Text> */}
-                                  </TouchableOpacity>
-                                </View>
-                              </View>
-                            );
-                          })}
-                        </Collapsible>
+                      <View key={slotIndex} style={styles.slotDetailsSlot}>
+                        <View style={styles.slotTimeSlot}>
+                          <Text>{startTimeFormatted.formatedate}</Text>
+                          <Text>{`${startTimeFormatted.Time} - ${endTimeFormatted.Time}`}</Text>
+                        </View>
+                        <Text style={styles.slotPriceSlot}>{`₹${slot.price}`}</Text>
+                        <View style={styles.actionsSlot}>
+                          <TouchableOpacity onPress={() => handleSlotdelete(slot)}>
+                            {/* <Text>Delete</Text> */}
+                            <Image source={IMAGES.DeleteIcons} style={styles.actionIconSlot} />
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => handleSlotedit(slot)}>
+                          <Image source={IMAGES.EditIcons} style={styles.actionIconSlot} />
+                            {/* <Text>Edit</Text> */}
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     );
                   })}
+
               </>
             )}
           </View>
@@ -1650,93 +1632,9 @@ const CourtScreen = () => {
                 </TouchableOpacity>
               </View>
             </View>
+
           </View>
-        </Modal>
-        <Modal
-          visible={changestatusmodal}
-          transparent={true}
-          onRequestClose={() => setChangestatusmodal(false)}
-          animationType="slide">
-          <View style={styles.modalCreateCourtOverlay}>
-            <View style={styles.modalCreateCourtContainer}>
-              <View style={styles.headerCreateCourt}>
-                <Text style={styles.modalCreateCourtText}>
-                  Are you sure you want to Change Court Status?
-                </Text>
-                <TouchableOpacity onPress={() => setChangestatusmodal(false)}>
-                  <Text style={styles.closeCreateCourtButton}>X</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.buttonCreateCourtContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.buttonCreateCourt,
-                    styles.cancelCreateCourtButton,
-                  ]}
-                  onPress={() => setChangestatusmodal(false)}>
-                  <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.confirmCreateCourtButton]}
-                  onPress={handleswitchChange}>
-                  <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-        <Modal
-          visible={SlotmodalOpen}
-          transparent={true}
-          onRequestClose={() => setSlotModalOpen(false)}
-          animationType="slide">
-          <View style={styles.modalCreateCourtOverlay}>
-            <View style={styles.modalCreateCourtContainer}>
-              <View style={styles.headerCreateCourt}>
-                <Text style={styles.modalCreateCourtText}>
-                  {addEdit == 'Add'
-                    ? 'Are you sure you want to Create a Slot?'
-                    : 'Are you sure you want to Update a Slot?'}
-                </Text>
-                <TouchableOpacity onPress={() => setSlotModalOpen(false)}>
-                  <Text style={styles.closeCreateCourtButton}>X</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.buttonCreateCourtContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.buttonCreateCourt,
-                    styles.cancelCreateCourtButton,
-                  ]}
-                  onPress={() => setSlotModalOpen(false)}>
-                  <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.confirmCreateCourtButton]}
-                  onPress={handleCourtslot}>
-                  <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-        <Modal
-          visible={CreateSlotWarning}
-          transparent={true}
-          onRequestClose={() => setCreateSlotWarning(false)}
-          animationType="slide">
-          <View style={styles.modalCreateCourtOverlay}>
-            <View style={styles.modalCreateCourtContainer}>
-              <View style={styles.headerCreateCourt}>
-                <Text style={styles.modalCreateCourtText}>
-                  Cannot create slot as another slot already exists in the
-                  chosen time range.
-                </Text>
-                <TouchableOpacity onPress={() => setCreateSlotWarning(false)}>
-                  <Text style={styles.closeCreateCourtButton}>X</Text>
-                </TouchableOpacity>
-              </View>
-              {/* <View style={styles.buttonCreateCourtContainer}>
+          <View style={styles.buttonCreateCourtContainer}>
             <TouchableOpacity
               style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
               onPress={() => setModalOpen(false)}
@@ -1749,191 +1647,299 @@ const CourtScreen = () => {
             >
               <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
             </TouchableOpacity>
-          </View> */}
-            </View>
           </View>
-        </Modal>
-        <Modal
-          visible={CreateEditSlotWarning}
-          transparent={true}
-          onRequestClose={() => setCreateEditSlotWarning(false)}
-          animationType="slide">
-          <View style={styles.modalCreateCourtOverlay}>
-            <View style={styles.modalCreateCourtContainer}>
-              <View style={styles.headerCreateCourt}>
-                <Text style={styles.modalCreateCourtText}>
-                  Cannot create slot as an event already exists in the chosen
-                  time range.
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setCreateEditSlotWarning(false)}>
-                  <Text style={styles.closeCreateCourtButton}>X</Text>
-                </TouchableOpacity>
-              </View>
-              {/* <View style={styles.buttonCreateCourtContainer}>
-            <TouchableOpacity
-              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
-              onPress={() => setModalOpen(false)}
-            >
-              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.confirmCreateCourtButton]}
-              onPress={handleCreateCourt}
-            >
-              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
-            </TouchableOpacity>
-          </View> */}
-            </View>
-          </View>
-        </Modal>
-        <Modal
-          visible={blockmodalopen}
-          transparent={true}
-          onRequestClose={() => setblockModalOpen(false)}
-          animationType="slide">
-          <View style={styles.modalCreateCourtOverlay}>
-            <View style={styles.modalCreateCourtContainer}>
-              <View style={styles.headerCreateCourt}>
-                <Text style={styles.modalCreateCourtText}>
-                  Are you sure you want to block the selected slots?
-                </Text>
-                <TouchableOpacity onPress={() => setblockModalOpen(false)}>
-                  <Text style={styles.closeCreateCourtButton}>X</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.buttonCreateCourtContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.buttonCreateCourt,
-                    styles.cancelCreateCourtButton,
-                  ]}
-                  onPress={() => setblockModalOpen(false)}>
-                  <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.confirmCreateCourtButton]}
-                  onPress={handleblock}>
-                  <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-        <Modal
-          visible={blockerrormodalopen}
-          transparent={true}
-          onRequestClose={() => setblockerrorModalOpen(false)}
-          animationType="slide">
-          <View style={styles.modalCreateCourtOverlay}>
-            <View style={styles.modalCreateCourtContainer}>
-              <View style={styles.headerCreateCourt}>
-                <Text style={styles.modalCreateCourtText}>
-                  Cannot block slot as an blocked slot exists in the chosen time
-                  range.
-                </Text>
-                <TouchableOpacity onPress={() => setblockerrorModalOpen(false)}>
-                  <Text style={styles.closeCreateCourtButton}>X</Text>
-                </TouchableOpacity>
-              </View>
-              {/* <View style={styles.buttonCreateCourtContainer}>
-            <TouchableOpacity
-              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
-              onPress={() => setModalOpen(false)}
-            >
-              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.confirmCreateCourtButton]}
-              onPress={handleCreateCourt}
-            >
-              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
-            </TouchableOpacity>
-          </View> */}
-            </View>
-          </View>
-        </Modal>
-        <Modal
-          visible={unblockmodalopen}
-          transparent={true}
-          onRequestClose={() => setunblockModalOpen(false)}
-          animationType="slide">
-          <View style={styles.modalCreateCourtOverlay}>
-            <View style={styles.modalCreateCourtContainer}>
-              <View style={styles.headerCreateCourt}>
-                <Text style={styles.modalCreateCourtText}>
-                  Are you sure you want to unblock the selected slots?
-                </Text>
-                <TouchableOpacity onPress={() => setunblockModalOpen(false)}>
-                  <Text style={styles.closeCreateCourtButton}>X</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.buttonCreateCourtContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.buttonCreateCourt,
-                    styles.cancelCreateCourtButton,
-                  ]}
-                  onPress={() => setunblockModalOpen(false)}>
-                  <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.confirmCreateCourtButton]}
-                  onPress={handleUnblock}>
-                  <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-        <Modal
-          visible={unblockerrormodalopen}
-          transparent={true}
-          onRequestClose={() => setunblockerrorModalOpen(false)}
-          animationType="slide">
-          <View style={styles.modalCreateCourtOverlay}>
-            <View style={styles.modalCreateCourtContainer}>
-              <View style={styles.headerCreateCourt}>
-                <Text style={styles.modalCreateCourtText}>
-                  Cannot unblock slot as an unblocked slot exists in the chosen
-                  time range.
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setunblockerrorModalOpen(false)}>
-                  <Text style={styles.closeCreateCourtButton}>X</Text>
-                </TouchableOpacity>
-              </View>
-              {/* <View style={styles.buttonCreateCourtContainer}>
-            <TouchableOpacity
-              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
-              onPress={() => setModalOpen(false)}
-            >
-              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.confirmCreateCourtButton]}
-              onPress={handleCreateCourt}
-            >
-              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
-            </TouchableOpacity>
-          </View> */}
-            </View>
-          </View>
-        </Modal>
+        </View>
       </View>
+    </Modal>
+    <Modal
+      visible={changestatusmodal}
+      transparent={true}
+      onRequestClose={() => setChangestatusmodal(false)}
+      animationType="slide"
+    >
+      <View style={styles.modalCreateCourtOverlay}>
+        <View style={styles.modalCreateCourtContainer}>
+          <View style={styles.headerCreateCourt}>
+            <Text style={styles.modalCreateCourtText}>
+                Are you sure you want to Change Court Status?
+            </Text>
+            <TouchableOpacity onPress={() => setChangestatusmodal(false)}>
+              <Text style={styles.closeCreateCourtButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.buttonCreateCourtContainer}>
+            <TouchableOpacity
+              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
+              onPress={() => setChangestatusmodal(false)}
+            >
+              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmCreateCourtButton]}
+              onPress={handleswitchChange}
+            >
+              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    <Modal
+      visible={SlotmodalOpen}
+      transparent={true}
+      onRequestClose={() => setSlotModalOpen(false)}
+      animationType="slide"
+    >
+      <View style={styles.modalCreateCourtOverlay}>
+        <View style={styles.modalCreateCourtContainer}>
+          <View style={styles.headerCreateCourt}>
+            <Text style={styles.modalCreateCourtText}>
+            {addEdit == "Add"
+                ? "Are you sure you want to Create a Slot?"
+                : "Are you sure you want to Update a Slot?"}
+            </Text>
+            <TouchableOpacity onPress={() => setSlotModalOpen(false)}>
+              <Text style={styles.closeCreateCourtButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.buttonCreateCourtContainer}>
+            <TouchableOpacity
+              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
+              onPress={() => setSlotModalOpen(false)}
+            >
+              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmCreateCourtButton]}
+              onPress={handleCourtslot}
+            >
+              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    <Modal
+      visible={CreateSlotWarning}
+      transparent={true}
+      onRequestClose={() => setCreateSlotWarning(false)}
+      animationType="slide"
+    >
+      <View style={styles.modalCreateCourtOverlay}>
+        <View style={styles.modalCreateCourtContainer}>
+          <View style={styles.headerCreateCourt}>
+            <Text style={styles.modalCreateCourtText}>
+            Cannot create slot as another slot already exists in the chosen
+            time range.
+            </Text>
+            <TouchableOpacity onPress={() => setCreateSlotWarning(false)}>
+              <Text style={styles.closeCreateCourtButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+          {/* <View style={styles.buttonCreateCourtContainer}>
+            <TouchableOpacity
+              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
+              onPress={() => setModalOpen(false)}
+            >
+              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmCreateCourtButton]}
+              onPress={handleCreateCourt}
+            >
+              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
+            </TouchableOpacity>
+          </View> */}
+        </View>
+      </View>
+    </Modal>
+    <Modal
+      visible={CreateEditSlotWarning}
+      transparent={true}
+      onRequestClose={() => setCreateEditSlotWarning(false)}
+      animationType="slide"
+    >
+      <View style={styles.modalCreateCourtOverlay}>
+        <View style={styles.modalCreateCourtContainer}>
+          <View style={styles.headerCreateCourt}>
+            <Text style={styles.modalCreateCourtText}>
+            Cannot create slot as an event already exists in the chosen time
+            range.
+            </Text>
+            <TouchableOpacity onPress={() => setCreateEditSlotWarning(false)}>
+              <Text style={styles.closeCreateCourtButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+          {/* <View style={styles.buttonCreateCourtContainer}>
+            <TouchableOpacity
+              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
+              onPress={() => setModalOpen(false)}
+            >
+              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmCreateCourtButton]}
+              onPress={handleCreateCourt}
+            >
+              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
+            </TouchableOpacity>
+          </View> */}
+        </View>
+      </View>
+    </Modal>
+    <Modal
+      visible={blockmodalopen}
+      transparent={true}
+      onRequestClose={() => setblockModalOpen(false)}
+      animationType="slide"
+    >
+      <View style={styles.modalCreateCourtOverlay}>
+        <View style={styles.modalCreateCourtContainer}>
+          <View style={styles.headerCreateCourt}>
+            <Text style={styles.modalCreateCourtText}>
+            Are you sure you want to block the selected slots?
+            </Text>
+            <TouchableOpacity onPress={() => setblockModalOpen(false)}>
+              <Text style={styles.closeCreateCourtButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.buttonCreateCourtContainer}>
+            <TouchableOpacity
+              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
+              onPress={() => setblockModalOpen(false)}
+            >
+              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmCreateCourtButton]}
+              onPress={handleblock}
+            >
+              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    <Modal
+      visible={blockerrormodalopen}
+      transparent={true}
+      onRequestClose={() => setblockerrorModalOpen(false)}
+      animationType="slide"
+    >
+      <View style={styles.modalCreateCourtOverlay}>
+        <View style={styles.modalCreateCourtContainer}>
+          <View style={styles.headerCreateCourt}>
+            <Text style={styles.modalCreateCourtText}>
+            Cannot block slot as an blocked slot exists in the chosen time
+              range.
+            </Text>
+            <TouchableOpacity onPress={() => setblockerrorModalOpen(false)}>
+              <Text style={styles.closeCreateCourtButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+          {/* <View style={styles.buttonCreateCourtContainer}>
+            <TouchableOpacity
+              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
+              onPress={() => setModalOpen(false)}
+            >
+              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmCreateCourtButton]}
+              onPress={handleCreateCourt}
+            >
+              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
+            </TouchableOpacity>
+          </View> */}
+        </View>
+      </View>
+    </Modal>
+    <Modal
+      visible={unblockmodalopen}
+      transparent={true}
+      onRequestClose={() => setunblockModalOpen(false)}
+      animationType="slide"
+    >
+      <View style={styles.modalCreateCourtOverlay}>
+        <View style={styles.modalCreateCourtContainer}>
+          <View style={styles.headerCreateCourt}>
+            <Text style={styles.modalCreateCourtText}>
+            Are you sure you want to unblock the selected slots?
+            </Text>
+            <TouchableOpacity onPress={() => setunblockModalOpen(false)}>
+              <Text style={styles.closeCreateCourtButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.buttonCreateCourtContainer}>
+            <TouchableOpacity
+              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
+              onPress={() => setunblockModalOpen(false)}
+            >
+              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmCreateCourtButton]}
+              onPress={handleUnblock}
+            >
+              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    <Modal
+      visible={unblockerrormodalopen}
+      transparent={true}
+      onRequestClose={() => setunblockerrorModalOpen(false)}
+      animationType="slide"
+    >
+      <View style={styles.modalCreateCourtOverlay}>
+        <View style={styles.modalCreateCourtContainer}>
+          <View style={styles.headerCreateCourt}>
+            <Text style={styles.modalCreateCourtText}>
+            Cannot unblock slot as an unblocked slot exists in the chosen time
+            range.
+            </Text>
+            <TouchableOpacity onPress={() => setunblockerrorModalOpen(false)}>
+              <Text style={styles.closeCreateCourtButton}>X</Text>
+            </TouchableOpacity>
+          </View>
+          {/* <View style={styles.buttonCreateCourtContainer}>
+            <TouchableOpacity
+              style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
+              onPress={() => setModalOpen(false)}
+            >
+              <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmCreateCourtButton]}
+              onPress={handleCreateCourt}
+            >
+              <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
+            </TouchableOpacity>
+          </View> */}
+        </View>
+      </View>
+    </Modal>
+
+    </View>
+
+    
     </ScrollView>
-  );
-};
+  )
+}
+
 
 const styles = StyleSheet.create({
   scrollContainer: {
-    flexGrow: 1,
+      flexGrow: 1,
   },
   container: {
     flex: 1,
     //alignItems: 'center',
     paddingHorizontal: 20,
     backgroundColor: '#f9f9f9',
+
   },
   itemContainerGame: {
     flex: 1,
@@ -2011,8 +2017,8 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    width: 100,
-    alignSelf: 'center',
+    width:100,
+    alignSelf:'center'
   },
   addButtonTextRule: {
     color: '#fff',
@@ -2061,14 +2067,15 @@ const styles = StyleSheet.create({
   },
   confirmCreateCourtButton: {
     backgroundColor: '#192335',
-    borderRadius: 12,
+    borderRadius:12
   },
   cancelCreateCourtButtonText: {
     color: '#000',
   },
   confirmCreateCourtButtonText: {
     color: '#FFF',
-    padding: 10,
+    padding:10,
+    
   },
 
   /* Court Card Details Of Switch */
@@ -2126,7 +2133,7 @@ const styles = StyleSheet.create({
   datePickerSlot: {
     marginBottom: 16,
   },
-  buttonSlot: {
+    buttonSlot: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fafafa',
@@ -2146,7 +2153,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
     fontSize: 16,
   },
-  inputSlotDateView: {
+   inputSlotDateView: {
     backgroundColor: '#FAFAFA',
     padding: 10,
     borderRadius: 8,
@@ -2173,7 +2180,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   /* Available Booking Booked Courttimes */
-  buttonContainerAvailable: {
+buttonContainerAvailable: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
@@ -2263,7 +2270,7 @@ const styles = StyleSheet.create({
   groundNameSlot: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#000000',
+    color:'#000000'
   },
   courtNameSlot: {
     fontSize: 12,
@@ -2298,6 +2305,7 @@ const styles = StyleSheet.create({
     height: 25,
     marginLeft: 10,
   },
-});
 
-export default CourtScreen;
+})
+
+export default CourtScreen
