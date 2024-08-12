@@ -1933,7 +1933,7 @@ const styles = StyleSheet.create({
     flex: 1,
     //alignItems: 'center',
     paddingHorizontal: 20,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f5f5f5',
   },
   itemContainerGame: {
     flex: 1,
