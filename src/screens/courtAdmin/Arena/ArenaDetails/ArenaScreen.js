@@ -1450,7 +1450,7 @@ const styles = StyleSheet.create({
   },
 
   dropdown: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA',
     borderColor: '#FAFAFA',
     borderRadius: 8,
     height: 60,
