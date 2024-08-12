@@ -7,21 +7,24 @@ import {
   TouchableOpacity,
   Modal,
   ActivityIndicator,
-  SafeAreaView
+  SafeAreaView,
 } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
-import { getTimeFormatted } from '../../../../utils/getHours';
-import { COLORS } from '../../../../assets/constants/global_colors';
-import { getEventdetailsByType, changeEventStatus } from '../../../../firebase/firebaseFunction/eventDetails';
+import {getTimeFormatted} from '../../../../utils/getHours';
+import {COLORS} from '../../../../assets/constants/global_colors';
+import {
+  getEventdetailsByType,
+  changeEventStatus,
+} from '../../../../firebase/firebaseFunction/eventDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 
-const BookingScreen = ({ route }) => {
-  const { groundID } = route?.params || {};
+const BookingScreen = ({route}) => {
+  const {groundID} = route?.params || {};
 
   const [tab, setTab] = useState('Bookings');
   const [statusopen, setstatusopen] = useState(false);
@@ -41,9 +44,8 @@ const BookingScreen = ({ route }) => {
     {label: 'Last Month', value: 'Last Month'},
     {label: 'This Month', value: 'This Month'},
     {label: 'Next Month', value: 'Next Month'},
-]);
-const today = moment().startOf('day');
-
+  ]);
+  const today = moment().startOf('day');
 
   useEffect(() => {
     const getUserData = async () => {
@@ -62,11 +64,18 @@ const today = moment().startOf('day');
 
   const eventData = async () => {
     if (uid == null) {
-      navigate("/login");
+      navigate('/login');
     }
-    let startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
-    let endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
-    let statusValue = ["Accepted", "Awaiting", "Cancelled", "Canceled", "Completed", "On-going"];
+    let startDate = moment().startOf('month').format('YYYY-MM-DDTHH:mm');
+    let endOfMonth = moment().endOf('month').format('YYYY-MM-DDTHH:mm');
+    let statusValue = [
+      'Accepted',
+      'Awaiting',
+      'Cancelled',
+      'Canceled',
+      'Completed',
+      'On-going',
+    ];
     console.log(tab, 'tab-----');
 
     // if (tab === "Cancelled") {
@@ -76,22 +85,22 @@ const today = moment().startOf('day');
     //   statusValue = [tab];
     //   startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
     //   endOfMonth = moment().format("YYYY-MM-DDTHH:mm");
-    // } else 
+    // } else
     // if (tab == "Bookings") {
     //   startDate = moment().format("YYYY-MM-DDTHH:mm");
     //   endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
     // }
 
     const otherFilters = [
-      { key: "status", operator: "in", value: statusValue },
-      { key: "start", operator: ">=", value: startDate },
-      { key: "end", operator: "<=", value: endOfMonth },
+      {key: 'status', operator: 'in', value: statusValue},
+      {key: 'start', operator: '>=', value: startDate},
+      {key: 'end', operator: '<=', value: endOfMonth},
     ];
     if (otherFilters && otherFilters.length > 0) {
       const response = await getEventdetailsByType(
         uid,
-        "owner",
-        { key: "start", dir: "asc" },
+        'owner',
+        {key: 'start', dir: 'asc'},
         null,
         otherFilters,
       );
@@ -108,28 +117,30 @@ const today = moment().startOf('day');
       // }
       // console.log('bookingsData',bookingsData);
       if (groundID) {
-        const filteredEvents = events.filter(item => item.ground_id === groundID);
+        const filteredEvents = events.filter(
+          item => item.ground_id === groundID,
+        );
         setdata(filteredEvents);
         const groupedData = Object.values(groupByBookId(filteredEvents));
         setFilterData(groupedData);
         setLoading(true);
-      }
-      else {
+      } else {
         console.log('hi');
 
         let bookingsData = events.filter(item => {
-          const eventStartDate = moment(item.start); 
-          return (eventStartDate.isSameOrAfter(today) && 
-                  (item.status === 'Accepted' || item.status === 'Awaiting'));
+          const eventStartDate = moment(item.start);
+          return (
+            eventStartDate.isSameOrAfter(today) &&
+            (item.status === 'Accepted' || item.status === 'Awaiting')
+          );
         });
-        
-        console.log('bookingsDataaaaa',bookingsData);
+
+        console.log('bookingsDataaaaa', bookingsData);
 
         const groupedData = Object.values(groupByBookId(bookingsData));
         setFilterData(groupedData);
         setLoading(true);
       }
-
     }
   };
 
@@ -138,17 +149,15 @@ const today = moment().startOf('day');
   };
 
   function checkSamePropertyValue(array) {
-    return array.reduce((acc, obj) => acc && obj.status !== "Accepted", true);
+    return array.reduce((acc, obj) => acc && obj.status !== 'Accepted', true);
   }
 
-  const handleUpdateStatus = async (props) => {
+  const handleUpdateStatus = async props => {
     if (checkSamePropertyValue(selectedEventData)) {
-      const mapcosnt = selectedEventData.map(
-        async (selectedEventData) => {
-          await updateBooking(selectedEventData, props);
-        }
-      );
-      console.log('updateBooking',updateBooking);
+      const mapcosnt = selectedEventData.map(async selectedEventData => {
+        await updateBooking(selectedEventData, props);
+      });
+      console.log('updateBooking', updateBooking);
       setstatusopen(false);
       // setCancelEventind([]);
       selectedEventData([]);
@@ -169,9 +178,11 @@ const today = moment().startOf('day');
     if (value == 'Bookings') {
       console.log('hi');
       const tableData = data.filter(item => {
-        const eventStartDate = moment(item.start); 
-        return (eventStartDate.isSameOrAfter(today) && 
-                (item.status === 'Accepted' || item.status === 'Awaiting'));
+        const eventStartDate = moment(item.start);
+        return (
+          eventStartDate.isSameOrAfter(today) &&
+          (item.status === 'Accepted' || item.status === 'Awaiting')
+        );
       });
       const finalData = tableData;
       console.log('Bookings data length--------------', tableData.length);
@@ -179,8 +190,7 @@ const today = moment().startOf('day');
       const groupedData = Object.values(groupByBookId(finalData));
       setFilterData(groupedData);
       //console.log('Bookings data length--------------', finalData.length);
-    }
-    else if (value == 'Completed') {
+    } else if (value == 'Completed') {
       const tableData = data?.filter(item => item.status === 'Completed');
 
       const finalData = tableData;
@@ -188,16 +198,14 @@ const today = moment().startOf('day');
       const groupedData = Object.values(groupByBookId(finalData));
       setFilterData(groupedData);
       //console.log('Completed data length--------------', finalData.length);
-    }
-    else if (value == 'On-Going') {
+    } else if (value == 'On-Going') {
       const tableData = data?.filter(item => item.status === 'On-going');
       const finalData = tableData;
       // console.log('tableData', finalData);
       const groupedData = Object.values(groupByBookId(finalData));
       setFilterData(groupedData);
       //console.log('On-Going data length--------------', finalData.length);
-    }
-    else if (value == 'Cancelled') {
+    } else if (value == 'Cancelled') {
       const tableData = data?.filter(
         item => item.status === 'Cancelled' || item.status === 'Canceled',
       );
@@ -266,10 +274,10 @@ const today = moment().startOf('day');
     return `${dayOfWeek}, ${month} ${day
       .toString()
       .padStart(2, '0')} | ${hours}:${minutes
-        .toString()
-        .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
-          .toString()
-          .padStart(2, '0')} ${ampm2}`;
+      .toString()
+      .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
+      .toString()
+      .padStart(2, '0')} ${ampm2}`;
   };
 
   const groupTimingsByDate = timings => {
@@ -284,7 +292,7 @@ const today = moment().startOf('day');
     return grouped;
   };
 
-  const groupByBookId = (data) => {
+  const groupByBookId = data => {
     return data.reduce((acc, item) => {
       if (!acc[item.BookId]) {
         acc[item.BookId] = [];
@@ -295,11 +303,11 @@ const today = moment().startOf('day');
     }, {});
   };
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({item}) => {
     const getStatusColor = status => {
       switch (status) {
         case 'Awaiting':
-          return { backgroundColor: '#E4DDF4', color: '#7756C9', icon: 'clock' };
+          return {backgroundColor: '#E4DDF4', color: '#7756C9', icon: 'clock'};
         case 'Cancelled':
           return {
             backgroundColor: '#F2DEDE',
@@ -307,7 +315,7 @@ const today = moment().startOf('day');
             icon: 'closecircleo',
           };
         case 'On-going':
-          return { backgroundColor: '#D9EDF7', color: '#45AEF4', icon: 'clock' };
+          return {backgroundColor: '#D9EDF7', color: '#45AEF4', icon: 'clock'};
         case 'Completed':
           return {
             backgroundColor: '#D1F0D6',
@@ -321,14 +329,17 @@ const today = moment().startOf('day');
             icon: 'checkcircleo',
           };
         default:
-          return { backgroundColor: '#FFFFFF', color: '#000000', icon: '' };
+          return {backgroundColor: '#FFFFFF', color: '#000000', icon: ''};
       }
     };
-    const { backgroundColor, color, icon } = getStatusColor(item[0].status);
-    const { BookId, user_name, ground_name, court_name, amount } = item[0];
+    const {backgroundColor, color, icon} = getStatusColor(item[0].status);
+    const {BookId, user_name, ground_name, court_name, amount} = item[0];
     const timings = item.map(i => formatDateTime(i));
     const groupedTimings = groupTimingsByDate(timings);
-    const total = item.reduce((acc, curr) => acc + (parseInt(curr.amount) || 0), 0); // Calculate total amount
+    const total = item.reduce(
+      (acc, curr) => acc + (parseInt(curr.amount) || 0),
+      0,
+    ); // Calculate total amount
 
     return (
       <View style={styles.slide}>
@@ -344,14 +355,15 @@ const today = moment().startOf('day');
               paddingVertical: 5,
               gap: 5,
             }}>
-            {(item[0].status === 'Awaiting' || item[0].status === 'On-going') && (
+            {(item[0].status === 'Awaiting' ||
+              item[0].status === 'On-going') && (
               <Feather name={icon} size={15} color={color} />
             )}
             {(item[0].status === 'Cancelled' ||
               item[0].status === 'Completed' ||
               item[0].status === 'Accepted') && (
-                <AntDesign name={icon} size={12} color={color} />
-              )}
+              <AntDesign name={icon} size={12} color={color} />
+            )}
             <Text
               style={{
                 color,
@@ -431,7 +443,6 @@ const today = moment().startOf('day');
     );
   };
 
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.tabContainer}>
@@ -447,7 +458,7 @@ const today = moment().startOf('day');
               style={[
                 styles.tabText,
                 tab === tabName && styles.activeTabText,
-                { fontFamily: 'Outfit-Regular', fontSize: 14 },
+                {fontFamily: 'Outfit-Regular', fontSize: 14},
               ]}>
               {tabName}
             </Text>
@@ -463,37 +474,37 @@ const today = moment().startOf('day');
                     setItems={setItems}
                     placeholder={'This Month'}
                 /> */}
-      
+
       {!loading ? (
-        <ActivityIndicator style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          width: '100%',
-          height: '100%',
-        }}size="large"/>
+        <ActivityIndicator
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            height: '100%',
+          }}
+          size="large"
+        />
+      ) : filterData.length !== 0 ? (
+        <FlatList
+          data={filterData}
+          renderItem={renderItem}
+          keyExtractor={item => item[0]?.BookId.toString()}
+        />
       ) : (
-        filterData.length !== 0 ? (
-          <FlatList
-            data={filterData}
-            renderItem={renderItem}
-            keyExtractor={(item) => item[0]?.BookId.toString()}
-          />
-        ) : (
-          <View
-            style={{
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '100%',
-              height: '100%',
-            }}>
-            <Text style={{ fontFamily: 'Outfit-Medium', color: COLORS.PRIMARY }}>
-              No {tab} bookings found.
-            </Text>
-          </View>
-        )
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            height: '100%',
+          }}>
+          <Text style={{fontFamily: 'Outfit-Medium', color: COLORS.PRIMARY}}>
+            No {tab} bookings found.
+          </Text>
+        </View>
       )}
       <Modal visible={statusopen} transparent={true}>
-
         <View style={styles.modalContainerCancelView}>
           <View style={styles.modalContentCancelView}>
             <TouchableOpacity
@@ -505,34 +516,33 @@ const today = moment().startOf('day');
             <Text style={styles.titleCancelView}>
               Select slots to Approve or reject
             </Text>
-          
-              <View style={styles.itemContainer}>
-                {selectedEventData?.map((item, index) => {
-                  let gttime = getTimeFormatted(item?.start);
-                  return (
-                    <TouchableOpacity onPress={handleActiveColorChange}>
+
+            <View style={styles.itemContainer}>
+              {selectedEventData?.map((item, index) => {
+                let gttime = getTimeFormatted(item?.start);
+                return (
+                  <TouchableOpacity onPress={handleActiveColorChange}>
                     <View key={index} style={styles.statusContainer}>
-                    <Text>{gttime.Time}</Text>
-                    <Text>₹{item.amount}</Text>
-                  </View>
+                      <Text>{gttime.Time}</Text>
+                      <Text>₹{item.amount}</Text>
+                    </View>
                   </TouchableOpacity>
-                  );
-                })}
-              </View>
+                );
+              })}
+            </View>
             <View style={styles.footerButtons}>
               <TouchableOpacity
                 onPress={() => {
-                  handleUpdateStatus("Accepted")
+                  handleUpdateStatus('Accepted');
                 }}>
                 <Text style={styles.paidButton}>Approve</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
-                  handleUpdateStatus("Cancelled")
+                  handleUpdateStatus('Cancelled');
                 }}>
                 <Text style={styles.cancelButton}>Cancelled</Text>
               </TouchableOpacity>
-
             </View>
           </View>
         </View>
@@ -632,7 +642,6 @@ const styles = StyleSheet.create({
   closeButtonCancelView: {
     color: 'red',
     fontSize: 18,
-    cursor: 'pointer',
     textAlign: 'right',
   },
 
@@ -664,9 +673,8 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     flexDirection: 'row',
-    gap:5,
+    gap: 5,
   },
 });
-
 
 export default BookingScreen;

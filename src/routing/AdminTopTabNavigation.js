@@ -10,7 +10,7 @@ import {IMAGES} from '../assets/constants/global_images';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {COLORS} from '../assets/constants/global_colors';
-import { ADMINARENA, ADMINHOME } from '../screens';
+import {ADMINARENA, ADMINHOME} from '../screens';
 import IndexHome from '../screens/courtAdmin/Home/indexHome';
 
 const Tab = createMaterialTopTabNavigator();
@@ -56,7 +56,7 @@ function CustomTabBar({state, descriptors, navigation, stackNavigation}) {
 
         let iconName, focusedIconName;
         switch (route.name) {
-          case 'Add Arena':
+          case 'Court Details':
             iconName = IMAGES.ArenaNoFoucs;
             focusedIconName = IMAGES.ArenaFoucs;
             break;
@@ -137,7 +137,7 @@ export default function AdminTopTabNavigation({route, navigation}) {
         ),
       })}>
       <Tab.Screen
-        name="Add Arena"
+        name="Court Details"
         component={ArenaScreen}
         initialParams={{groundID}}
         options={{tabBarLabel: 'Court Details'}}
@@ -153,7 +153,7 @@ export default function AdminTopTabNavigation({route, navigation}) {
       <Tab.Screen
         name="Court"
         component={CourtScreen}
-        initialParams={{ groundID }}
+        initialParams={{groundID}}
         options={{tabBarLabel: 'Court'}}
         screenOptions={{
           headerStyle: {
@@ -167,7 +167,7 @@ export default function AdminTopTabNavigation({route, navigation}) {
       <Tab.Screen
         name="Booking"
         component={BookingScreen}
-        initialParams={{ groundID }}
+        initialParams={{groundID}}
         options={{tabBarLabel: 'Booking'}}
         screenOptions={{
           headerStyle: {
