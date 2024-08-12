@@ -15,6 +15,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { USER, USERLOGIN } from '../../..';
 import Collapsible from 'react-native-collapsible';
 import moment from 'moment';
+import {COLORS} from '../../../../assets/constants/global_colors';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import CommonTextInputError from '../../../../components/molecules/commomTextInputError';
 
 const CourtScreen = () => {
   const [tab, setTab] = useState("Add Court");
@@ -1119,7 +1122,7 @@ console.log("delSlot", delSlot)
             </Text>
           </View>
           <TouchableOpacity onPress={() => handleEditCourt(item)}>
-            <Icon name="ellipsis-v" size={24} color={colors.text} />
+            <Icon name="ellipsis-v" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
         <View style={[styles.rowCourtCard, { paddingTop: 40 }]}>
@@ -1136,185 +1139,193 @@ console.log("delSlot", delSlot)
     );
   };
 
-  const renderItemGame = ({ item }) => (
-    <View style={styles.itemContainerGame}>
-      <TouchableOpacity onPress={() => handleGameclick(item)}>
-        <Image style={styles.imageGame} source={iconsss[item]} />
-        <Text style={styles.textGame}>{item.replace("_", " ")}</Text>
-        {createCourt?.gametype?.includes(item) && (
-          <Image source={IMAGES.TickIcons} style={styles.tickGame} />
-        )}
-      </TouchableOpacity>
-    </View>
+  const renderItemGame = ({item}) => (
+    <TouchableOpacity
+      style={styles.itemContainerGame}
+      onPress={() => handleGameclick(item)}>
+      <Image
+        style={styles.imageGame}
+        resizeMode="contain"
+        source={iconsss[item]}
+      />
+      <Text style={styles.textGame}>{item.replace('_', ' ')}</Text>
+      {createCourt?.gametype?.includes(item) && (
+        <Ionicons
+          style={styles.tickIconSports}
+          name="checkmark-circle"
+          size={15}
+          color="#4CA181"
+        />
+      )}
+    </TouchableOpacity>
+
   );
 
 
   return (
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.container}>
-        <View>
-        <FlatList
-          data={gametype}
-          renderItem={renderItemGame}
-          keyExtractor={(item) => item}
-          numColumns={3}
-          columnWrapperStyle={styles.rowGame}
-        />
-        {AddCourtError && createCourt.gametype === "" && (
-            <Text style={styles.errorText}>*Select appropriate values</Text>
-          )}
+        <View
+          style={{
+            zIndex: 2000,
+            padding: 10,
+            marginBottom: 20,
+            backgroundColor: '#fff',
+            borderBottomRightRadius: 12,
+            borderBottomLeftRadius: 12,
+          }}>
+          <View>
+            <FlatList
+              data={gametype}
+              renderItem={renderItemGame}
+              keyExtractor={item => item}
+              numColumns={3}
+              columnWrapperStyle={styles.rowSports}
+            />
+            {AddCourtError && createCourt.gametype === '' && (
+              <Text style={styles.errorText}>*Select appropriate values</Text>
+            )}
+          </View>
         </View>
-        <View>
-        <View>
-          <CommonTextInput
-            label="Court Name"
-            value={createCourt?.court_name}
-            onChangeText={(text) => setCreateCourt({ ...createCourt, court_name: text })}
-            //widthStyle={true}
-          />
-          {AddCourtError && createCourt.court_name === "" && (
-            <Text style={styles.errorText}>*Enter appropriate values</Text>
-          )}
+        <View
+          style={{
+            backgroundColor: '#fff',
+            borderRadius: 12,
+            padding: 10,
+          }}>
+          <View style={{marginBottom: 20}}>
+            <CommonTextInputError
+              label="Court Name"
+              value={createCourt?.court_name}
+              onChangeText={text =>
+                setCreateCourt({...createCourt, court_name: text})
+              }
+              //widthStyle={true}
+            />
+            {AddCourtError && createCourt.court_name === '' && (
+              <Text style={styles.errorText}>Enter the Court Name</Text>
+            )}
+          </View>
+          <View style={{marginBottom: 20}}>
+            <CommonTextInputError
+              label="Default price"
+              value={createCourt?.default_amount}
+              onChangeText={text =>
+                setCreateCourt({...createCourt, default_amount: text})
+              }
+              // widthStyle={true}
+            />
+            {AddCourtError && createCourt.default_amount === '' && (
+              <Text style={styles.errorText}>Enter the Court Price</Text>
+            )}
+          </View>
+          <TouchableOpacity
+            style={styles.addButtonRule}
+            onPress={handleAddCourt}>
+            <Text style={styles.addButtonTextRule}>Add</Text>
+          </TouchableOpacity>
         </View>
-        <View>
-          <CommonTextInput
-            label="Default price"
-            value={createCourt?.default_amount}
-            onChangeText={(text) => setCreateCourt({ ...createCourt, default_amount: text })}
-           // widthStyle={true}
-          />
-          {AddCourtError && createCourt.default_amount === "" && (
-            <Text style={styles.errorText}>*Enter appropriate values</Text>
-          )}
+        <View style={{marginTop: 20}}>
+          {groundData?.court_details?.map(item => (
+            <CourtCard
+              key={item.id}
+              item={item}
+              handlemodal={handlemodal}
+              handleEditCourt={handleEditCourt}
+            />
+          ))}
         </View>
-        <TouchableOpacity
-        style={styles.addButtonRule}
-        onPress={handleAddCourt}
-      >
-        <Text style={styles.addButtonTextRule}>Add</Text>
-      </TouchableOpacity>
-      </View>
-      <View >
-      {groundData?.court_details?.map((item) => (
-        <CourtCard
-          key={item.id}
-          item={item}
-          handlemodal={handlemodal}
-          handleEditCourt={handleEditCourt}
-        />
-      ))}
-    </View>
-    <View>
-    <Text style={styles.labelSlot}>Add Slot Timing</Text>
-    </View>
-    <View>
-      <Text style={styles.labelSlot}>Courts</Text>
-      {/* <DropDownPicker
-        open={openCourtDropdown}
-        value={selectedValue?.Courts}
-        items={courtItems}
-        setOpen={setOpenCourtDropdown}
-        setValue={handleCourtChange}
-        setItems={setCourtItems}
-        placeholder="Select Court"
-        style={styles.dropdownSlot}
-        dropDownStyle={styles.dropdownSlot}
-      /> */}
-      <DropDownPicker
-                    open={open}
-                    value={value}
-                    items={courtItems}
-                    setOpen={setOpen}
-                    setValue={setValue}
-                    setItems={setItems}
-                    placeholder={'Select Court'}
-                    //maxHeight={500}
-                       maxHeight={calculatedHeight}  
-      zIndex={1000}  
-      zIndexInverse={3000}  
-                />
-      {AddCourtTimingError && selectedValue.Courts === "" && (
-        <Text style={styles.errorText}>*Select appropriate values</Text>
-      )}
+        <View
+          style={{
+            zIndex: 2000,
+            padding: 10,
+            marginBottom: 20,
+            backgroundColor: '#fff',
+            borderBottomRightRadius: 12,
+            borderBottomLeftRadius: 12,
+          }}>
+          <View>
+            <Text style={styles.labelSlot}>Add Slot Timing</Text>
+          </View>
+          <View>
+            <View style={{marginBottom: 20}}>
+              <Text style={styles.labelSlot}>Courts</Text>
+              <DropDownPicker
+                open={open}
+                value={value}
+                items={courtItems}
+                setOpen={setOpen}
+                setValue={setValue}
+                setItems={setItems}
+                placeholder={'Select Court'}
+                placeholderStyle={(fontFamily = 'Outfit-Regular')}
+                style={[styles.dropdown]}
+                textStyle={{
+                  fontFamily: 'Outfit-Regular',
+                  color: '#000',
+                  fontSize: 14,
+                }}
+                //maxHeight={500}
+                // maxHeight={calculatedHeight}
+                zIndex={1000}
+                zIndexInverse={3000}
+              />
+            </View>
+            {AddCourtTimingError && selectedValue.Courts === '' && (
+              <Text style={styles.errorText}>Select the Court</Text>
+            )}
 
-      <CommonTextInput
-        label="Price"
-        value={createSlots.price}
-        onChangeText={(text) => setCreateslots({ ...createSlots, price: text })}
-        widthStyle={false}
-      />
-      {AddCourtTimingError && createSlots.price === "" && (
-        <Text style={styles.errorText}>*Enter appropriate values</Text>
-      )}
-
-      <Text style={styles.labelSlot}>Date</Text>
-      {/* <DatePicker
-        date={createSlots.date}
-        onDateChange={handleDateChange}
-        minimumDate={new Date()}
-        mode="date"
-        style={styles.datePickerSlot}
-      /> */}
-       <TouchableOpacity style={styles.buttonSlot} onPress={() => setOpenDatePicker(true)}>
-        <Text style={styles.buttonTextSlot}> {createSlots.date ? createSlots.date  ? new Date(createSlots.date).toLocaleDateString('en-GB') : new Date(createSlots.createdAt).toLocaleDateString('en-GB') : 'Select Date'}</Text>
-      </TouchableOpacity>
-      <DatePicker
-        modal
-        mode="date"
-        open={openDatePicker}
-        date={createSlots.date ? new Date(createSlots.date) :  new Date(createSlots.createdAt)}
-        minimumDate={new Date()}
-        onConfirm={(date) => {
-          setOpenDatePicker(false);
-          handleDateChange(date);
-        }}
-        onCancel={() => {
-          setOpenDatePicker(false);
-        }}
-      />
-       {/* <Text style={styles.labelSlot}>Start Timing</Text>
-      <TouchableOpacity style={styles.inputSlotDateView} onPress={() => setOpenStartPicker(true)}>
-        <Text style={styles.inputSlotText}>{createSlots.starttime ? formatTimeSlot(createSlots.starttime) : 'Select Time'}</Text>
-      </TouchableOpacity>
-      <DatePicker
-        modal
-        open={openStartPicker}
-        date={createSlots.starttime}
-        mode="time"
-        onConfirm={(date) => {
-          setOpenStartPicker(false);
-          handleTimeChange('starttime', date);
-        }}
-        onCancel={() => {
-          setOpenStartPicker(false);
-        }}
-      />
-      {AddCourtTimingError && !createSlots.starttime && (
-        <Text style={styles.errorText}>*Enter start time</Text>
-      )}
-
-      <Text style={styles.labelSlot}>End Timing</Text>
-      <TouchableOpacity style={styles.inputSlotDateView} onPress={() => setOpenEndPicker(true)}>
-        <Text style={styles.inputSlotText}>{createSlots.endtime ? formatTimeSlot(createSlots.endtime) : 'Select Time'}</Text>
-      </TouchableOpacity>
-      <DatePicker
-        modal
-        open={openEndPicker}
-        date={createSlots.endtime}
-        mode="time"
-        onConfirm={(date) => {
-          setOpenEndPicker(false);
-          handleTimeChange('endtime', date);
-        }}
-        onCancel={() => {
-          setOpenEndPicker(false);
-        }}
-      />
-      {AddCourtTimingError && !createSlots.endtime && (
-        <Text style={styles.errorText}>*Enter end time</Text>
-      )} */}
-         <View style={styles.inputContainer}>
-                <Text style={styles.labelSlot}>Start Time</Text>
+            <CommonTextInput
+              label="Price"
+              value={createSlots.price}
+              onChangeText={text =>
+                setCreateslots({...createSlots, price: text})
+              }
+              widthStyle={false}
+            />
+            {AddCourtTimingError && createSlots.price === '' && (
+              <Text style={styles.errorText}>Enter the Price</Text>
+            )}
+            <View>
+              <Text style={styles.labelSlot}>Date</Text>
+              <View style={styles.dropDownDate}>
+                <TouchableOpacity
+                  style={styles.buttonSlot}
+                  onPress={() => setOpenDatePicker(true)}>
+                  <Text style={styles.buttonTextSlot}>
+                    {' '}
+                    {createSlots.date
+                      ? createSlots.date
+                        ? new Date(createSlots.date).toLocaleDateString('en-GB')
+                        : new Date(createSlots.createdAt).toLocaleDateString(
+                            'en-GB',
+                          )
+                      : 'Select Date'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <DatePicker
+                modal
+                mode="date"
+                open={openDatePicker}
+                date={
+                  createSlots.date
+                    ? new Date(createSlots.date)
+                    : new Date(createSlots.createdAt)
+                }
+                minimumDate={new Date()}
+                onConfirm={date => {
+                  setOpenDatePicker(false);
+                  handleDateChange(date);
+                }}
+                onCancel={() => {
+                  setOpenDatePicker(false);
+                }}
+              />
+            </View>
+            <View>
+              <Text style={styles.labelSlot}>Start Time</Text>
+              <View style={styles.dropDownDate}>
                 <TouchableOpacity
                   style={styles.inputDateViewSlot}
                   onPress={() => setOpenStartPicker(true)}>
@@ -1322,73 +1333,80 @@ console.log("delSlot", delSlot)
                     {createSlots?.starttime || 'Select Time'}
                   </Text>
                 </TouchableOpacity>
-                <DatePicker
-                  modal
-                  open={openStartPicker}
-                  date={new Date()}
-                  mode="time"
-                  onConfirm={date => {
-                    setOpenStartPicker(false);
-                    //handleInputChange('start_time', date);
-                    setCreateslots(prevState => ({
-                      ...prevState,
-                      ['starttime']: formatTime(date),
-                    }));
-                  }}
-                  onCancel={() => {
-                    setOpenStartPicker(false);
-                  }}
-                />
-                {!createSlots?.starttime && AddCourtTimingError && (
-                  <Text style={styles.errorText}>*Enter start time</Text>
-                )}
               </View>
-              <View style={styles.inputContainer}>
-                <Text style={styles.labelSlot}>End Time</Text>
-                <TouchableOpacity
-                  style={styles.inputDateViewSlot}
-                  onPress={() => setOpenEndPicker(true)}>
-                  <Text style={styles.inputTextSlot}>
-                    {createSlots?.endtime || 'Select Time'}
-                  </Text>
-                </TouchableOpacity>
-                <DatePicker
-                  style={{fontFamily: 'Outfit-Regular'}}
-                  modal
-                  open={openEndPicker}
-                  date={new Date()}
-                  mode="time"
-                  onConfirm={date => {
-                    setOpenEndPicker(false);
-                    //handleInputChange('end_time', date);
-                    setCreateslots(prevState => ({
-                      ...prevState,
-                      ['endtime']: formatTime(date),
-                    }));
-                  }}
-                  onCancel={() => {
-                    setOpenEndPicker(false);
-                  }}
-                />
-                {!createSlots?.endtime && AddCourtTimingError && (
-                  <Text style={styles.errorText}>*Enter end time</Text>
-                )}
-              </View>
-      <View>
-      <TouchableOpacity
-        style={styles.addButtonRule}
-        onPress={handleAddCourtSlot}
-      >
-        <Text style={styles.addButtonTextRule}>Add</Text>
-      </TouchableOpacity>
-      </View>
-      {/* New View of Add Slots */}
-      <View>
-      {groundData?.court_details?.length !== 0 && (
-        <>
-          {courtslot && Object.values(courtslot).map((item, index) => {
-            let sortslotdata = item?.slotData?.sort(compareByDate);
-            let activeSlotData = sortslotdata?.filter(item => item?.isActive);
+              <DatePicker
+                modal
+                open={openStartPicker}
+                date={new Date()}
+                mode="time"
+                onConfirm={date => {
+                  setOpenStartPicker(false);
+                  //handleInputChange('start_time', date);
+                  setCreateslots(prevState => ({
+                    ...prevState,
+                    ['starttime']: formatTime(date),
+                  }));
+                }}
+                onCancel={() => {
+                  setOpenStartPicker(false);
+                }}
+              />
+              {!createSlots?.starttime && AddCourtTimingError && (
+                <Text style={styles.errorText}>Enter start time</Text>
+              )}
+            </View>
+          </View>
+
+          <View>
+            <Text style={styles.labelSlot}>End Time</Text>
+            <View style={styles.dropDownDate}>
+              <TouchableOpacity
+                style={styles.inputDateViewSlot}
+                onPress={() => setOpenEndPicker(true)}>
+                <Text style={styles.inputTextSlot}>
+                  {createSlots?.endtime || 'Select Time'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <DatePicker
+              style={{fontFamily: 'Outfit-Regular'}}
+              modal
+              open={openEndPicker}
+              date={new Date()}
+              mode="time"
+              onConfirm={date => {
+                setOpenEndPicker(false);
+                //handleInputChange('end_time', date);
+                setCreateslots(prevState => ({
+                  ...prevState,
+                  ['endtime']: formatTime(date),
+                }));
+              }}
+              onCancel={() => {
+                setOpenEndPicker(false);
+              }}
+            />
+            {!createSlots?.endtime && AddCourtTimingError && (
+              <Text style={styles.errorText}>Enter end time</Text>
+            )}
+          </View>
+          <View style={{marginVertical: 20}}>
+            <TouchableOpacity
+              style={styles.addButtonRule}
+              onPress={handleAddCourtSlot}>
+              <Text style={styles.addButtonTextRule}>Add</Text>
+            </TouchableOpacity>
+          </View>
+          {/* New View of Add Slots */}
+          <View>
+            {groundData?.court_details?.length !== 0 && (
+              <>
+                {courtslot &&
+                  Object.values(courtslot).map((item, index) => {
+                    let sortslotdata = item?.slotData?.sort(compareByDate);
+                    let activeSlotData = sortslotdata?.filter(
+                      item => item?.isActive,
+                    );
 
             return (
               <View key={index} style={styles.cardSlot}>
@@ -1425,146 +1443,196 @@ console.log("delSlot", delSlot)
                       </View>
                     );
                   })}
-                </Collapsible>
-              </View>
-            );
-          })}
-        </>
-      )}
-      </View>
-     
-    </View>
-    <View>
-    <Text style={styles.labelSlot}>Available Timing</Text>
-    </View>
-    <View>
-    <Text style={styles.labelSlot}>Courts</Text>
-      <DropDownPicker
-                    open={openAvailable}
-                    value={valueAvailable}
-                    items={courtItems}
-                    setOpen={setOpenAvailable}
-                    setValue={setValueAvailable}
-                    setItems={setItems}
-                    placeholder={'Select Court'}
-                      maxHeight={calculatedHeight}  // Dynamic height based on the number of items
-      zIndex={1000}  // Ensure dropdown is above other elements
-      zIndexInverse={3000}  // Adjust for any issues with overlapping
-                />
-      {AddCourtTimingError && availablecourt.Courts === "" && (
-        <Text style={styles.errorText}>*Select appropriate values</Text>
-      )}
-      <Text style={styles.labelSlot}>Date</Text>
-      {/* <DatePicker
+
+              </>
+            )}
+          </View>
+        </View>
+
+        <View
+          style={{
+            zIndex: 2000,
+            padding: 10,
+            marginBottom: 20,
+            backgroundColor: '#fff',
+            borderBottomRightRadius: 12,
+            borderBottomLeftRadius: 12,
+          }}>
+          <View>
+            <Text style={styles.labelSlot}>Available Timing</Text>
+          </View>
+          <View style={{marginBottom: 20}}>
+            <Text style={styles.labelSlot}>Courts</Text>
+            <DropDownPicker
+              loading={true}
+              open={openAvailable}
+              value={valueAvailable}
+              items={courtItems}
+              setOpen={setOpenAvailable}
+              setValue={setValueAvailable}
+              setItems={setItems}
+              placeholder={'Select Court'}
+              maxHeight={calculatedHeight} // Dynamic height based on the number of items
+              zIndex={1000} // Ensure dropdown is above other elements
+              zIndexInverse={3000} // Adjust for any issues with overlapping
+            />
+            {AddCourtTimingError && availablecourt.Courts === '' && (
+              <Text style={styles.errorText}>*Select appropriate values</Text>
+            )}
+            <Text style={styles.labelSlot}>Date</Text>
+            {/* <DatePicker
         date={createSlots.date}
         onDateChange={handleDateChange}
         minimumDate={new Date()}
         mode="date"
         style={styles.datePickerSlot}
       /> */}
-       <TouchableOpacity style={styles.buttonSlot} onPress={() => setOpenAvailableDatePicker(true)}>
-        <Text style={styles.buttonTextSlot}> {availablecourt.date ? new Date(availablecourt.date).toLocaleDateString('en-GB') : 'Select Date'}</Text>
-      </TouchableOpacity>
-      <DatePicker
-        modal
-        mode="date"
-        open={openAvailableDatePicker}
-        date={new Date(availablecourt.date)}
-        minimumDate={new Date()}
-        onConfirm={(date) => {
-          setOpenAvailableDatePicker(false);
-          handleavialbleDateChange(date);
-        }}
-        onCancel={() => {
-          setOpenAvailableDatePicker(false);
-        }}
-      />
-    </View>
-    <View>
-    {courtTime?.length ? (
-        <View style={styles.buttonContainerAvailable}>
-          {courtTime.map((item, index) => {
-            let gttime = getTimeFormatted(item?.start);
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.buttonAvailable,
-                  {
-                    borderColor: item?.bordercolor,
-                    backgroundColor: item?.backgroundColor,
-                  },
-                ]}
-                disabled={item.isbooked}
-                onPress={() => handlebooking(item, index)}
-              >
-                <Text style={{ color: item?.textColor }}>{gttime.Time}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      ) : (
-        <View style={styles.noSelectionContainerAvailable}>
-          <Text>Select the appropriate values</Text>
-        </View>
-      )}
-
-      <View style={styles.legendContainerAvailable}>
-        <View style={styles.legendItemAvailable}>
-          <Image source={IMAGES.BookedRec} style={styles.iconAvailable} />
-          <Text style={styles.legendTextAvailable}>Booked</Text>
-        </View>
-        <View style={styles.legendItemAvailable}>
-          <Image source={IMAGES.AvailableRec} style={styles.iconAvailable} />
-          <Text style={styles.legendTextAvailable}>Available</Text>
-        </View>
-        <View style={styles.legendItemAvailable}>
-          <Image source={IMAGES.SelectedRec} style={styles.iconAvailable} />
-          <Text style={styles.legendTextAvailable}>Selected</Text>
-        </View>
-        <View style={styles.legendItemAvailable}>
-          <Image source={IMAGES.AvailableRec} style={styles.icon} />
-          <Text style={[styles.legendTextAvailable, styles.noWrapTextAvailable]}>Current slot</Text>
-        </View>
-        <View style={styles.legendItemAvailable}>
-          <Image source={IMAGES.BlockedRec} style={styles.iconAvailable} />
-          <Text style={[styles.legendTextAvailable, styles.noWrapTextAvailable]}>Blocked slot</Text>
-        </View>
-      </View>
-
-      <View style={styles.footerButtonsCartData}>
             <TouchableOpacity
-              style={styles.resetButtonCartData}
-              onPress={handleunblockmodal}
-            >
-              <Text style={styles.buttonTextCartData}>UnBlock Court</Text>
+              style={styles.buttonSlot}
+              onPress={() => setOpenAvailableDatePicker(true)}>
+              <Text style={styles.buttonTextSlot}>
+                {' '}
+                {availablecourt.date
+                  ? new Date(availablecourt.date).toLocaleDateString('en-GB')
+                  : 'Select Date'}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.paymentButtonCartData}
-              onPress={handleblockmodal}
-            >
-              <Text style={styles.buttonTextCartData}>Block Court</Text>
-            </TouchableOpacity>
+            <DatePicker
+              modal
+              mode="date"
+              open={openAvailableDatePicker}
+              date={new Date(availablecourt.date)}
+              minimumDate={new Date()}
+              onConfirm={date => {
+                setOpenAvailableDatePicker(false);
+                handleavialbleDateChange(date);
+              }}
+              onCancel={() => {
+                setOpenAvailableDatePicker(false);
+              }}
+            />
           </View>
-        
-    </View>
+          <View>
+            {courtTime?.length ? (
+              <View style={styles.buttonContainerAvailable}>
+                {courtTime.map((item, index) => {
+                  let gttime = getTimeFormatted(item?.start);
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.buttonAvailable,
+                        {
+                          borderColor: item?.bordercolor,
+                          backgroundColor: item?.backgroundColor,
+                        },
+                      ]}
+                      disabled={item.isbooked}
+                      onPress={() => handlebooking(item, index)}>
+                      <Text style={{color: item?.textColor}}>
+                        {gttime.Time}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ) : (
+              <View style={styles.noSelectionContainerAvailable}>
+                <Text>Select the appropriate values</Text>
+              </View>
+            )}
 
-{/* Modal For Create Court */}
-<Modal
-      visible={modalOpen}
-      transparent={true}
-      onRequestClose={() => setModalOpen(false)}
-      animationType="slide"
-    >
-      <View style={styles.modalCreateCourtOverlay}>
-        <View style={styles.modalCreateCourtContainer}>
-          <View style={styles.headerCreateCourt}>
-            <Text style={styles.modalCreateCourtText}>
-              Are you sure you want to Create a Court?
-            </Text>
-            <TouchableOpacity onPress={() => setModalOpen(false)}>
-              <Text style={styles.closeCreateCourtButton}>X</Text>
-            </TouchableOpacity>
+            <View style={styles.legendContainerAvailable}>
+              <View style={styles.legendItemAvailable}>
+                <Image source={IMAGES.BookedRec} style={styles.iconAvailable} />
+                <Text style={styles.legendTextAvailable}>Booked</Text>
+              </View>
+              <View style={styles.legendItemAvailable}>
+                <Image
+                  source={IMAGES.AvailableRec}
+                  style={styles.iconAvailable}
+                />
+                <Text style={styles.legendTextAvailable}>Available</Text>
+              </View>
+              <View style={styles.legendItemAvailable}>
+                <Image
+                  source={IMAGES.SelectedRec}
+                  style={styles.iconAvailable}
+                />
+                <Text style={styles.legendTextAvailable}>Selected</Text>
+              </View>
+              <View style={styles.legendItemAvailable}>
+                <Image source={IMAGES.AvailableRec} style={styles.icon} />
+                <Text
+                  style={[
+                    styles.legendTextAvailable,
+                    styles.noWrapTextAvailable,
+                  ]}>
+                  Current slot
+                </Text>
+              </View>
+              <View style={styles.legendItemAvailable}>
+                <Image
+                  source={IMAGES.BlockedRec}
+                  style={styles.iconAvailable}
+                />
+                <Text
+                  style={[
+                    styles.legendTextAvailable,
+                    styles.noWrapTextAvailable,
+                  ]}>
+                  Blocked slot
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.footerButtonsCartData}>
+              <TouchableOpacity
+                style={styles.resetButtonCartData}
+                onPress={handleunblockmodal}>
+                <Text style={styles.buttonTextCartData}>Unblock Court</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.paymentButtonCartData}
+                onPress={handleblockmodal}>
+                <Text style={styles.buttonTextCartData}>Block Court</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        {/* Modal For Create Court */}
+        <Modal
+          visible={modalOpen}
+          transparent={true}
+          onRequestClose={() => setModalOpen(false)}
+          animationType="slide">
+          <View style={styles.modalCreateCourtOverlay}>
+            <View style={styles.modalCreateCourtContainer}>
+              <View style={styles.headerCreateCourt}>
+                <Text style={styles.modalCreateCourtText}>
+                  Are you sure you want to Create a Court?
+                </Text>
+                <TouchableOpacity onPress={() => setModalOpen(false)}>
+                  <Text style={styles.closeCreateCourtButton}>X</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.buttonCreateCourtContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.buttonCreateCourt,
+                    styles.cancelCreateCourtButton,
+                  ]}
+                  onPress={() => setModalOpen(false)}>
+                  <Text style={styles.cancelCreateCourtButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.confirmCreateCourtButton]}
+                  onPress={handleCreateCourt}>
+                  <Text style={styles.confirmCreateCourtButtonText}>Yes</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
           </View>
           <View style={styles.buttonCreateCourtContainer}>
             <TouchableOpacity
@@ -1867,39 +1935,40 @@ const styles = StyleSheet.create({
       flexGrow: 1,
   },
   container: {
-      flex: 1,
-      //alignItems: 'center',
-      padding: 20,
-      backgroundColor: '#f5f5f5',
+    flex: 1,
+    //alignItems: 'center',
+    paddingHorizontal: 20,
+    backgroundColor: '#f9f9f9',
+
   },
   itemContainerGame: {
     flex: 1,
-    alignItems: 'center',
     margin: 5,
     padding: 10,
-    backgroundColor: '#F9F9F6',
-    borderRadius: 10,
-    borderWidth: 1,
+    borderRadius: 5,
+    backgroundColor: COLORS.fieldColor,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderColor: '#F9F9F6',
   },
   imageGame: {
-    width: 52,
-    height: 35,
+    // width: 52,
+    // height: 35,
+    marginBottom: 10,
   },
   textGame: {
     color: '#192335',
-    marginTop: 5,
     fontSize: 12,
-    fontWeight: '500',
+    lineHeight: 22,
+    fontFamily: 'Outfit-Medium',
   },
-  tickGame: {
+  tickIconSports: {
     width: 15,
     height: 15,
     position: 'absolute',
     top: -5,
     right: -5,
-    zIndex: 10,
-    borderRadius: 7.5,
+    borderRadius: 15,
   },
   // row: {
   //   flexDirection: 'row',
@@ -1936,7 +2005,11 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     fontSize: 13,
-    textAlign: 'left',
+    fontFamily: 'Outfit-Regular',
+    marginBottom: 20,
+  },
+  rowSports: {
+    justifyContent: 'space-between',
   },
   addButtonRule: {
     backgroundColor: '#097E52',
@@ -2010,11 +2083,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     marginVertical: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
     width: Dimensions.get('window').width * 0.9,
   },
   rowCourtCard: {
@@ -2024,24 +2092,36 @@ const styles = StyleSheet.create({
   },
   courtNameCourtCard: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Outfit-Medium',
+    textTransform: 'uppercase',
   },
   gameTypeCourtCard: {
+    paddingTop: 5,
+    fontFamily: 'Outfit-Regular',
     fontSize: 14,
     color: '#097E52',
   },
   priceCourtCard: {
+    fontFamily: 'Outfit-SemiBold',
     fontSize: 16,
-    fontWeight: '600',
   },
   blockCourtTextCourtCard: {
+    fontFamily: 'Outfit-Regular',
     fontSize: 14,
     color: '#757C8D',
     marginRight: 8,
   },
   /* Slot Timing Styles*/
+  dropdown: {
+    backgroundColor: '#fff',
+    borderColor: '#FAFAFA',
+    borderRadius: 8,
+    height: 60,
+  },
   labelSlot: {
+    marginTop: 20,
     fontSize: 16,
+    fontFamily: 'Outfit-Regular',
     marginBottom: 8,
     color: '#333',
   },
@@ -2061,8 +2141,16 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 16,
   },
+  dropDownDate: {
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    fontFamily: 'Outfit-Regular',
+    borderColor: COLORS.fieldBorderColor,
+    borderWidth: 1,
+  },
   buttonTextSlot: {
     color: '#000000',
+    fontFamily: 'Outfit-Regular',
     fontSize: 16,
   },
    inputSlotDateView: {
@@ -2148,7 +2236,14 @@ buttonContainerAvailable: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     width: '48%',
+    height: 50,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonTextCartData: {
+    fontFamily: 'Outfit-Medium',
+    color: COLORS.WHITE,
+    fontSize: 18,
   },
   paymentButtonCartData: {
     backgroundColor: '#192335',
@@ -2157,11 +2252,12 @@ buttonContainerAvailable: {
     paddingHorizontal: 20,
     width: '48%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
 
   /* Add Slot Accordian */
   cardSlot: {
-    backgroundColor: 'white',
+    backgroundColor: '#fafafa',
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,

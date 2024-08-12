@@ -191,7 +191,13 @@ export const HomePageEventSlider = ({
   };
 
   return (
-    <View style={[styles.card]}>
+    <View
+      style={[
+        styles.card,
+        type === 'Accepted'
+          ? {backgroundColor: COLORS.BLACK}
+          : {backgroundColor: COLORS.PrimaryColor},
+      ]}>
       <View style={styles.header}>
         <View>
           <Text style={styles.heading}>
@@ -357,7 +363,7 @@ const styles = StyleSheet.create({
     padding: 10,
     height: 175,
     justifyContent: 'space-between',
-    backgroundColor: COLORS.PrimaryColor,
+    // backgroundColor: COLORS.PrimaryColor,
   },
   header: {
     // flexDirection: 'row',

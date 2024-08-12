@@ -83,7 +83,6 @@ const GroungEventSlider = ({filteredGrounds, userId, onGroundsUpdated}) => {
   };
 
   const handleCreateground = item => {
-    console.log('hi', item);
     navigation.navigate(ADMINTOPTABNAVIGATION, {groundID: item});
   };
 

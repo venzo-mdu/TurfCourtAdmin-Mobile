@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Modal,
   ToastAndroid,
   ActivityIndicator,
 } from 'react-native';
@@ -16,18 +15,16 @@ import CommonTextArea from '../../../components/molecules/CommonTextArea';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {launchImageLibrary} from 'react-native-image-picker';
 // import storage from '@react-native-firebase/storage';
-import {storage} from '../../../firebase/firebase';
 import {uploadFile} from '../../../firebase/firebaseFunction/groundDetails';
 import {USERLOGIN} from '../..';
 import {
   UpdateUserData,
   userData,
 } from '../../../firebase/firebaseFunction/userDetails';
-import {Dropdown} from 'react-native-element-dropdown';
 import PhoneInput from 'react-native-phone-number-input';
 import {Dimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const {WD, mS, hS} = require('../../../utils/metrics');
+const {hS} = require('../../../utils/metrics');
 const {COLORS} = require('../../../assets/constants/global_colors');
 
 const ProfileView = () => {
@@ -41,7 +38,6 @@ const ProfileView = () => {
   const navigation = useNavigation();
   const [loader, setLoader] = useState(false);
   const [formattedPhoneNumber, setFormattedPhoneNumber] = useState('');
-  const [open, setOpen] = useState(false);
   const [phoneError, setPhoneError] = useState('');
 
   useEffect(() => {
@@ -59,24 +55,34 @@ const ProfileView = () => {
     getUserData();
   }, []);
 
-  async function profileDetail() {
-    const userProfile = await userData(uid);
-    console.log('Profile:', userProfile);
-    // setDetails(userProfile);
-    // setTempDetails(userProfile);
-    const strippedPhoneNumber = userProfile.phonenumber.replace(/^\+91/, '');
-    setDetails({
-      ...userProfile,
-      phonenumber: strippedPhoneNumber,
-    });
-    setTempDetails({
-      ...userProfile,
-      phonenumber: strippedPhoneNumber,
-    });
-  }
-
   useEffect(() => {
-    profileDetail();
+    const fetchProfileDetails = async () => {
+      try {
+        setLoader(true);
+        if (uid) {
+          const userProfile = await userData(uid);
+          console.log('Profile:', userProfile);
+          const strippedPhoneNumber = userProfile.phonenumber.replace(
+            /^\+91/,
+            '',
+          );
+          setDetails({
+            ...userProfile,
+            phonenumber: strippedPhoneNumber,
+          });
+          setTempDetails({
+            ...userProfile,
+            phonenumber: strippedPhoneNumber,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching profile details:', error);
+      } finally {
+        setLoader(false); // Stop loader when data fetch is done
+      }
+    };
+
+    fetchProfileDetails();
   }, [uid]);
 
   const handleChange = (key, value) => {
@@ -199,23 +205,20 @@ const ProfileView = () => {
     });
   };
 
-  const handleDeactivate = () => {
-    setDetails({
-      ...details,
-      isuseractive: false,
-    });
-    setOpen(false);
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        {loader && (
+        {loader ? (
           <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color="#0000ff" />
+            <ActivityIndicator
+              size={50}
+              color={COLORS.PrimaryColor}
+              animating={loader}
+            />
+            <Text>Loading...</Text>
           </View>
-        )}
-        {details && (
+        ) : null}
+        {details ? (
           <>
             <View style={styles.profileContainer}>
               <Image
@@ -317,50 +320,8 @@ const ProfileView = () => {
                 <Text style={styles.buttonTextCartData}>Save Changes</Text>
               </TouchableOpacity>
             </View>
-            {/* <TouchableOpacity onPress={handleSave}>
-                            <Text style={styles.saveButton}>Save Changes</Text>
-                        </TouchableOpacity> */}
-            {/* <View style={{paddingTop: 20, paddingBottom: 20, width: '100%'}}>
-              <TouchableOpacity
-                style={styles.deactivateButtonDeactivateButton}
-                onPress={() => setOpen(true)}>
-                <Text style={styles.buttonTextDeactivateButton}>
-                  Deactivate Account
-                </Text>
-              </TouchableOpacity>
-            </View> */}
           </>
-        )}
-
-        <Modal
-          transparent={true}
-          visible={open}
-          onRequestClose={() => setOpen(false)}>
-          <View style={styles.modalOverlayDeactivate}>
-            <View style={styles.modalContentDeactivate}>
-              <View style={styles.modalHeaderDeactivate}>
-                <Text style={styles.modalTitleDeactivate}>
-                  Are you sure you want to deactivate?
-                </Text>
-                <TouchableOpacity onPress={() => setOpen(false)}>
-                  <Text style={styles.closeButtonDeactivate}>X</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.modalFooterDeactivate}>
-                <TouchableOpacity
-                  style={styles.yesButtonDeactivate}
-                  onPress={handleDeactivate}>
-                  <Text style={styles.buttonTextDeactivate}>Yes</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.noButtonDeactivate}
-                  onPress={() => setOpen(false)}>
-                  <Text style={styles.buttonTextDeactivate}>No</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
+        ) : null}
       </View>
     </ScrollView>
   );
@@ -526,16 +487,22 @@ const styles = StyleSheet.create({
 
   /* Load Container*/
   loaderContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 9999,
+    height: '100%',
   },
+  // loaderContainer: {
+  //   position: 'absolute',
+  //   top: 0,
+  //   left: 0,
+  //   right: 0,
+  //   bottom: 0,
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  //   backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  //   zIndex: 9999,
+  // },
   errorText: {
     color: 'red',
     marginTop: 5,

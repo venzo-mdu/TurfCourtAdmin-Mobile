@@ -29,6 +29,7 @@ import ArenaScreen from '../screens/courtAdmin/Arena/ArenaDetails/ArenaScreen';
 import AdminTopTabNavigation from './AdminTopTabNavigation';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {COLORS} from '../assets/constants/global_colors';
+import IndexHome from '../screens/courtAdmin/Home/indexHome';
 
 const Stack = createNativeStackNavigator();
 
@@ -48,7 +49,7 @@ const AdminStackNav = ({route}) => {
         component={AdminTopTabNavigation}
         options={({navigation}) => ({
           headerShown: true,
-          headerTitle: 'Add Arena',
+          headerTitle: 'Court Details',
           headerTitleAlign: 'center',
           headerBackTitleVisible: false,
           headerTitleStyle: {
@@ -64,8 +65,7 @@ const AdminStackNav = ({route}) => {
           },
           headerShadowVisible: false,
           headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => navigation.navigate(ADMINARENA, {refresh: true})}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
               <Icon name="angle-left" size={32} color="#4CA181" />
             </TouchableOpacity>
           ),
@@ -92,10 +92,7 @@ const AdminStackNav = ({route}) => {
             shadowColor: 'transparent',
           },
           headerLeft: () => (
-            <TouchableOpacity
-              onPress={() =>
-                navigation.goBack()
-              }>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
               <Icon name="angle-left" size={32} color="#4CA181" />
             </TouchableOpacity>
           ),
