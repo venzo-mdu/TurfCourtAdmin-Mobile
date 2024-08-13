@@ -217,18 +217,23 @@ export const HomePageEventSlider = ({
           </Text>
           {renderSlots()}
         </View>
-        <View
-          style={{
-            backgroundColor: '#fff',
-            height: 0.5,
-          }}></View>
-        <TouchableOpacity onPress={() => handleStatusEdit(bookingItem)}>
-          {/* <Image source={EditIcon} style={styles.editIcon} /> */}
-          <View style={styles.footer}>
-            <Text style={styles.text}>View</Text>
-            <Icon name="eye" size={20} color="#ffffff" />
+        {type === 'Awaiting' ? (
+          <View>
+            <View
+              style={{
+                backgroundColor: '#fff',
+                height: 0.5,
+              }}
+            />
+            <TouchableOpacity onPress={() => handleStatusEdit(bookingItem)}>
+              {/* <Image source={EditIcon} style={styles.editIcon} /> */}
+              <View style={styles.footer}>
+                <Text style={styles.text}>View</Text>
+                <Icon name="eye" size={20} color="#ffffff" />
+              </View>
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+        ) : null}
       </View>
       {/* )} */}
       {statusOpen && (
