@@ -179,7 +179,6 @@ const BookingScreen = ({route}) => {
 
   const handleChange = value => {
     setTab(value);
-    setTabSelected(true);
     console.log('value', value);
 
     if (value == 'Bookings') {
