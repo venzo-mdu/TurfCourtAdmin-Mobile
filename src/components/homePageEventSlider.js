@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ScrollView,
   FlatList,
+  ToastAndroid,
 } from 'react-native';
 import _ from 'lodash';
 import {statusMap} from '../utils/statusMap';
@@ -54,6 +55,12 @@ export const HomePageEventSlider = ({
   const [canBePaid, setCanBePaid] = useState(false);
 
   const handleUpdateStatus = async props => {
+    var sat;
+    if (props === 'Accepted') {
+      sat = 'Approved';
+    } else {
+      sat = 'Rejected';
+    }
     if (checkSamePropertyValue(selectedCancelEventData)) {
       await Promise.all(
         selectedCancelEventData.map(async selectedCancelEventDatum => {
@@ -64,6 +71,12 @@ export const HomePageEventSlider = ({
       setCancelEventInd([]);
       setSelectedCancelEventData([]);
       await eventData(groundIds);
+
+      ToastAndroid.showWithGravity(
+        'You have ' + sat + ' the Slots.',
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER,
+      );
     } else {
       setCanBePaid(true);
     }
