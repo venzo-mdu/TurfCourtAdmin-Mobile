@@ -26,6 +26,8 @@ import {Dimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const {hS} = require('../../../utils/metrics');
 const {COLORS} = require('../../../assets/constants/global_colors');
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const ProfileView = () => {
   const route = useRoute();
@@ -39,6 +41,8 @@ const ProfileView = () => {
   const [loader, setLoader] = useState(false);
   const [formattedPhoneNumber, setFormattedPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [profileActive, setProfileActive] = useState(true);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -205,6 +209,27 @@ const ProfileView = () => {
     });
   };
 
+  const handleProfileChange = () => {
+    setProfileActive(true);
+  };
+
+  const handleOtherSettingsChange = () => {
+    setProfileActive(false);
+  };
+
+  const handleDeactivate = () => {
+    setDetails({
+      ...details,
+      isuseractive: false,
+    });
+    setOpen(false);
+  };
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('res-data');
+    navigation.replace(USERLOGIN);
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
@@ -219,108 +244,191 @@ const ProfileView = () => {
           </View>
         ) : null}
         {details ? (
-          <>
-            <View style={styles.profileContainer}>
-              <Image
-                source={{uri: details.profileimg}}
-                style={styles.profileImage}
-              />
-              <View>
-                <TouchableOpacity
-                  style={styles.cameraIcon}
-                  onPress={handleImagePick}>
-                  <Icon name="camera" size={15} color="#FFF" />
-                </TouchableOpacity>
-              </View>
-            </View>
-            <CommonTextInput
-              label="Name"
-              value={details.username}
-              onChangeText={text => handleChange('username', text)}
-            />
-            <CommonTextInput
-              label="Email"
-              value={details.email}
-              onChangeText={text => handleChange('email', text)}
-            />
-            <View>
-              <Text style={styles.signUpViewText}>Mobile Number</Text>
-              <View
-                style={[
-                  styles.phoneBox,
-                  {flexDirection: 'row', marginBottom: 20},
-                ]}>
-                <PhoneInput
-                  defaultValue={details.phonenumber}
-                  defaultCode="IN"
-                  layout="first"
-                  onChangeFormattedText={text =>
-                    handleFormattedPhoneNumberChange(text)
-                  }
-                  containerStyle={styles.phoneInputContainer}
-                  textContainerStyle={styles.phoneInputTextContainer}
-                  textInputStyle={{
-                    fontSize: 18,
-                    paddingBottom: 8,
-                    color: COLORS.BLACK,
+          <View style={{marginTop: 30, width: '100%'}}>
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: 10,
+                alignSelf: 'flex-start',
+              }}>
+              <TouchableOpacity
+                style={{
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  backgroundColor: profileActive ? '#fff' : '#000',
+                  borderColor: profileActive ? '#F1F2F7' : null,
+                  borderWidth: profileActive ? 1.5 : null,
+                  borderRadius: 12,
+                }}
+                onPress={handleProfileChange}>
+                <Text
+                  style={{
                     fontFamily: 'Outfit-Regular',
-                  }}
-                />
-              </View>
-              {phoneError ? (
-                <Text style={styles.errorText}>{phoneError}</Text>
-              ) : null}
+                    fontSize: 20,
+                    color: profileActive ? '#000' : '#fff',
+                  }}>
+                  Profile
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  backgroundColor: profileActive ? '#000' : '#fff',
+                  borderColor: profileActive ? null : '#F1F2F7',
+                  borderWidth: profileActive ? null : 1.5,
+                  borderRadius: 12,
+                }}
+                onPress={handleOtherSettingsChange}>
+                <Text
+                  style={{
+                    fontFamily: 'Outfit-Regular',
+                    color: profileActive ? '#fff' : '#000',
+                    fontSize: 20,
+                  }}>
+                  Other Settings
+                </Text>
+              </TouchableOpacity>
             </View>
-            <CommonTextArea
-              label="Information About You"
-              value={details.info}
-              onChangeText={text => handleChange('info', text)}
-              placeholder="Information About You"
-              placeholderTextColor="#666"
-              numberOfLines={4}
-            />
-            <CommonTextArea
-              label="Address"
-              value={details.address}
-              onChangeText={text => handleChange('address', text)}
-              placeholder="Address"
-              placeholderTextColor="#666"
-              numberOfLines={4}
-            />
-            <CommonTextInput
-              label="State"
-              value={details.state}
-              onChangeText={text => handleChange('state', text)}
-            />
-            <CommonTextInput
-              label="City"
-              value={details.city}
-              onChangeText={text => handleChange('city', text)}
-            />
-            <CommonTextInput
-              label="Country"
-              value={details.country}
-              onChangeText={text => handleChange('country', text)}
-            />
-            <CommonTextInput
-              label="Zip Code"
-              value={details.zipcode}
-              onChangeText={text => handleChange('zipcode', text)}
-            />
-            <View style={styles.footerButtonsCartData}>
-              {/* <TouchableOpacity
+            {profileActive ? (
+              <>
+                <View style={styles.profileContainer}>
+                  <Image
+                    source={{uri: details.profileimg}}
+                    style={styles.profileImage}
+                  />
+                  <View>
+                    <TouchableOpacity
+                      style={styles.cameraIcon}
+                      onPress={handleImagePick}>
+                      <Icon name="camera" size={15} color="#FFF" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <CommonTextInput
+                  label="Name"
+                  value={details.username}
+                  onChangeText={text => handleChange('username', text)}
+                />
+                <CommonTextInput
+                  label="Email"
+                  value={details.email}
+                  onChangeText={text => handleChange('email', text)}
+                />
+                <View>
+                  <Text style={styles.signUpViewText}>Mobile Number</Text>
+                  <View
+                    style={[
+                      styles.phoneBox,
+                      {flexDirection: 'row', marginBottom: 20},
+                    ]}>
+                    <PhoneInput
+                      defaultValue={details.phonenumber}
+                      defaultCode="IN"
+                      layout="first"
+                      onChangeFormattedText={text =>
+                        handleFormattedPhoneNumberChange(text)
+                      }
+                      containerStyle={styles.phoneInputContainer}
+                      textContainerStyle={styles.phoneInputTextContainer}
+                      textInputStyle={{
+                        fontSize: 18,
+                        paddingBottom: 8,
+                        color: COLORS.BLACK,
+                        fontFamily: 'Outfit-Regular',
+                      }}
+                    />
+                  </View>
+                  {phoneError ? (
+                    <Text style={styles.errorText}>{phoneError}</Text>
+                  ) : null}
+                </View>
+                <CommonTextArea
+                  label="Information About You"
+                  value={details.info}
+                  onChangeText={text => handleChange('info', text)}
+                  placeholder="Information About You"
+                  placeholderTextColor="#666"
+                  numberOfLines={4}
+                />
+                <CommonTextArea
+                  label="Address"
+                  value={details.address}
+                  onChangeText={text => handleChange('address', text)}
+                  placeholder="Address"
+                  placeholderTextColor="#666"
+                  numberOfLines={4}
+                />
+                <CommonTextInput
+                  label="State"
+                  value={details.state}
+                  onChangeText={text => handleChange('state', text)}
+                />
+                <CommonTextInput
+                  label="City"
+                  value={details.city}
+                  onChangeText={text => handleChange('city', text)}
+                />
+                <CommonTextInput
+                  label="Country"
+                  value={details.country}
+                  onChangeText={text => handleChange('country', text)}
+                />
+                <CommonTextInput
+                  label="Zip Code"
+                  value={details.zipcode}
+                  onChangeText={text => handleChange('zipcode', text)}
+                />
+                <View style={styles.footerButtonsCartData}>
+                  {/* <TouchableOpacity
               style={styles.resetButtonCartData}
               onPress={() => setDetails(tempdetails)}
             >
               <Text style={styles.buttonTextCartData}>Reset</Text>
             </TouchableOpacity> */}
-              <TouchableOpacity
-                style={styles.paymentButtonCartData}
-                onPress={handleSave}>
-                <Text style={styles.buttonTextCartData}>Save Changes</Text>
-              </TouchableOpacity>
-            </View>
-          </>
+                  <TouchableOpacity
+                    style={styles.paymentButtonCartData}
+                    onPress={handleSave}>
+                    <Text style={styles.buttonTextCartData}>Save Changes</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <View
+                style={{
+                  alignSelf: 'flex-start',
+                }}>
+                <View style={{paddingTop: 30}}>
+                  <TouchableOpacity
+                    onPress={handleLogout}
+                    style={styles.logoutContainer}>
+                    <Text style={styles.logoutStyle}>Logout</Text>
+                    <AntDesign
+                      style={styles.logoutLogoStyle}
+                      name="logout"
+                      size={20}
+                      color={COLORS.PrimaryColor}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={{paddingTop: 20, paddingButton: 20}}>
+                  <TouchableOpacity
+                    style={styles.logoutContainer}
+                    onPress={() => setOpen(true)}>
+                    <Text style={styles.buttonTextDeactivateButton}>
+                      Deactivate Account
+                    </Text>
+                    <AntDesign
+                      style={styles.logoutLogoStyle}
+                      name="deleteuser"
+                      size={24}
+                      color={COLORS.PrimaryColor}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
         ) : null}
       </View>
     </ScrollView>
@@ -339,7 +447,7 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginVertical: 30,
   },
   profileImage: {
     width: 100,
@@ -418,16 +526,11 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
-  deactivateButtonDeactivateButton: {
-    backgroundColor: '#E50000',
-    padding: 10,
-    borderRadius: 8,
-  },
+
   buttonTextDeactivateButton: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    textAlign: 'center',
-    marginVertical: 8,
+    color: 'red',
+    fontSize: 20,
+    fontFamily: 'Outfit-Medium',
   },
 
   /* Modal View Of Deactivate Account */
@@ -507,6 +610,24 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 5,
     marginHorizontal: hS(16),
+  },
+  logoutStyle: {
+    color: '#000',
+    fontFamily: 'Outfit-Medium',
+    borderRadius: 22,
+    fontSize: 20,
+  },
+  logoutContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+    height: 30,
+  },
+  logoutLogoStyle: {
+    alignContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
   },
 });
 

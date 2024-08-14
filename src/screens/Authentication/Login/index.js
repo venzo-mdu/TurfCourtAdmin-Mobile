@@ -100,10 +100,7 @@ const UserLoginScreen = () => {
 
             if (res?.owner === true) {
               navigation.replace(USERBOOTOM);
-              ToastAndroid.show(
-                'User Logged In Successfully',
-                ToastAndroid.SHORT,
-              );
+              ToastAndroid.show('Logged In Successfully', ToastAndroid.SHORT);
               // } else if (res?.usertype == 'venzoadmin') {
               //   navigation.replace(USERBOOTOM);
             } else {

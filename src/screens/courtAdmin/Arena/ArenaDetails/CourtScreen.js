@@ -44,7 +44,6 @@ import {USER, USERLOGIN} from '../../..';
 import moment from 'moment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Collapsible from 'react-native-collapsible';
-import CommonTextInputError from '../../../../components/molecules/commomTextInputError';
 
 const CourtScreen = () => {
   const [tab, setTab] = useState('Add Court');
@@ -57,7 +56,7 @@ const CourtScreen = () => {
   const [courtTime, setCourtTime] = useState([]);
   //  console.log("courtTime---", courtTime)
   const [eventData, setEventData] = useState([]);
-  //console.log("eventData values", eventData)
+  console.log('eventData values', eventData);
   //const [loader, setLoading] = useState(false);
   const [loader, setLoadingView] = useState(false);
   //console.log("CourtScreeen groundData", groundData)
@@ -489,10 +488,21 @@ const CourtScreen = () => {
         ...prev,
         Courts: valueAvailable,
       }));
-      handleavailablecourt(valueAvailable);
+      // handleavailablecourt(valueAvailable);
     }
   }, [valueAvailable]);
-  console.log('valueAvailable----', valueAvailable);
+
+  useEffect(() => {
+    if (availablecourt?.Courts !== null) {
+      console.log('availablecourt?.Courts', availablecourt?.Courts);
+      //  setAvailablecourt((prev) => ({
+      //    ...prev,
+      //    Courts: valueAvailable,
+      //  }));
+      handleavailablecourt(availablecourt?.Courts);
+    }
+  }, [availablecourt?.Courts]);
+  console.log('availablecourt?.Courts----', availablecourt?.Courts);
   //console.log("availableCourts", availablecourt, valueAvailable)
 
   /* Add Funciton of SLot */
@@ -627,10 +637,14 @@ const CourtScreen = () => {
     // console.log("data HandleAvailCOurt123", !_.isEmpty(availablecourt.date) && !_.isEmpty(value))
     console.log('Hi');
     console.log('data value given', value);
-    if (!_.isEmpty(availablecourt.date) && !_.isEmpty(value)) {
+    console.log(
+      '!_.isEmpty(availablecourt.date) && !_.isEmpty(value)',
+      !_.isEmpty(availablecourt.date) && !_.isEmpty(value),
+    );
+    if (_.isEmpty(availablecourt.date) && !_.isEmpty(value)) {
       setAccordionOpen(true);
       //setLoading(true);
-      const data = await getcourtevent(value?.value);
+      const data = await getcourtevent(value);
       console.log('data HandleAvailCOurt', data);
       //setLoading(false);
       setEventData(data);
@@ -925,6 +939,7 @@ const CourtScreen = () => {
       navigation.navigate(USERLOGIN);
       return;
     }
+    setLoadingView(true);
     let data = courtTime?.filter(item => item?.selected == true);
     if (
       availablecourt?.Courts != '' &&
@@ -992,18 +1007,29 @@ const CourtScreen = () => {
       //console.log("results", results)
       const response = await createNewBlockEvent(Addcartdatas);
       //console.log("response handle Booking", response)
+      setLoadingView(false);
       if (response?.status == 'Success') {
         setblockModalOpen(false);
         handleReset();
+        ToastAndroid.showWithGravity(
+          'Slot Blocked successfully!',
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER,
+        );
         // ToastAndroid.show("Blocking Success");
 
         grndData();
         //setblockModalOpen(false);
       } else {
-        toast.error('Blocking Failed', {
-          position: 'top-right',
-          autoClose: 2000,
-        });
+        // toast.error("Blocking Failed", {
+        //   position: "top-right",
+        //   autoClose: 2000,
+        // });
+        ToastAndroid.showWithGravity(
+          'Slot Blocked Failed!',
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER,
+        );
         console.error('book fail');
       }
       // }
@@ -1064,6 +1090,7 @@ const CourtScreen = () => {
       navigation.navigate(USERLOGIN);
       return;
     }
+    setLoadingView(true);
     let data = courtTime?.filter(item => item?.selected == true);
     if (
       availablecourt?.Courts != '' &&
@@ -1131,21 +1158,33 @@ const CourtScreen = () => {
       const mapcosnt = bookedDataList.map(async datum => {
         await changeEventStatus(datum?.event_id, 'Unblocked');
       });
-
+      console.log('mapcosnt', mapcosnt);
+      setLoadingView(false);
       if (mapcosnt?.length) {
+        setunblockModalOpen(false);
         handleReset();
-        toast.success('Unblocking Success', {
-          position: 'top-right',
-          autoClose: 2000,
-        });
+        // toast.success("Unblocking Success", {
+        //   position: "top-right",
+        //   autoClose: 2000,
+        // });
+        ToastAndroid.showWithGravity(
+          'Slot Unblocked successfully!',
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER,
+        );
         grndData();
-        setunblockModalOpen(false);
+        //  setunblockModalOpen(false);
       } else {
-        toast.error('Unblocking Failed', {
-          position: 'top-right',
-          autoClose: 2000,
-        });
+        // toast.error("Unblocking Failed", {
+        //   position: "top-right",
+        //   autoClose: 2000,
+        // });
         setunblockModalOpen(false);
+        ToastAndroid.showWithGravity(
+          'Slot Unblocked Failed!',
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER,
+        );
         console.error('Unblocking fail');
       }
       // }
@@ -1337,11 +1376,7 @@ const CourtScreen = () => {
   const renderItemGame = ({item}) => (
     <View style={styles.itemContainerGame}>
       <TouchableOpacity onPress={() => handleGameclick(item)}>
-        <Image
-          style={styles.imageGame}
-          resizeMode="contain"
-          source={iconsss[item]}
-        />
+        <Image style={styles.imageGame} source={iconsss[item]} />
         <Text style={styles.textGame}>{item.replace('_', ' ')}</Text>
         {createCourt?.gametype?.includes(item) && (
           <Image source={IMAGES.TickIcons} style={styles.tickGame} />
@@ -1375,38 +1410,21 @@ const CourtScreen = () => {
               />
             </TouchableOpacity>
             {/* <Collapsible collapsed={basicCourtDetailsOpen}> */}
-            <View
-              style={{
-                zIndex: 2000,
-                padding: 10,
-                marginBottom: 20,
-                backgroundColor: '#fff',
-                borderBottomRightRadius: 12,
-                borderBottomLeftRadius: 12,
-              }}>
-              <View>
-                <FlatList
-                  data={gametype}
-                  renderItem={renderItemGame}
-                  keyExtractor={item => item}
-                  numColumns={3}
-                  columnWrapperStyle={styles.rowGame}
-                />
-                {AddCourtError && createCourt.gametype === '' && (
-                  <Text style={styles.errorText}>
-                    *Select appropriate values
-                  </Text>
-                )}
-              </View>
+            <View>
+              <FlatList
+                data={gametype}
+                renderItem={renderItemGame}
+                keyExtractor={item => item}
+                numColumns={3}
+                columnWrapperStyle={styles.rowGame}
+              />
+              {AddCourtError && createCourt.gametype === '' && (
+                <Text style={styles.errorText}>*Select appropriate values</Text>
+              )}
             </View>
-            <View
-              style={{
-                backgroundColor: '#fff',
-                borderRadius: 12,
-                padding: 10,
-              }}>
-              <View style={{marginBottom: 20}}>
-                <CommonTextInputError
+            <View>
+              <View style={{paddingTop: 10}}>
+                <CommonTextInput
                   label="Court Name"
                   value={createCourt?.court_name}
                   onChangeText={text =>
@@ -1415,11 +1433,13 @@ const CourtScreen = () => {
                   //widthStyle={true}
                 />
                 {AddCourtError && createCourt.court_name === '' && (
-                  <Text style={styles.errorText}>Enter the Court Name</Text>
+                  <Text style={styles.errorText}>
+                    *Enter appropriate values
+                  </Text>
                 )}
               </View>
-              <View style={{marginBottom: 20}}>
-                <CommonTextInputError
+              <View>
+                <CommonTextInput
                   label="Default price"
                   value={createCourt?.default_amount}
                   onChangeText={text =>
@@ -1428,7 +1448,9 @@ const CourtScreen = () => {
                   // widthStyle={true}
                 />
                 {AddCourtError && createCourt.default_amount === '' && (
-                  <Text style={styles.errorText}>Enter the Court Price</Text>
+                  <Text style={styles.errorText}>
+                    *Enter appropriate values
+                  </Text>
                 )}
               </View>
               <TouchableOpacity
@@ -2305,9 +2327,10 @@ const styles = StyleSheet.create({
   imageGame: {
     // width: 52,
     // height: 35,
-    // width: 45,
-    // height: 45,
+    width: 45,
+    height: 45,
     //padding:5,
+    resizeMode: 'cover',
   },
   textGame: {
     color: '#192335',
