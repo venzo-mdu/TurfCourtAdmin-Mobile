@@ -27,8 +27,9 @@ const CourtScreen = () => {
   //console.log("groundID Views", groundID)
   const [groundData, setGroundData] = useState();
   const [courtTime, setCourtTime] = useState([]);
-  //console.log("courtTime---", courtTime)
+//  console.log("courtTime---", courtTime)
   const [eventData, setEventData] = useState([]);
+  console.log("eventData values", eventData)
   //const [loader, setLoading] = useState(false);
   const [loader, setLoadingView] = useState(false);
 //console.log("CourtScreeen groundData", groundData)
@@ -173,14 +174,14 @@ const [basicAvailableDetailsOpen, setBasicAvailableDetailsOpen] = useState(true)
       let groundres = await getgroundDataById(groundID,"admin",uid);
       //setLoading(false);
       setLoadingView(false)
-      console.log("gtrr33 groundres" , groundres, "gtrr33");
+    //  console.log("gtrr33 groundres" , groundres, "gtrr33");
       setGroundData(groundres);
       setgametype(groundres?.game_type);
       //setLoading(true);
             let court_details = await getCourtsForGround(groundID);
        //     console.log("court_details", court_details)
             let ground_details = { ...groundData, court_details };
-            console.log("ground_details", ground_details)
+           // console.log("ground_details", ground_details)
             // setGroundData(ground_details);
             // setgametype(ground_details?.game_type);
       
@@ -266,7 +267,7 @@ const [basicAvailableDetailsOpen, setBasicAvailableDetailsOpen] = useState(true)
     } else {
       //setLoading(true);
       setLoadingView(true);
-      await createNewCourt(groundID, createCourt);
+      //await createNewCourt(groundID, createCourt);
       try {
         await createNewCourt(groundID, createCourt);
         ToastAndroid.showWithGravity(
@@ -426,7 +427,7 @@ const [basicAvailableDetailsOpen, setBasicAvailableDetailsOpen] = useState(true)
  /* Got the DropDown Value Of Court Slot */
    useEffect(() => {
     if (groundData?.court_details) {
-      console.log("groundData?.court_details", groundData?.court_details)
+    //  console.log("groundData?.court_details", groundData?.court_details)
       const items = groundData?.court_details.map((court, index) => ({
         id: index + 1,
         value: court?.court_id,
@@ -445,28 +446,40 @@ const [basicAvailableDetailsOpen, setBasicAvailableDetailsOpen] = useState(true)
         Courts: value,
       }));
     }
-    else if(valueAvailable !== null){
-      //console.log("valueAvailable",valueAvailable)
-      setAvailablecourt((prev) => ({
-        ...prev,
-        Courts: valueAvailable,
-      }));
-      handleavailablecourt(valueAvailable);
-    }
-  }, [value, valueAvailable]);
+    // else if(valueAvailable !== null){
+    //   //console.log("valueAvailable",valueAvailable)
+    //   setAvailablecourt((prev) => ({
+    //     ...prev,
+    //     Courts: valueAvailable,
+    //   }));
+    //   handleavailablecourt(valueAvailable);
+    // }
+  }, [value]);
 
-//   useEffect(()=>{
-//     if(valueAvailable !== null){
-//      console.log("valueAvailable",valueAvailable)
-//      setAvailablecourt((prev) => ({
-//        ...prev,
-//        Courts: value,
-//      }));
-//      handleavailablecourt(valueAvailable);
-//    }
+  useEffect(()=>{
+    if(valueAvailable !== null){
+     console.log("valueAvailable",valueAvailable)
+     setAvailablecourt((prev) => ({
+       ...prev,
+       Courts: valueAvailable,
+     }));
+    // handleavailablecourt(valueAvailable);
+   }
+ 
+ },[valueAvailable])
 
-//  },[valueAvailable])
+ useEffect(()=>{
+  if(availablecourt?.Courts !== null){
+   console.log("availablecourt?.Courts",availablecourt?.Courts)
+  //  setAvailablecourt((prev) => ({
+  //    ...prev,
+  //    Courts: valueAvailable,
+  //  }));
+   handleavailablecourt(availablecourt?.Courts);
+ }
 
+},[availablecourt?.Courts])
+console.log("availablecourt?.Courts----", availablecourt?.Courts)
   //console.log("availableCourts", availablecourt, valueAvailable)
 
 
@@ -606,10 +619,13 @@ const [basicAvailableDetailsOpen, setBasicAvailableDetailsOpen] = useState(true)
   const handleavailablecourt = async (value) => {
    // setAvailablecourt({ ...availablecourt, Courts: value });
    // console.log("data HandleAvailCOurt123", !_.isEmpty(availablecourt.date) && !_.isEmpty(value))
-    if (!_.isEmpty(availablecourt.date) && !_.isEmpty(value)) {
+   console.log("Hi")
+   console.log("data value given",value)
+   console.log("!_.isEmpty(availablecourt.date) && !_.isEmpty(value)", !_.isEmpty(availablecourt.date) && !_.isEmpty(value))
+    if (_.isEmpty(availablecourt.date) && !_.isEmpty(value)) {
       setAccordionOpen(true);
       //setLoading(true);
-      const data = await getcourtevent(value?.value);
+      const data = await getcourtevent(value);
       console.log("data HandleAvailCOurt", data)
       //setLoading(false);
       setEventData(data);
@@ -800,8 +816,8 @@ const getCourttime = (groundData, date) => {
     starttime = new Date(en.end.getTime() + 1);
   }
 
-  eventss.forEach((court) => {
-    eventData.forEach((event) => {
+  eventss.map((court) => {
+    eventData.map((event) => {
       let date1 = new Date(event?.start);
       let date2 = new Date(court?.start);
       if (
@@ -838,16 +854,20 @@ const getCourttime = (groundData, date) => {
         bordercolor: "#00b4d8",
         textColor: "#00b4d8",
       };
+      return element;
+    }
+    else {
+      return element;
     }
 
     // Convert start and end to the required format
-    element.start = element.start.toString();
-    element.end = element.end.toString();
+    // element.start = element.start.toString();
+    // element.end = element.end.toString();
 
-    return element;
+
   });
 
-  console.log("eventss", eventarr);
+  //console.log("eventss", eventarr);
 
   setCourtTime(eventarr);
 };
@@ -857,7 +877,7 @@ const getCourttime = (groundData, date) => {
   
   const handlebooking = (value, index) => {
     const updatedCourtTime = [...courtTime];
-
+console.log("value, index", value, index);
     const currentTime = new Date();
     const currentTimehour = new Date().getHours();
     if (value.start <= new Date().getHours()) {
@@ -893,6 +913,7 @@ const getCourttime = (groundData, date) => {
           textColor: !updatedCourtTime[index].selected ? "#FFF" : "#339A49",
         };
       }
+      console.log("updatedCourtTime", updatedCourtTime)
       setCourtTime(updatedCourtTime);
     }
   };
@@ -902,6 +923,7 @@ const getCourttime = (groundData, date) => {
       navigation.navigate(USERLOGIN);
       return;
     }
+    setLoadingView(true);
     let data = courtTime?.filter((item) => item?.selected == true);
     if (
       availablecourt?.Courts != "" &&
@@ -974,18 +996,29 @@ const getCourttime = (groundData, date) => {
 //console.log("results", results)
       const response = await createNewBlockEvent(Addcartdatas);
 //console.log("response handle Booking", response)
+setLoadingView(false);
       if (response?.status == "Success") {
         setblockModalOpen(false);
         handleReset();
+        ToastAndroid.showWithGravity(
+          "Slot Blocked successfully!",
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER
+        );
        // ToastAndroid.show("Blocking Success");
 
         grndData();
         //setblockModalOpen(false);
       } else {
-        toast.error("Blocking Failed", {
-          position: "top-right",
-          autoClose: 2000,
-        });
+        // toast.error("Blocking Failed", {
+        //   position: "top-right",
+        //   autoClose: 2000,
+        // });
+        ToastAndroid.showWithGravity(
+          "Slot Blocked Failed!",
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER
+        );
         console.error("book fail");
       }
       // }
@@ -1047,6 +1080,7 @@ const getCourttime = (groundData, date) => {
       navigation.navigate(USERLOGIN);
       return;
     }
+    setLoadingView(true);
     let data = courtTime?.filter((item) => item?.selected == true);
     if (
       availablecourt?.Courts != "" &&
@@ -1119,21 +1153,33 @@ const getCourttime = (groundData, date) => {
       const mapcosnt = bookedDataList.map(async (datum) => {
         await changeEventStatus(datum?.event_id, "Unblocked");
       });
-
+console.log("mapcosnt", mapcosnt)
+setLoadingView(false);
       if (mapcosnt?.length) {
+        setunblockModalOpen(false);
         handleReset();
-        toast.success("Unblocking Success", {
-          position: "top-right",
-          autoClose: 2000,
-        });
+        // toast.success("Unblocking Success", {
+        //   position: "top-right",
+        //   autoClose: 2000,
+        // });
+        ToastAndroid.showWithGravity(
+          "Slot Unblocked successfully!",
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER
+        );
         grndData();
-        setunblockModalOpen(false);
+      //  setunblockModalOpen(false);
       } else {
-        toast.error("Unblocking Failed", {
-          position: "top-right",
-          autoClose: 2000,
-        });
+        // toast.error("Unblocking Failed", {
+        //   position: "top-right",
+        //   autoClose: 2000,
+        // });
         setunblockModalOpen(false);
+        ToastAndroid.showWithGravity(
+          "Slot Unblocked Failed!",
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER
+        );
         console.error("Unblocking fail");
       }
       // }

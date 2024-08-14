@@ -163,6 +163,7 @@ export const getEventdetailsByType = async (
 };
 
 export const getcourtevent = async court_id => {
+  console.log("getcourtevent court_id", court_id)
   try {
     if (court_id != '') {
       let events = await FetchData('events', 'court_id', court_id);
