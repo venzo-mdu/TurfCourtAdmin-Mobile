@@ -9,25 +9,88 @@ import {
   ActivityIndicator,
   SafeAreaView,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
-import {getTimeFormatted} from '../../../../utils/getHours';
-import {COLORS} from '../../../../assets/constants/global_colors';
+import { getTimeFormatted } from '../../../../utils/getHours';
+import { COLORS } from '../../../../assets/constants/global_colors';
 import {
   getEventdetailsByType,
   changeEventStatus,
 } from '../../../../firebase/firebaseFunction/eventDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { useRoute } from '@react-navigation/native';
+import { getEventdetailsByArenas, getgroundDataForOwner } from '../../../../firebase/firebaseFunction/groundDetails';
 
-const BookingScreen = ({route}) => {
-  const {groundID} = route?.params || {};
 
+const BookingScreen = () => {
+  const sampleData = [
+    {
+      event_id: '8WLs8znlIUc3ffZqhg9D',
+      user_name: 'Jadeja',
+      court_id: '49fcUezuCwv9egxpScZ5',
+      end: '2024-07-29T20:00',
+      court_name: 'Tester court1',
+      status: 'Awaiting',
+      BookId: '1e31ab64-564f-4564-84e7-0ee6723f2e89-0',
+      createdAt: { seconds: 1722236051, nanoseconds: 24000000 },
+      amount: '683',
+      reason: '',
+      ground_id: 'ZkBMZmjdlvff84hU7srJ',
+      start: '2024-07-29T19:00',
+      mapIndexx: 632129078,
+      gametype: 'Cricket',
+      ground_name: 'abc sport',
+      user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
+      owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193',
+    },
+    {
+      event_id: '8WLs8znlIUc3ffZqhg9u',
+      user_name: 'Jadeja',
+      court_id: '49fcUezuCwv9egxpScZ5',
+      end: '2024-07-29T23:00',
+      court_name: 'Tester court2',
+      status: 'Completed',
+      BookId: '1e31ab64-564f-4564-84e6-0ee6723f2e09-0',
+      createdAt: { seconds: 1722236051, nanoseconds: 24000000 },
+      amount: '633',
+      reason: '',
+      ground_id: 'ZkBMZmjdlvff84hU7srv',
+      start: '2024-07-29T22:00',
+      mapIndexx: 632129078,
+      gametype: 'Cricket',
+      ground_name: 'abc sports',
+      user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
+      owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193',
+    },
+    {
+      event_id: '8WLs8znlIUc3ffZqhg9u',
+      user_name: 'Jadeja',
+      court_id: '49fcUezuCwv9egxpScZ5',
+      end: '2024-07-29T23:00',
+      court_name: 'Tester court2',
+      status: 'Cancelled',
+      BookId: '1e31ab64-564f-4564-84e6-0ee6723f2e89-0',
+      createdAt: { seconds: 1722236051, nanoseconds: 24000000 },
+      amount: '633',
+      reason: '',
+      ground_id: 'ZkBMZmjdlf84hU7srv',
+      start: '2024-07-29T22:00',
+      mapIndexx: 632129078,
+      gametype: 'Cricket',
+      ground_name: 'abc sports',
+      user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
+      owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193',
+    },
+  ];
+  const route = useRoute();
+  const { groundID } = route?.params || {};
+  const containerStyle = groundID ? styles.insideGroundContainer : styles.tabContainer;
   const [tab, setTab] = useState('Bookings'); //isTabSelected
   const [statusopen, setstatusopen] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [filterData, setFilterData] = useState([]);
   const [uid, setUid] = useState('');
@@ -38,11 +101,13 @@ const BookingScreen = ({route}) => {
   const [value, setValue] = useState('This Month');
   const [cancelEventind, setCancelEventind] = useState([]);
   const [selectedCancelEventData, setselectedCancelEventData] = useState([]);
+  const [trigger, setTrigger] = useState([false]);
+
 
   const [dropdownItems, setDropdownItems] = useState([
-    {label: 'Last Month', value: 'Last Month'},
-    {label: 'This Month', value: 'This Month'},
-    {label: 'Next Month', value: 'Next Month'},
+    { label: 'Last Month', value: 'Last Month' },
+    { label: 'This Month', value: 'This Month' },
+    { label: 'Next Month', value: 'Next Month' },
   ]);
   const today = moment().startOf('day');
 
@@ -58,101 +123,134 @@ const BookingScreen = ({route}) => {
       }
     };
     getUserData();
+    // eventData();
+  }, []);// 
+
+  // useEffect(async () => {
+  //   if(uid !== null){
+  //     let response = await getgroundDataForOwner(uid);
+  //     console.log('response',response);
+  //   }
+  // }, [uid]);
+
+  useEffect(() => {
+    // console.log('frommmmmm',tab,value);
     eventData();
-  }, []);
+  }, [tab, value]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      eventData();
+    }, 2000);
+  }, [trigger]);
 
   const eventData = async () => {
+    console.log('from eventData', tab, value);
+    let response1 = await getgroundDataForOwner(uid);
+    const groundIds = response1?.map(r => r.ground_id);
+    console.log('groundIds',groundIds);
     if (uid == null) {
-      navigate('/login');
+      navigate("/login");
     }
-    let startDate = moment().startOf('month').format('YYYY-MM-DDTHH:mm');
-    let endOfMonth = moment().endOf('month').format('YYYY-MM-DDTHH:mm');
-    let statusValue = [
-      'Accepted',
-      'Awaiting',
-      'Cancelled',
-      'Canceled',
-      'Completed',
-      'On-going',
-    ];
+    let startDate = moment().format("YYYY-MM-DDTHH:mm");
+    let endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
+    let statusValue = ["Accepted", "Awaiting"];
+
+    if (tab === "Cancelled") {
+      statusValue = ["Cancelled", "Canceled"];
+      startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
+    } else if (tab === "Completed") {
+      statusValue = [tab];
+      startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
+      endOfMonth = moment().format("YYYY-MM-DDTHH:mm");
+    } else if (tab !== "Bookings" && tab !== "Cancelled") {
+      statusValue = [tab];
+    }
+    if (value === "Last Month") {
+      startDate = moment()
+        .subtract(1, "months")
+        .startOf("month")
+        .format("YYYY-MM-DDTHH:mm");
+      endOfMonth = moment()
+        .subtract(1, "months")
+        .endOf("month")
+        .format("YYYY-MM-DDTHH:mm");
+    } else if (value === "Next Month") {
+      startDate = moment()
+        .add(1, "months")
+        .startOf("month")
+        .format("YYYY-MM-DDTHH:mm");
+      endOfMonth = moment()
+        .add(1, "months")
+        .endOf("month")
+        .format("YYYY-MM-DDTHH:mm");
+    }
 
     const otherFilters = [
-      {key: 'status', operator: 'in', value: statusValue},
-      {key: 'start', operator: '>=', value: startDate},
-      {key: 'end', operator: '<=', value: endOfMonth},
+      { key: "status", operator: "in", value: statusValue },
+      { key: "start", operator: ">=", value: startDate },
+      { key: "end", operator: "<=", value: endOfMonth },
     ];
-    if (otherFilters && otherFilters.length > 0) {
-      const response = await getEventdetailsByType(
-        uid,
-        'owner',
-        {key: 'start', dir: 'asc'},
-        null,
+    if (
+      otherFilters &&
+      otherFilters.length > 0
+    ) {
+      console.log('groundIdssssss',groundIds)
+      const response1 = await getEventdetailsByArenas({
+        groundIds: groundIds?.slice(0, 15),
         otherFilters,
-      );
-      const events = response?.data;
-      setdata(events);
-      if (value === 'Last Month') {
-        startDate = moment()
-          .subtract(1, 'months')
-          .startOf('month')
-          .format('YYYY-MM-DDTHH:mm');
-        endOfMonth = moment()
-          .subtract(1, 'months')
-          .endOf('month')
-          .format('YYYY-MM-DDTHH:mm');
-      } else if (value === 'Next Month') {
-        startDate = moment()
-          .add(1, 'months')
-          .startOf('month')
-          .format('YYYY-MM-DDTHH:mm');
-        endOfMonth = moment()
-          .add(1, 'months')
-          .endOf('month')
-          .format('YYYY-MM-DDTHH:mm');
-      } else if (value === 'This Month') {
-        startDate = moment().startOf('month').format('YYYY-MM-DDTHH:mm');
-        endOfMonth = moment().endOf('month').format('YYYY-MM-DDTHH:mm');
-      }
+        order: {key: 'start', dir: 'asc'},
+      });
 
-      if (groundID) {
-        if (tab === 'Bookings') {
-          let filteredEvents = events.filter(item => {
-            const eventStartDate = moment(item.start);
-            return (
-              eventStartDate.isSameOrAfter(today) &&
-              (item.status === 'Accepted' || item.status === 'Awaiting') &&
-              item.ground_id === groundID
-            );
-          });
-          let monthFiltered = filteredEvents.filter(item => {
-            const eventStartDate = moment(item.start);
-            return (
-              eventStartDate.isSameOrAfter(startDate) &&
-              eventStartDate.isSameOrBefore(endOfMonth)
-            );
-          });
-          const groupedData = Object.values(groupByBookId(filteredEvents));
-          setFilterData(groupedData);
-          setLoading(true);
-        }
-      } else {
-        let bookingsData = events.filter(item => {
-          const eventStartDate = moment(item.start);
-          return (
-            eventStartDate.isSameOrAfter(today) &&
-            (item.status === 'Accepted' || item.status === 'Awaiting')
-          );
-        });
-        const groupedData = Object.values(groupByBookId(bookingsData));
-        setFilterData(groupedData);
-        setLoading(true);
-      }
+      const response2 = await getEventdetailsByArenas({
+        groundIds: groundIds?.slice(15, groundIds?.length),
+        otherFilters,
+        order: {key: 'start', dir: 'asc'},
+      });
+
+      const data = _.uniqBy(
+        [...response1?.data, ...response2?.data],
+        'event_id',
+      );
+      // const response = await getEventdetailsByType(
+      //   groundID,
+      //   "owner",
+      //   { key: "start", dir: "asc" },
+      //   null,
+      //   otherFilters
+      // );
+    
+      // const events = response.data;
+      // console.log('response', response, );
+      setdata(data);
+      const groupedData = Object.values(groupByBookId(data));
+      setFilterData(groupedData);
+      setLoading(true);
+
+      console.log('from above api response', otherFilters, uid);
     }
   };
 
   function checkSamePropertyValue(array) {
     return array.reduce((acc, obj) => acc && obj.status !== 'Accepted', true);
   }
+
+  findElementsWithSameProp = arr => {
+    const prop1Map = new Map();
+  
+    arr.forEach(element => {
+      const prop1Value = element.BookId;
+      if (prop1Map.has(prop1Value)) {
+        prop1Map.get(prop1Value).push(element);
+      } else {
+        prop1Map.set(prop1Value, [element]);
+      }
+    });
+  
+    const result = Array.from(prop1Map.values());
+  
+    return result;
+  };
 
   const handleUpdateStatus = async props => {
     if (checkSamePropertyValue(selectedCancelEventData)) {
@@ -164,6 +262,7 @@ const BookingScreen = ({route}) => {
       setstatusopen(false);
       setCancelEventind([]);
       setselectedCancelEventData([]);
+      setTrigger(!trigger);
     } else {
       setCanBePaid(true);
     }
@@ -179,75 +278,75 @@ const BookingScreen = ({route}) => {
 
   const handleChange = value => {
     setTab(value);
-    console.log('value', value);
+    // console.log('value', value);
 
-    if (value == 'Bookings') {
-      console.log('hi');
-      if (groundID) {
-        //item.ground_id === groundID
-        const tableData = data.filter(item => {
-          const eventStartDate = moment(item.start);
-          return (
-            eventStartDate.isSameOrAfter(today) &&
-            (item.status === 'Accepted' || item.status === 'Awaiting') &&
-            item.ground_id === groundID
-          );
-        });
-        const groupedData = Object.values(groupByBookId(tableData));
-        setFilterData(groupedData);
-      } else {
-        const tableData = data.filter(item => {
-          const eventStartDate = moment(item.start);
-          return (
-            eventStartDate.isSameOrAfter(today) &&
-            (item.status === 'Accepted' || item.status === 'Awaiting')
-          );
-        });
-        const groupedData = Object.values(groupByBookId(tableData));
-        setFilterData(groupedData);
-      }
-    } else if (value == 'Completed') {
-      if (groundID) {
-        const tableData = data.filter(item => {
-          return item.status === 'Completed' && item.ground_id === groundID;
-        });
-        const groupedData = Object.values(groupByBookId(tableData));
-        setFilterData(groupedData);
-      } else {
-        const tableData = data?.filter(item => item.status === 'Completed');
-        const groupedData = Object.values(groupByBookId(tableData));
-        setFilterData(groupedData);
-      }
-    } else if (value == 'On-Going') {
-      if (groundID) {
-        const tableData = data.filter(item => {
-          return item.status === 'On-going' && item.ground_id === groundID;
-        });
-        const groupedData = Object.values(groupByBookId(tableData));
-        setFilterData(groupedData);
-      } else {
-        const tableData = data?.filter(item => item.status === 'On-going');
-        const groupedData = Object.values(groupByBookId(tableData));
-        setFilterData(groupedData);
-      }
-    } else if (value == 'Cancelled') {
-      if (groundID) {
-        const tableData = data.filter(item => {
-          return (
-            (item.status === 'Cancelled' || item.status === 'Canceled') &&
-            item.ground_id === groundID
-          );
-        });
-        const groupedData = Object.values(groupByBookId(tableData));
-        setFilterData(groupedData);
-      } else {
-        const tableData = data?.filter(
-          item => item.status === 'Cancelled' || item.status === 'Canceled',
-        );
-        const groupedData = Object.values(groupByBookId(tableData));
-        setFilterData(groupedData);
-      }
-    }
+    // if (value == 'Bookings') {
+    //   console.log('hi');
+    //   if (groundID) {
+    //     //item.ground_id === groundID
+    //     const tableData = data.filter(item => {
+    //       const eventStartDate = moment(item.start);
+    //       return (
+    //         eventStartDate.isSameOrAfter(today) &&
+    //         (item.status === 'Accepted' || item.status === 'Awaiting') &&
+    //         item.ground_id === groundID
+    //       );
+    //     });
+    //     const groupedData = Object.values(groupByBookId(tableData));
+    //     setFilterData(groupedData);
+    //   } else {
+    //     const tableData = data.filter(item => {
+    //       const eventStartDate = moment(item.start);
+    //       return (
+    //         eventStartDate.isSameOrAfter(today) &&
+    //         (item.status === 'Accepted' || item.status === 'Awaiting')
+    //       );
+    //     });
+    //     const groupedData = Object.values(groupByBookId(tableData));
+    //     setFilterData(groupedData);
+    //   }
+    // } else if (value == 'Completed') {
+    //   if (groundID) {
+    //     const tableData = data.filter(item => {
+    //       return item.status === 'Completed' && item.ground_id === groundID;
+    //     });
+    //     const groupedData = Object.values(groupByBookId(tableData));
+    //     setFilterData(groupedData);
+    //   } else {
+    //     const tableData = data?.filter(item => item.status === 'Completed');
+    //     const groupedData = Object.values(groupByBookId(tableData));
+    //     setFilterData(groupedData);
+    //   }
+    // } else if (value == 'On-Going') {
+    //   if (groundID) {
+    //     const tableData = data.filter(item => {
+    //       return item.status === 'On-going' && item.ground_id === groundID;
+    //     });
+    //     const groupedData = Object.values(groupByBookId(tableData));
+    //     setFilterData(groupedData);
+    //   } else {
+    //     const tableData = data?.filter(item => item.status === 'On-going');
+    //     const groupedData = Object.values(groupByBookId(tableData));
+    //     setFilterData(groupedData);
+    //   }
+    // } else if (value == 'Cancelled') {
+    //   if (groundID) {
+    //     const tableData = data.filter(item => {
+    //       return (
+    //         (item.status === 'Cancelled' || item.status === 'Canceled') &&
+    //         item.ground_id === groundID
+    //       );
+    //     });
+    //     const groupedData = Object.values(groupByBookId(tableData));
+    //     setFilterData(groupedData);
+    //   } else {
+    //     const tableData = data?.filter(
+    //       item => item.status === 'Cancelled' || item.status === 'Canceled',
+    //     );
+    //     const groupedData = Object.values(groupByBookId(tableData));
+    //     setFilterData(groupedData);
+    //   }
+    // }
   };
 
   const handlestatusEdit = data => {
@@ -307,10 +406,10 @@ const BookingScreen = ({route}) => {
     return `${dayOfWeek}, ${month} ${day
       .toString()
       .padStart(2, '0')} | ${hours}:${minutes
-      .toString()
-      .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
-      .toString()
-      .padStart(2, '0')} ${ampm2}`;
+        .toString()
+        .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
+          .toString()
+          .padStart(2, '0')} ${ampm2}`;
   };
 
   const groupTimingsByDate = timings => {
@@ -336,11 +435,11 @@ const BookingScreen = ({route}) => {
     }, {});
   };
 
-  const renderItem = ({item}) => {
+  const renderItem = ({ item }) => {
     const getStatusColor = status => {
       switch (status) {
         case 'Awaiting':
-          return {backgroundColor: '#E4DDF4', color: '#7756C9', icon: 'clock'};
+          return { backgroundColor: '#E4DDF4', color: '#7756C9', icon: 'clock' };
         case 'Cancelled':
           return {
             backgroundColor: '#F2DEDE',
@@ -348,7 +447,7 @@ const BookingScreen = ({route}) => {
             icon: 'closecircleo',
           };
         case 'On-going':
-          return {backgroundColor: '#D9EDF7', color: '#45AEF4', icon: 'clock'};
+          return { backgroundColor: '#D9EDF7', color: '#45AEF4', icon: 'clock' };
         case 'Completed':
           return {
             backgroundColor: '#D1F0D6',
@@ -362,11 +461,11 @@ const BookingScreen = ({route}) => {
             icon: 'checkcircleo',
           };
         default:
-          return {backgroundColor: '#FFFFFF', color: '#000000', icon: ''};
+          return { backgroundColor: '#FFFFFF', color: '#000000', icon: '' };
       }
     };
 
-    const {BookId, user_name, ground_name, court_name, amount} = item[0];
+    const { BookId, user_name, ground_name, court_name, amount } = item[0];
     const timings = item.map(i => formatDateTime(i));
     const groupedTimings = groupTimingsByDate(timings);
     const total = item.reduce(
@@ -437,7 +536,7 @@ const BookingScreen = ({route}) => {
             <View>
               {groupedTimings[date].map((time, idx) => {
                 const statusItem = item[idx];
-                const {backgroundColor, color, icon} = getStatusColor(
+                const { backgroundColor, color, icon } = getStatusColor(
                   statusItem.status,
                 );
 
@@ -469,13 +568,13 @@ const BookingScreen = ({route}) => {
                       }}>
                       {(statusItem.status === 'Awaiting' ||
                         statusItem.status === 'On-going') && (
-                        <Feather name={icon} size={15} color={color} />
-                      )}
+                          <Feather name={icon} size={15} color={color} />
+                        )}
                       {(statusItem.status === 'Cancelled' ||
                         statusItem.status === 'Completed' ||
                         statusItem.status === 'Accepted') && (
-                        <AntDesign name={icon} size={12} color={color} />
-                      )}
+                          <AntDesign name={icon} size={12} color={color} />
+                        )}
                       <Text
                         style={{
                           color,
@@ -495,11 +594,11 @@ const BookingScreen = ({route}) => {
       </View>
     );
   };
-  console.log('groundID: ', groundID);
+
   return (
     <SafeAreaView
-      style={[styles.container, groundID === undefined ? {marginTop: 40} : {}]}>
-      <View style={styles.tabContainer}>
+      style={styles.container}>
+      <View style={containerStyle}>
         {['Bookings', 'Completed', 'On-Going', 'Cancelled'].map(tabName => (
           <TouchableOpacity
             key={tabName}
@@ -512,13 +611,22 @@ const BookingScreen = ({route}) => {
               style={[
                 styles.tabText,
                 tab === tabName && styles.activeTabText,
-                {fontFamily: 'Outfit-Regular', fontSize: 14},
+                { fontFamily: 'Outfit-Regular', fontSize: 14 },
               ]}>
               {tabName}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
+      <DropDownPicker
+        open={open}
+        value={value}
+        items={dropdownItems}
+        setOpen={setOpen}
+        setValue={setValue}
+        setItems={setDropdownItems}
+        placeholder={'This Month'}
+      />
       {!loading ? (
         <ActivityIndicator
           style={{
@@ -543,7 +651,7 @@ const BookingScreen = ({route}) => {
             width: '100%',
             height: '100%',
           }}>
-          <Text style={{fontFamily: 'Outfit-Medium', color: COLORS.PRIMARY}}>
+          <Text style={{ fontFamily: 'Outfit-Medium', color: COLORS.PRIMARY }}>
             No {tab} bookings found.
           </Text>
         </View>
@@ -630,11 +738,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
   },
-  tabContainer: {
-    alignItems: 'center',
+  insideGroundContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginVertical: 10,
+    height: Dimensions.get('window').height * 0.055,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 10,
+    height: Dimensions.get('window').height * 0.055,
+    marginTop: 30,
   },
   tabButton: {
     paddingVertical: 10,
@@ -747,6 +862,7 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 5,
   },
 });

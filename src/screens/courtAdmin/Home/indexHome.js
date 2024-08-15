@@ -75,10 +75,12 @@ const IndexHome = () => {
         setNoData(response?.length === 0);
         setLoading(false);
         const groundIds = response?.map(r => r.ground_id);
+        // usedispatch(groundIds)
         if (!_.isEmpty(groundIds)) {
           await eventData(groundIds);
         }
         setNewGroundData(response);
+        
       }
     } catch (err) {
       console.log('Error: ', err);
@@ -219,6 +221,8 @@ const IndexHome = () => {
   };
 
   const eventData = async groundIds => {
+    // console.log('groundIds',groundIds);
+    //  await AsyncStorage.setItem('groundIds',groundIds );
     setLoading(true);
 
     let startDate = moment().format('YYYY-MM-DDTHH:mm');

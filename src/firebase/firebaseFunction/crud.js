@@ -41,7 +41,7 @@ const fetchBulkData = async (
 ) => {
   try {
     let collectionRef = collection(db, table);
-
+     console.log('fie',filter_value)
     if (filter_key && operator && filter_value) {
       collectionRef = query(
         collectionRef,
@@ -52,6 +52,7 @@ const fetchBulkData = async (
         ),
       );
     }
+
 
     otherFilters = _.compact(otherFilters);
     if (otherFilters?.length > 0) {

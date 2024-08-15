@@ -77,11 +77,11 @@ export default function ApprovalWaitingEventsSlider({uid, refreshUpcoming}) {
   };
 
   useEffect(() => {
-    eventData();
+    // eventData();
   }, []);
 
   useEffect(() => {
-    eventData();
+    // eventData();
   }, [refreshUpcoming]);
 
   function findElementsWithSameProp(arr) {
