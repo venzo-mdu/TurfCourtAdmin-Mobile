@@ -1,102 +1,101 @@
-import { ImageBackground, StyleSheet, Text, View } from 'react-native'
-import React, { useEffect } from 'react'
-import { useNavigation } from '@react-navigation/native';
+import {ImageBackground, StyleSheet, Text, View} from 'react-native';
+import React, {useEffect} from 'react';
+import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../../../assets/constants/global_colors';
-import { IMAGES } from '../../../assets/constants/global_images';
-import { StatusBarCommon } from '../../../components';
-import { ADMINDRAWER, USERDRAWER, VENZOADMINDRAWER } from '../..';
-import { Image } from 'react-native';
+import {COLORS} from '../../../assets/constants/global_colors';
+import {IMAGES} from '../../../assets/constants/global_images';
+import {StatusBarCommon} from '../../../components';
+import {ADMINDRAWER, USERDRAWER, VENZOADMINDRAWER} from '../..';
+import {Image} from 'react-native';
 
 const LaunchScreen = () => {
+  const navigation = useNavigation();
 
-    const navigation = useNavigation();
-    
-    useEffect(() => {
-      const flash_timer = setTimeout(() => {
-        getUsersFn();
-      }, 1500);
-  
-      return () => {
-        clearTimeout(flash_timer);
-      }
-    }, []);
-  
-    const getUsersFn = async () => {
-      // var res = {
-      //   avatar: null,
-      //   email: "san@turf.com",
-      //   isuseractive: true,
-      //   phonenumber: "6382918880",
-      //   username: "F.Santhiya",
-      //   usertype: "admin",
-      //   user_id: "CUPHGCMRL0WBDIJwLKNuWgZUNL53"
-      // };
+  useEffect(() => {
+    const flash_timer = setTimeout(() => {
+      getUsersFn();
+    }, 1500);
 
-      // var res = {
-      //   avatar: null,
-      //   email: "nash@user.com",
-      //   isuseractive: true,
-      //   phonenumber: "9789515946",
-      //   username: "Nash user",
-      //   usertype: "user",
-      //   user_id: "FcgYgigJTmOp8DEvRo4GJoqmC2P2"
-      // };
+    return () => {
+      clearTimeout(flash_timer);
+    };
+  }, []);
 
-      var value = await AsyncStorage.getItem('res-data');
-      value = JSON.parse(value);
+  const getUsersFn = async () => {
+    // var res = {
+    //   avatar: null,
+    //   email: "san@turf.com",
+    //   isuseractive: true,
+    //   phonenumber: "6382918880",
+    //   username: "F.Santhiya",
+    //   usertype: "admin",
+    //   user_id: "CUPHGCMRL0WBDIJwLKNuWgZUNL53"
+    // };
 
-      // var value = (res);
+    // var res = {
+    //   avatar: null,
+    //   email: "nash@user.com",
+    //   isuseractive: true,
+    //   phonenumber: "9789515946",
+    //   username: "Nash user",
+    //   usertype: "user",
+    //   user_id: "FcgYgigJTmOp8DEvRo4GJoqmC2P2"
+    // };
 
-      // const jsonValue = JSON.stringify(res);
+    var value = await AsyncStorage.getItem('res-data');
+    value = JSON.parse(value);
 
-      // await AsyncStorage.setItem('res-data', jsonValue);
+    // var value = (res);
 
-      if(value != null) {
-        if(value?.usertype == "admin") {
-            navigation.navigate(ADMINDRAWER);
-          } else if(value?.usertype == "venzoadmin") {
-            navigation.navigate(VENZOADMINDRAWER);
-          } else {
-            navigation.navigate(USERLOGIN);
-          }
+    // const jsonValue = JSON.stringify(res);
+
+    // await AsyncStorage.setItem('res-data', jsonValue);
+
+    if (value != null) {
+      if (value?.usertype == 'admin') {
+        navigation.navigate(ADMINDRAWER);
+      } else if (value?.usertype == 'venzoadmin') {
+        navigation.navigate(VENZOADMINDRAWER);
       } else {
         navigation.navigate(USERLOGIN);
       }
+    } else {
+      navigation.navigate(USERLOGIN);
+    }
+  };
 
-    };
-  
-    return (
-      <View onTouchEnd={getUsersFn} style={LaunchScreenStyles.container}>
-        <StatusBarCommon color={COLORS.PRIMARY} />
-        <View style={LaunchScreenStyles.centeredView}>
-                    <Image source={IMAGES.LogoSplashOne} style={LaunchScreenStyles.logo} />
-                </View>
+  return (
+    <View onTouchEnd={getUsersFn} style={LaunchScreenStyles.container}>
+      <StatusBarCommon color={COLORS.PRIMARY} />
+      <View style={LaunchScreenStyles.centeredView}>
+        <Image source={IMAGES.LogoSplashOne} style={LaunchScreenStyles.logo} />
       </View>
-    )
-  }
+    </View>
+  );
+};
 
-export default LaunchScreen
+export default LaunchScreen;
 
 const LaunchScreenStyles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.WHITE,
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
+    backgroundColor: COLORS.BLACK,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backgroundImage: {
-    width:"100%",
-    height:"100%"
+    width: '100%',
+    height: '100%',
   },
   centeredView: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        flex: 1
-    },
-    logo: {
-        width: 200,
-        height: 200,
-        resizeMode: 'contain'
-    }
-})
+    backgroundColor: COLORS.BLACK,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
+  logo: {
+    width: 200,
+    height: 300,
+    resizeMode: 'contain',
+  },
+});
