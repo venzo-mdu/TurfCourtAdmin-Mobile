@@ -24,6 +24,7 @@ import moment from 'moment';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useRoute } from '@react-navigation/native';
 import { getEventdetailsByArenas, getgroundDataForOwner } from '../../../../firebase/firebaseFunction/groundDetails';
+import _ from 'lodash';
 
 
 const BookingScreen = () => {
@@ -89,7 +90,7 @@ const BookingScreen = () => {
   const route = useRoute();
   const { groundID } = route?.params || {};
   const containerStyle = groundID ? styles.insideGroundContainer : styles.tabContainer;
-  const [tab, setTab] = useState('Bookings'); //isTabSelected
+  const [tab, setTab] = useState('Bookings'); 
   const [statusopen, setstatusopen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [filterData, setFilterData] = useState([]);
@@ -123,18 +124,9 @@ const BookingScreen = () => {
       }
     };
     getUserData();
-    // eventData();
-  }, []);// 
-
-  // useEffect(async () => {
-  //   if(uid !== null){
-  //     let response = await getgroundDataForOwner(uid);
-  //     console.log('response',response);
-  //   }
-  // }, [uid]);
+  }, []);
 
   useEffect(() => {
-    // console.log('frommmmmm',tab,value);
     eventData();
   }, [tab, value]);
 
@@ -145,10 +137,10 @@ const BookingScreen = () => {
   }, [trigger]);
 
   const eventData = async () => {
-    console.log('from eventData', tab, value);
+    setLoading(false);
     let response1 = await getgroundDataForOwner(uid);
-    const groundIds = response1?.map(r => r.ground_id);
-    console.log('groundIds',groundIds);
+    let groundIds = response1?.map(r => r.ground_id);
+   
     if (uid == null) {
       navigate("/login");
     }
@@ -185,7 +177,7 @@ const BookingScreen = () => {
         .endOf("month")
         .format("YYYY-MM-DDTHH:mm");
     }
-
+   
     const otherFilters = [
       { key: "status", operator: "in", value: statusValue },
       { key: "start", operator: ">=", value: startDate },
@@ -195,62 +187,45 @@ const BookingScreen = () => {
       otherFilters &&
       otherFilters.length > 0
     ) {
-      console.log('groundIdssssss',groundIds)
-      const response1 = await getEventdetailsByArenas({
-        groundIds: groundIds?.slice(0, 15),
-        otherFilters,
-        order: {key: 'start', dir: 'asc'},
-      });
+      let events ;
+      if(groundID){
+        groundIds = [ groundID ];
+        const response1 = await getEventdetailsByArenas({
+          groundIds: groundIds,
+          otherFilters,
+          order: {key: 'start', dir: 'asc'},
+        });
+        events = response1.data;
+      }
+   else{
+    const response1 = await getEventdetailsByArenas({
+      groundIds: groundIds?.slice(0, 15),
+      otherFilters,
+      order: {key: 'start', dir: 'asc'},
+    });
 
-      const response2 = await getEventdetailsByArenas({
-        groundIds: groundIds?.slice(15, groundIds?.length),
-        otherFilters,
-        order: {key: 'start', dir: 'asc'},
-      });
+    const response2 = await getEventdetailsByArenas({
+      groundIds: groundIds?.slice(15, groundIds?.length),
+      otherFilters,
+      order: {key: 'start', dir: 'asc'},
+    });
 
-      const data = _.uniqBy(
-        [...response1?.data, ...response2?.data],
-        'event_id',
-      );
-      // const response = await getEventdetailsByType(
-      //   groundID,
-      //   "owner",
-      //   { key: "start", dir: "asc" },
-      //   null,
-      //   otherFilters
-      // );
-    
-      // const events = response.data;
-      // console.log('response', response, );
-      setdata(data);
-      const groupedData = Object.values(groupByBookId(data));
+    const data = _.uniqBy(
+      [...response1?.data, ...response2?.data],
+      'event_id',
+    );
+     events = data;
+   }
+      setdata(events);
+      const groupedData = Object.values(groupByBookId(events));
       setFilterData(groupedData);
       setLoading(true);
-
-      console.log('from above api response', otherFilters, uid);
     }
   };
 
   function checkSamePropertyValue(array) {
     return array.reduce((acc, obj) => acc && obj.status !== 'Accepted', true);
   }
-
-  findElementsWithSameProp = arr => {
-    const prop1Map = new Map();
-  
-    arr.forEach(element => {
-      const prop1Value = element.BookId;
-      if (prop1Map.has(prop1Value)) {
-        prop1Map.get(prop1Value).push(element);
-      } else {
-        prop1Map.set(prop1Value, [element]);
-      }
-    });
-  
-    const result = Array.from(prop1Map.values());
-  
-    return result;
-  };
 
   const handleUpdateStatus = async props => {
     if (checkSamePropertyValue(selectedCancelEventData)) {
@@ -278,75 +253,6 @@ const BookingScreen = () => {
 
   const handleChange = value => {
     setTab(value);
-    // console.log('value', value);
-
-    // if (value == 'Bookings') {
-    //   console.log('hi');
-    //   if (groundID) {
-    //     //item.ground_id === groundID
-    //     const tableData = data.filter(item => {
-    //       const eventStartDate = moment(item.start);
-    //       return (
-    //         eventStartDate.isSameOrAfter(today) &&
-    //         (item.status === 'Accepted' || item.status === 'Awaiting') &&
-    //         item.ground_id === groundID
-    //       );
-    //     });
-    //     const groupedData = Object.values(groupByBookId(tableData));
-    //     setFilterData(groupedData);
-    //   } else {
-    //     const tableData = data.filter(item => {
-    //       const eventStartDate = moment(item.start);
-    //       return (
-    //         eventStartDate.isSameOrAfter(today) &&
-    //         (item.status === 'Accepted' || item.status === 'Awaiting')
-    //       );
-    //     });
-    //     const groupedData = Object.values(groupByBookId(tableData));
-    //     setFilterData(groupedData);
-    //   }
-    // } else if (value == 'Completed') {
-    //   if (groundID) {
-    //     const tableData = data.filter(item => {
-    //       return item.status === 'Completed' && item.ground_id === groundID;
-    //     });
-    //     const groupedData = Object.values(groupByBookId(tableData));
-    //     setFilterData(groupedData);
-    //   } else {
-    //     const tableData = data?.filter(item => item.status === 'Completed');
-    //     const groupedData = Object.values(groupByBookId(tableData));
-    //     setFilterData(groupedData);
-    //   }
-    // } else if (value == 'On-Going') {
-    //   if (groundID) {
-    //     const tableData = data.filter(item => {
-    //       return item.status === 'On-going' && item.ground_id === groundID;
-    //     });
-    //     const groupedData = Object.values(groupByBookId(tableData));
-    //     setFilterData(groupedData);
-    //   } else {
-    //     const tableData = data?.filter(item => item.status === 'On-going');
-    //     const groupedData = Object.values(groupByBookId(tableData));
-    //     setFilterData(groupedData);
-    //   }
-    // } else if (value == 'Cancelled') {
-    //   if (groundID) {
-    //     const tableData = data.filter(item => {
-    //       return (
-    //         (item.status === 'Cancelled' || item.status === 'Canceled') &&
-    //         item.ground_id === groundID
-    //       );
-    //     });
-    //     const groupedData = Object.values(groupByBookId(tableData));
-    //     setFilterData(groupedData);
-    //   } else {
-    //     const tableData = data?.filter(
-    //       item => item.status === 'Cancelled' || item.status === 'Canceled',
-    //     );
-    //     const groupedData = Object.values(groupByBookId(tableData));
-    //     setFilterData(groupedData);
-    //   }
-    // }
   };
 
   const handlestatusEdit = data => {

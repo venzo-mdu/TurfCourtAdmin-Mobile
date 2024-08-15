@@ -221,8 +221,6 @@ const IndexHome = () => {
   };
 
   const eventData = async groundIds => {
-    // console.log('groundIds',groundIds);
-    //  await AsyncStorage.setItem('groundIds',groundIds );
     setLoading(true);
 
     let startDate = moment().format('YYYY-MM-DDTHH:mm');
