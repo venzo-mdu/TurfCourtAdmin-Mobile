@@ -82,11 +82,11 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
   };
 
   useEffect(() => {
-    eventData();
+    // eventData();
   }, []);
 
   useEffect(() => {
-    eventData();
+    // eventData();
   }, [refreshUpcoming]);
 
   function findElementsWithSameProp(arr) {
