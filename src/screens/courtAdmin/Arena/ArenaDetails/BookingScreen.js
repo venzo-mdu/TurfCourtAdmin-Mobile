@@ -188,34 +188,36 @@ const BookingScreen = () => {
       otherFilters.length > 0
     ) {
       let events ;
-      if(groundID){
-        groundIds = [ groundID ];
-        const response1 = await getEventdetailsByArenas({
-          groundIds: groundIds,
-          otherFilters,
-          order: {key: 'start', dir: 'asc'},
-        });
-        events = response1.data;
+      if (groundID) {
+        groundIds = [groundID];
+      } 
+      
+      if (groundIds.length > 0) {
+        if (groundIds.length > 15) {
+          const response1 = await getEventdetailsByArenas({
+            groundIds: groundIds.slice(0, 15),
+            otherFilters,
+            order: { key: 'start', dir: 'asc' },
+          });
+      
+          const response2 = await getEventdetailsByArenas({
+            groundIds: groundIds.slice(15),
+            otherFilters,
+            order: { key: 'start', dir: 'asc' },
+          });
+      
+          const data = _.uniqBy([...response1.data, ...response2.data], 'event_id');
+          events = data;
+        } else {
+          const response = await getEventdetailsByArenas({
+            groundIds: groundIds,
+            otherFilters,
+            order: { key: 'start', dir: 'asc' },
+          });
+          events = response.data;
+        }
       }
-   else{
-    const response1 = await getEventdetailsByArenas({
-      groundIds: groundIds?.slice(0, 15),
-      otherFilters,
-      order: {key: 'start', dir: 'asc'},
-    });
-
-    const response2 = await getEventdetailsByArenas({
-      groundIds: groundIds?.slice(15, groundIds?.length),
-      otherFilters,
-      order: {key: 'start', dir: 'asc'},
-    });
-
-    const data = _.uniqBy(
-      [...response1?.data, ...response2?.data],
-      'event_id',
-    );
-     events = data;
-   }
+      
       setdata(events);
       const groupedData = Object.values(groupByBookId(events));
       setFilterData(groupedData);
