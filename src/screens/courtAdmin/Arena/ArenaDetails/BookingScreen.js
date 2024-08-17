@@ -188,34 +188,36 @@ const BookingScreen = () => {
       otherFilters.length > 0
     ) {
       let events ;
-      if(groundID){
-        groundIds = [ groundID ];
-        const response1 = await getEventdetailsByArenas({
-          groundIds: groundIds,
-          otherFilters,
-          order: {key: 'start', dir: 'asc'},
-        });
-        events = response1.data;
+      if (groundID) {
+        groundIds = [groundID];
+      } 
+      
+      if (groundIds.length > 0) {
+        if (groundIds.length > 15) {
+          const response1 = await getEventdetailsByArenas({
+            groundIds: groundIds.slice(0, 15),
+            otherFilters,
+            order: { key: 'start', dir: 'asc' },
+          });
+      
+          const response2 = await getEventdetailsByArenas({
+            groundIds: groundIds.slice(15),
+            otherFilters,
+            order: { key: 'start', dir: 'asc' },
+          });
+      
+          const data = _.uniqBy([...response1.data, ...response2.data], 'event_id');
+          events = data;
+        } else {
+          const response = await getEventdetailsByArenas({
+            groundIds: groundIds,
+            otherFilters,
+            order: { key: 'start', dir: 'asc' },
+          });
+          events = response.data;
+        }
       }
-   else{
-    const response1 = await getEventdetailsByArenas({
-      groundIds: groundIds?.slice(0, 15),
-      otherFilters,
-      order: {key: 'start', dir: 'asc'},
-    });
-
-    const response2 = await getEventdetailsByArenas({
-      groundIds: groundIds?.slice(15, groundIds?.length),
-      otherFilters,
-      order: {key: 'start', dir: 'asc'},
-    });
-
-    const data = _.uniqBy(
-      [...response1?.data, ...response2?.data],
-      'event_id',
-    );
-     events = data;
-   }
+      
       setdata(events);
       const groupedData = Object.values(groupByBookId(events));
       setFilterData(groupedData);
@@ -245,6 +247,11 @@ const BookingScreen = () => {
 
   const updateBooking = async (selectedEventDatum, props) => {
     await changeEventStatus(selectedEventDatum?.event_id, props);
+    // let response = await changeEventStatus(selectedEventDatum?.event_id, props);
+    // console.log('response-----',response,selectedEventDatum?.ground_name);
+    // if(response.status == 'success'){
+    //   ToastAndroid.show(`${selectedEventDatum?.ground_name} Booking Accepted`, ToastAndroid.SHORT);
+    // }
   };
 
   const handleCancelbooking = value => {
