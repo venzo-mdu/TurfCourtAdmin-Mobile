@@ -245,6 +245,11 @@ const BookingScreen = () => {
 
   const updateBooking = async (selectedEventDatum, props) => {
     await changeEventStatus(selectedEventDatum?.event_id, props);
+    // let response = await changeEventStatus(selectedEventDatum?.event_id, props);
+    // console.log('response-----',response,selectedEventDatum?.ground_name);
+    // if(response.status == 'success'){
+    //   ToastAndroid.show(`${selectedEventDatum?.ground_name} Booking Accepted`, ToastAndroid.SHORT);
+    // }
   };
 
   const handleCancelbooking = value => {

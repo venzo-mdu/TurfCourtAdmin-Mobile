@@ -72,9 +72,11 @@ const IndexHome = () => {
         setLoading(true);
 
         let response = await getgroundDataForOwner(userId);
+       
         setNoData(response?.length === 0);
         setLoading(false);
         const groundIds = response?.map(r => r.ground_id);
+        console.log('groundIds',groundIds);
         // usedispatch(groundIds)
         if (!_.isEmpty(groundIds)) {
           await eventData(groundIds);
@@ -221,6 +223,7 @@ const IndexHome = () => {
   };
 
   const eventData = async groundIds => {
+   
     setLoading(true);
 
     let startDate = moment().format('YYYY-MM-DDTHH:mm');
@@ -234,22 +237,35 @@ const IndexHome = () => {
       {key: 'end', operator: '<=', value: endOfMonth},
     ];
     if (otherFilters && otherFilters.length > 0) {
+      let data;
+      if(groundIds.length >15){
+        const response1 = await getEventdetailsByArenas({
+          groundIds: groundIds?.slice(0, 15),
+          otherFilters,
+          order: {key: 'start', dir: 'asc'},
+        });
+       
+  
+        const response2 = await getEventdetailsByArenas({
+          groundIds: groundIds?.slice(15, groundIds?.length),
+          otherFilters,
+          order: {key: 'start', dir: 'asc'},
+        });
+        console.log('from here',response2);
+         data = _.uniqBy(
+          [...response1?.data, ...response2?.data],
+          'event_id',
+        );
+      }
+     else{
       const response1 = await getEventdetailsByArenas({
         groundIds: groundIds?.slice(0, 15),
         otherFilters,
         order: {key: 'start', dir: 'asc'},
       });
+      data = response1.data;
 
-      const response2 = await getEventdetailsByArenas({
-        groundIds: groundIds?.slice(15, groundIds?.length),
-        otherFilters,
-        order: {key: 'start', dir: 'asc'},
-      });
-
-      const data = _.uniqBy(
-        [...response1?.data, ...response2?.data],
-        'event_id',
-      );
+     }
 
       if (data) {
         setApprovedBookings(

@@ -50,10 +50,12 @@ export default function UpcomingEventsSlider({uid, refreshUpcoming}) {
 
   /* Event Data Method */
   const eventData = async () => {
+    console.log('gggg');
     setLoading(true);
     if (uid == null) {
       navigate('/login');
     }
+    console.log('uid',uid);
     const response = await getEventdetailsByType(uid, 'owners');
 
     setdata(response?.data);
