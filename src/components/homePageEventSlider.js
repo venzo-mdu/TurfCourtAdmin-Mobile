@@ -55,6 +55,7 @@ export const HomePageEventSlider = ({
   const [canBePaid, setCanBePaid] = useState(false);
 
   const handleUpdateStatus = async props => {
+
     var sat;
     if (props === 'Accepted') {
       sat = 'Approved';
@@ -71,7 +72,6 @@ export const HomePageEventSlider = ({
       setCancelEventInd([]);
       setSelectedCancelEventData([]);
       await eventData(groundIds);
-
       ToastAndroid.showWithGravity(
         'You have ' + sat + ' the Slots.',
         ToastAndroid.SHORT,
