@@ -100,9 +100,18 @@ const UserCreateScreen = props => {
         console.log('recaptchaVerifier', recaptchaVerifier);
         const res = await mobilesignup(data, recaptchaVerifier.current);
         console.log('res', res);
-        setVerificationID(res);
-        setEnterOTP(true);
-        setSeconds(30);
+        // setVerificationID(res);
+        // setEnterOTP(true);
+        // setSeconds(30);
+        if (res.error) {
+          ToastAndroid.show(res.msg, ToastAndroid.SHORT); // Show the error message
+        } else if (res) {
+          setVerificationID(res);
+          setEnterOTP(true);
+          setSeconds(30);
+        } else {
+          ToastAndroid.show('An unexpected error occurred.', ToastAndroid.SHORT);
+        }
       }
     }
   };

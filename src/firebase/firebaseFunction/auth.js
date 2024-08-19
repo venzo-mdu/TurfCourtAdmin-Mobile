@@ -384,8 +384,8 @@ export const mobilesignup = async (userData, recaptchaVerifier) => {
     } else {
       return {
         data: null,
-        error: 'Phone number is Not registered.',
-        msg: 'Phone number is Not registered.',
+        error: 'Phone number is Already registered.',
+        msg: 'Phone number is Already registered.',
       };
     }
   } catch (error) {
