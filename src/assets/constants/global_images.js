@@ -27,6 +27,12 @@ export const IMAGES = {
     TableTennis: require(ImagePath + "table_tennis.png"),
     Football: require(ImagePath + "football.png"),
     Badmiton: require(ImagePath + "badminton.png"),
+    Volleyball: require(ImagePath + "volleyball.png"),
+    Basketball: require(ImagePath + "basketball.png"),
+    Archery: require(ImagePath + "archery.png"),
+    Baseball: require(ImagePath + "baseball.png"),
+    Softball: require(ImagePath + "softball.png"),
+    Hockey: require(ImagePath + "hockey.png"),
     Cricket: require(ImagePath + "cricket.png"),
     TickRound: require(ImagePath + "tickround.png"),
     RulesIcons: require(ImagePath + "rulesIcon.png"),
@@ -52,12 +58,12 @@ export const IMAGES = {
     BlockedRec: require(ImagePath + "blocked_rec_red.png"),
     DeleteIcons: require(ImagePath + "delete_icons.png"),
     EditIcons: require(ImagePath + "edit_icons.png"),
-   
-    
-    
-    // RoleBG: require(ImagePath + "role_bg.png"),
-  
 
-    
+
+
+    // RoleBG: require(ImagePath + "role_bg.png"),
+
+
+
     // backgroundW: require(ImagePath + "backgroundW.png"),
 };

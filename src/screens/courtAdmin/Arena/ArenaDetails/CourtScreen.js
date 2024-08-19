@@ -107,12 +107,12 @@ const CourtScreen = () => {
     Badminton: IMAGES.Badmiton,
     'Table Tennis': IMAGES.TableTennis,
     Football: IMAGES.Football,
-    Volleyball: IMAGES.Cricket,
-    Hockey: IMAGES.Badmiton,
-    Basketball: IMAGES.Cricket,
-    Archery: IMAGES.Badmiton,
-    Baseball: IMAGES.Cricket,
-    Softball: IMAGES.Badmiton,
+    Volleyball: IMAGES.Volleyball,
+    Hockey: IMAGES.Hockey,
+    Basketball: IMAGES.Basketball,
+    Archery: IMAGES.Archery,
+    Baseball: IMAGES.Baseball,
+    Softball: IMAGES.Softball,
   };
 
   const [changestatusmodal, setChangestatusmodal] = useState(false);
@@ -1415,7 +1415,7 @@ const CourtScreen = () => {
                 size={24}
               />
             </TouchableOpacity>
-            {/* <Collapsible collapsed={basicCourtDetailsOpen}> */}
+            <Collapsible collapsed={basicCourtDetailsOpen}>
             <View
               style={{
                 zIndex: 2000,
@@ -1489,7 +1489,7 @@ const CourtScreen = () => {
                 />
               ))}
             </View>
-            {/* </Collapsible> */}
+            </Collapsible>
             <View style={{paddingTop: 15}}>
               <TouchableOpacity
                 style={[
@@ -2347,7 +2347,7 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     //padding:5,
-    resizeMode: 'cover',
+    resizeMode: 'contain',
   },
   textGame: {
     color: '#192335',

@@ -65,6 +65,7 @@ const IndexHome = () => {
   const [activeWaitIndex, setActiveWaitIndex] = useState(0);
   const [selectedEventData, setSelectedEventData] = useState();
   const [statusopen, setstatusopen] = useState(false);
+  const [groundIds, setGroundIds] = useState();
 
   const getgroundDetails = async () => {
     try {
@@ -76,6 +77,7 @@ const IndexHome = () => {
         setNoData(response?.length === 0);
         setLoading(false);
         const groundIds = response?.map(r => r.ground_id);
+        setGroundIds(groundIds);
         // usedispatch(groundIds)
         if (!_.isEmpty(groundIds)) {
           await eventData(groundIds);
@@ -302,6 +304,9 @@ const IndexHome = () => {
         bookingItem={item}
         type={'Awaiting'}
         showShort={true}
+        // eventData={() => eventData(groundIds)} 
+        groundIds={groundIds}
+        eventData={eventData}
       />
     </View>
   );

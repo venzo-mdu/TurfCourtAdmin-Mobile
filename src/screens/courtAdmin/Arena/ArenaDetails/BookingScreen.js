@@ -131,9 +131,7 @@ const BookingScreen = () => {
   }, [tab, value]);
 
   useEffect(() => {
-    setTimeout(() => {
       eventData();
-    }, 2000);
   }, [trigger]);
 
   const eventData = async () => {
@@ -183,6 +181,7 @@ const BookingScreen = () => {
       { key: "start", operator: ">=", value: startDate },
       { key: "end", operator: "<=", value: endOfMonth },
     ];
+    console.log('otherFilters',otherFilters)
     if (
       otherFilters &&
       otherFilters.length > 0
@@ -655,14 +654,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginVertical: 10,
-    height: Dimensions.get('window').height * 0.055,
+    alignItems: 'center', 
+    // height: Dimensions.get('window').height * 0.05,
   },
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginVertical: 10,
-    height: Dimensions.get('window').height * 0.055,
+    // height: Dimensions.get('window').height * 0.055,
     marginTop: 30,
+    alignItems: 'center', 
   },
   tabButton: {
     paddingVertical: 10,

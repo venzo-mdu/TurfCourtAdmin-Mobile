@@ -89,6 +89,16 @@ const ProfileView = () => {
     fetchProfileDetails();
   }, [uid]);
 
+  async function profileDetail() {
+    const userProfile = await userData(uid);
+    setDetails(userProfile);
+    setTempDetails(userProfile);
+  }
+
+  useEffect(() => {
+    profileDetail();
+  }, []);
+
   const handleChange = (key, value) => {
     setDetails({
       ...details,
@@ -165,6 +175,7 @@ const ProfileView = () => {
       };
       let update;
       update = await UpdateUserData(updateValues, uid);
+      
       if (update.status == 'success') {
         setuserDetail(update.data);
         ToastAndroid.show('Profile updated successfully!', ToastAndroid.SHORT);
@@ -173,7 +184,7 @@ const ProfileView = () => {
       }
       profileDetail();
     }
-    setLoader(false); // Hide the loader
+    setLoader(false);
   };
 
   const handleImagePick = async () => {
@@ -255,9 +266,9 @@ const ProfileView = () => {
                 style={{
                   paddingHorizontal: 20,
                   paddingVertical: 10,
-                  backgroundColor: profileActive ? '#fff' : '#000',
-                  borderColor: profileActive ? '#F1F2F7' : null,
-                  borderWidth: profileActive ? 1.5 : null,
+                  backgroundColor: !profileActive ? '#fff' : '#000',
+                  borderColor: !profileActive ? '#F1F2F7' : null,
+                  borderWidth: !profileActive ? 1.5 : null,
                   borderRadius: 12,
                 }}
                 onPress={handleProfileChange}>
@@ -265,7 +276,7 @@ const ProfileView = () => {
                   style={{
                     fontFamily: 'Outfit-Regular',
                     fontSize: 20,
-                    color: profileActive ? '#000' : '#fff',
+                    color: !profileActive ? '#000' : '#fff',
                   }}>
                   Profile
                 </Text>
@@ -274,16 +285,16 @@ const ProfileView = () => {
                 style={{
                   paddingHorizontal: 20,
                   paddingVertical: 10,
-                  backgroundColor: profileActive ? '#000' : '#fff',
-                  borderColor: profileActive ? null : '#F1F2F7',
-                  borderWidth: profileActive ? null : 1.5,
+                  backgroundColor: !profileActive ? '#000' : '#fff',
+                  borderColor: !profileActive ? null : '#F1F2F7',
+                  borderWidth: !profileActive ? null : 1.5,
                   borderRadius: 12,
                 }}
                 onPress={handleOtherSettingsChange}>
                 <Text
                   style={{
                     fontFamily: 'Outfit-Regular',
-                    color: profileActive ? '#fff' : '#000',
+                    color: !profileActive ? '#fff' : '#000',
                     fontSize: 20,
                   }}>
                   Other Settings
