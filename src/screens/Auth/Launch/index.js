@@ -78,7 +78,7 @@ export default LaunchScreen;
 
 const LaunchScreenStyles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.BLACK,
+    backgroundColor: '#fff',
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -88,7 +88,7 @@ const LaunchScreenStyles = StyleSheet.create({
     height: '100%',
   },
   centeredView: {
-    backgroundColor: COLORS.BLACK,
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,

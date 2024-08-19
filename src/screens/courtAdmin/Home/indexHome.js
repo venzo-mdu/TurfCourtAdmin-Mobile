@@ -72,17 +72,15 @@ const IndexHome = () => {
         setLoading(true);
 
         let response = await getgroundDataForOwner(userId);
-       
+        console.log('Response: ', response);
         setNoData(response?.length === 0);
         setLoading(false);
         const groundIds = response?.map(r => r.ground_id);
-        console.log('groundIds',groundIds);
         // usedispatch(groundIds)
         if (!_.isEmpty(groundIds)) {
           await eventData(groundIds);
         }
         setNewGroundData(response);
-        
       }
     } catch (err) {
       console.log('Error: ', err);
@@ -132,19 +130,19 @@ const IndexHome = () => {
 
   useEffect(() => {
     getUserData();
-    getLocation();
+    // getLocation();
   }, []);
 
   useEffect(() => {
     uniqueCitiesData();
   }, [groundData, uniqueCitiesData]);
 
-  useEffect(() => {
-    if (currentLocation) {
-      setSearch(currentLocation);
-      setSelectedCity(currentLocation);
-    }
-  }, [currentLocation]);
+  // useEffect(() => {
+  //   if (currentLocation) {
+  //     setSearch(currentLocation);
+  //     setSelectedCity(currentLocation);
+  //   }
+  // }, [currentLocation]);
 
   const updateSearch = searchText => {
     setSearch(searchText);
@@ -168,62 +166,61 @@ const IndexHome = () => {
     navigation.navigate(ADMINTOPTABNAVIGATION);
   };
 
-  const getLocation = async () => {
-    const result = await requestLocationPermission();
-    if (result) {
-      setLoader(true);
-      Geolocation.getCurrentPosition(
-        async position => {
-          const {latitude, longitude} = position.coords;
-          //fetch(`https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}`)
-          fetch(
-            `https://geocode.maps.co/reverse?lat=${9.9287126}&lon=${78.1609953}`,
-          )
-            .then(response => response.json())
-            .then(data => {
-              const city = data.address.city;
-              setCurrentLocation(city);
-              setLoader(false);
-            })
-            .catch(error => {
-              console.error('Error fetching reverse geolocation:', error);
-              setLoader(false);
-            });
-        },
-        error => {
-          console.log('Geolocation error:', error.code, error.message);
-          setLoader(false);
-        },
-        {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-      );
-    }
-  };
+  // const getLocation = async () => {
+  //   const result = await requestLocationPermission();
+  //   if (result) {
+  //     setLoader(true);
+  //     Geolocation.getCurrentPosition(
+  //       async position => {
+  //         const {latitude, longitude} = position.coords;
+  //         //fetch(`https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}`)
+  //         fetch(
+  //           `https://geocode.maps.co/reverse?lat=${9.9287126}&lon=${78.1609953}`,
+  //         )
+  //           .then(response => response.json())
+  //           .then(data => {
+  //             const city = data.address.city;
+  //             setCurrentLocation(city);
+  //             setLoader(false);
+  //           })
+  //           .catch(error => {
+  //             console.error('Error fetching reverse geolocation:', error);
+  //             setLoader(false);
+  //           });
+  //       },
+  //       error => {
+  //         console.log('Geolocation error:', error.code, error.message);
+  //         setLoader(false);
+  //       },
+  //       {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+  //     );
+  //   }
+  // };
 
-  const requestLocationPermission = async () => {
-    try {
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: 'Geolocation Permission',
-            message: 'Can we access your location?',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          },
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      } else {
-        return true; // Assume iOS permission is handled separately
-      }
-    } catch (err) {
-      console.warn('Permission error:', err);
-      return false;
-    }
-  };
+  // const requestLocationPermission = async () => {
+  //   try {
+  //     if (Platform.OS === 'android') {
+  //       const granted = await PermissionsAndroid.request(
+  //         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+  //         {
+  //           title: 'Geolocation Permission',
+  //           message: 'Can we access your location?',
+  //           buttonNeutral: 'Ask Me Later',
+  //           buttonNegative: 'Cancel',
+  //           buttonPositive: 'OK',
+  //         },
+  //       );
+  //       return granted === PermissionsAndroid.RESULTS.GRANTED;
+  //     } else {
+  //       return true; // Assume iOS permission is handled separately
+  //     }
+  //   } catch (err) {
+  //     console.warn('Permission error:', err);
+  //     return false;
+  //   }
+  // };
 
   const eventData = async groundIds => {
-   
     setLoading(true);
 
     let startDate = moment().format('YYYY-MM-DDTHH:mm');
@@ -238,34 +235,28 @@ const IndexHome = () => {
     ];
     if (otherFilters && otherFilters.length > 0) {
       let data;
-      if(groundIds.length >15){
+      if (groundIds.length > 15) {
         const response1 = await getEventdetailsByArenas({
           groundIds: groundIds?.slice(0, 15),
           otherFilters,
           order: {key: 'start', dir: 'asc'},
         });
-       
-  
+
         const response2 = await getEventdetailsByArenas({
           groundIds: groundIds?.slice(15, groundIds?.length),
           otherFilters,
           order: {key: 'start', dir: 'asc'},
         });
-        console.log('from here',response2);
-         data = _.uniqBy(
-          [...response1?.data, ...response2?.data],
-          'event_id',
-        );
+        console.log('from here', response2);
+        data = _.uniqBy([...response1?.data, ...response2?.data], 'event_id');
+      } else {
+        const response1 = await getEventdetailsByArenas({
+          groundIds: groundIds?.slice(0, 15),
+          otherFilters,
+          order: {key: 'start', dir: 'asc'},
+        });
+        data = response1.data;
       }
-     else{
-      const response1 = await getEventdetailsByArenas({
-        groundIds: groundIds?.slice(0, 15),
-        otherFilters,
-        order: {key: 'start', dir: 'asc'},
-      });
-      data = response1.data;
-
-     }
 
       if (data) {
         setApprovedBookings(
@@ -330,7 +321,7 @@ const IndexHome = () => {
           </View>
         ) : (
           <>
-            <View style={{width: '100%'}}>
+            {/*  <View style={{width: '100%'}}>
               <View style={styles.searchWrapper}>
                 <FontAwesome6
                   name="location-dot"
@@ -392,8 +383,8 @@ const IndexHome = () => {
                   )}
                 />
               )}
-              {/* {selectedCity ? <Text style={styles.selected}>Selected City: {selectedCity}</Text> : null} */}
-            </View>
+              {selectedCity ? <Text style={styles.selected}>Selected City: {selectedCity}</Text> : null} 
+            </View> */}
 
             {approvedBookings.length !== 0 ? (
               <View>

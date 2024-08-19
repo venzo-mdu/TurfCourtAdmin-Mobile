@@ -44,6 +44,7 @@ import {USER, USERLOGIN} from '../../..';
 import moment from 'moment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Collapsible from 'react-native-collapsible';
+import {COLORS} from '../../../../assets/constants/global_colors';
 
 const CourtScreen = () => {
   const [tab, setTab] = useState('Add Court');
@@ -1355,7 +1356,7 @@ const CourtScreen = () => {
           </View>
           <View>
             <TouchableOpacity onPress={() => handleEditCourt(item)}>
-              <Icon name="ellipsis-v" size={24} color={colors.text} />
+              <Icon name="ellipsis-v" size={20} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -1379,7 +1380,12 @@ const CourtScreen = () => {
         <Image style={styles.imageGame} source={iconsss[item]} />
         <Text style={styles.textGame}>{item.replace('_', ' ')}</Text>
         {createCourt?.gametype?.includes(item) && (
-          <Image source={IMAGES.TickIcons} style={styles.tickGame} />
+          <Ionicons
+            style={styles.tickIconSports}
+            name="checkmark-circle"
+            size={15}
+            color="#4CA181"
+          />
         )}
       </TouchableOpacity>
     </View>
@@ -1410,17 +1416,29 @@ const CourtScreen = () => {
               />
             </TouchableOpacity>
             {/* <Collapsible collapsed={basicCourtDetailsOpen}> */}
-            <View>
-              <FlatList
-                data={gametype}
-                renderItem={renderItemGame}
-                keyExtractor={item => item}
-                numColumns={3}
-                columnWrapperStyle={styles.rowGame}
-              />
-              {AddCourtError && createCourt.gametype === '' && (
-                <Text style={styles.errorText}>*Select appropriate values</Text>
-              )}
+            <View
+              style={{
+                zIndex: 2000,
+                padding: 10,
+                marginBottom: 20,
+                backgroundColor: '#fff',
+                borderBottomRightRadius: 12,
+                borderBottomLeftRadius: 12,
+              }}>
+              <View>
+                <FlatList
+                  data={gametype}
+                  renderItem={renderItemGame}
+                  keyExtractor={item => item}
+                  numColumns={3}
+                  columnWrapperStyle={styles.rowGame}
+                />
+                {AddCourtError && createCourt.gametype === '' && (
+                  <Text style={styles.errorText}>
+                    *Select appropriate values
+                  </Text>
+                )}
+              </View>
             </View>
             <View>
               <View style={{paddingTop: 10}}>
@@ -2316,13 +2334,12 @@ const styles = StyleSheet.create({
   },
   itemContainerGame: {
     flex: 1,
-    alignItems: 'center',
     margin: 5,
     padding: 10,
-    backgroundColor: '#F9F9F6',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#F9F9F6',
+    borderRadius: 5,
+    backgroundColor: COLORS.fieldColor,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   imageGame: {
     // width: 52,
@@ -2691,6 +2708,17 @@ const styles = StyleSheet.create({
   },
   closedHeader: {
     borderRadius: 12,
+  },
+  buttonTextCartData: {
+    color: '#FFFFFF',
+  },
+  tickIconSports: {
+    width: 15,
+    height: 15,
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    borderRadius: 15,
   },
 });
 
