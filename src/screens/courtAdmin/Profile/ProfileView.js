@@ -118,11 +118,15 @@ const ProfileView = () => {
   };
 
   const handleSave = async () => {
+    console.log('hi');
+    
     if (uid == null) {
       navigation.navigate(USERLOGIN);
       return;
     }
-    setLoader(true);
+  
+    setLoader(true); 
+  
     let tempval = {
       username: false,
       email: false,
@@ -135,57 +139,48 @@ const ProfileView = () => {
       zipcode: false,
       owner: true,
     };
-    if (details?.profileimg != '') {
-      tempval.profileimg = true;
-    }
-    if (details?.username != '') {
-      tempval.username = true;
-    }
-    if (details?.email != '') {
-      tempval.email = true;
-    }
-    if (details?.phonenumber != '') {
-      tempval.phonenumber = true;
-    }
-    if (details?.info != '') {
-      tempval.info = true;
-    }
-    if (details?.address != '') {
-      tempval.address = true;
-    }
-    if (details?.state != '') {
-      tempval.state = true;
-    }
-    if (details?.city != '') {
-      tempval.city = true;
-    }
-    if (details?.country != '') {
-      tempval.country = true;
-    }
-    if (details?.zipcode != '') {
-      tempval.zipcode = true;
-    }
-    setvalData(Object.values(tempval).every(Boolean));
-    if (Object.values(tempval).every(Boolean)) {
-      let updateValues = {
-        ...details,
-        phonenumber: details.phonenumber.startsWith('+91')
-          ? details.phonenumber
-          : `+91${details.phonenumber}`,
-      };
-      let update;
-      update = await UpdateUserData(updateValues, uid);
-      
-      if (update.status == 'success') {
-        setuserDetail(update.data);
-        ToastAndroid.show('Profile updated successfully!', ToastAndroid.SHORT);
-      } else {
-        console.log('check ');
+
+    if (details?.profileimg) tempval.profileimg = true;
+    if (details?.username) tempval.username = true;
+    if (details?.email) tempval.email = true;
+    if (details?.phonenumber) tempval.phonenumber = true;
+    if (details?.info) tempval.info = true;
+    if (details?.address) tempval.address = true;
+    if (details?.state) tempval.state = true;
+    if (details?.city) tempval.city = true;
+    if (details?.country) tempval.country = true;
+    if (details?.zipcode) tempval.zipcode = true;
+    const allValid = Object.values(tempval).every(Boolean);
+    setvalData(allValid);
+  
+    if (allValid) {
+      try {
+        let updateValues = {
+          ...details,
+          phonenumber: details.phonenumber.startsWith('+91')
+            ? details.phonenumber
+            : `+91${details.phonenumber}`,
+        };
+          let update = await UpdateUserData(updateValues, uid);
+        console.log('update', update);
+  
+        if (update.status === 'success') {
+          setuserDetail(update.data); 
+          ToastAndroid.show('Profile updated successfully!', ToastAndroid.SHORT);
+        } else {
+          console.log('Update failed, check the response');
+        }
+        profileDetail();
+      } catch (error) {
+        console.log('Error updating profile:', error);
       }
-      profileDetail();
+    } else {
+      console.log('Validation failed, not all fields are valid');
     }
-    setLoader(false);
+  
+    setLoader(false); 
   };
+  
 
   const handleImagePick = async () => {
     const options = {
@@ -243,8 +238,15 @@ const ProfileView = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <View style={styles.container}>
-        {loader ? (
+     {loader?( <View style={styles.loaderContainer}>
+            <ActivityIndicator
+              size={50}
+              color={COLORS.PrimaryColor}
+              animating={loader}
+            />
+            <Text>Loading...</Text>
+          </View>):(<View style={styles.container}>
+        {/* {loader ? (
           <View style={styles.loaderContainer}>
             <ActivityIndicator
               size={50}
@@ -253,7 +255,7 @@ const ProfileView = () => {
             />
             <Text>Loading...</Text>
           </View>
-        ) : null}
+        ) : null} */}
         {details ? (
           <View style={{marginTop: 30, width: '100%'}}>
             <View
@@ -441,7 +443,7 @@ const ProfileView = () => {
             )}
           </View>
         ) : null}
-      </View>
+      </View>)}
     </ScrollView>
   );
 };
@@ -601,9 +603,10 @@ const styles = StyleSheet.create({
 
   /* Load Container*/
   loaderContainer: {
-    flex: 1,
+    marginVertical:50,
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
     height: '100%',
   },
   // loaderContainer: {

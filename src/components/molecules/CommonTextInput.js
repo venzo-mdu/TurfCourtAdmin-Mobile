@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 10,
     fontFamily: 'Outfit-Regular',
-    fontSize: 20,
+    fontSize: 16,
     borderColor: COLORS.fieldBorderColor,
     borderWidth: 1,
   },

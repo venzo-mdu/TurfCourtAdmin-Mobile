@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "744304593354",
-    "project_id": "venzoturfbooking",
-    "storage_bucket": "venzoturfbooking.appspot.com"
+    "project_number": "88276218064",
+    "project_id": "turfmama-5f88b",
+    "storage_bucket": "turfmama-5f88b.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:744304593354:android:94189ab9890b90bb296733",
+        "mobilesdk_app_id": "1:88276218064:android:761ea0412b78be56e42ed5",
         "android_client_info": {
-          "package_name": "com.venzo.turfbookingapplication"
+          "package_name": "com.venzo.turfmamaadmin"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAeBwuf2ptaO8EjcO2h87mW55SHludE0dI"
+          "current_key": "AIzaSyAnK0HV4pNImshY6L46TyI05kKCcI8-GkA"
         }
       ],
       "services": {

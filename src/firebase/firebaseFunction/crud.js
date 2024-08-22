@@ -63,7 +63,9 @@ const fetchBulkData = async (
             filterData.operator,
             filterData.value,
           ),
+          
         );
+
       });
     }
 

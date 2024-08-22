@@ -8,6 +8,7 @@ import {
   Image,
   FlatList,
   ToastAndroid,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import CommonTextInput from '../../../../components/molecules/CommonTextInput';
@@ -63,7 +64,6 @@ const ArenaScreen = () => {
   const navigation = useNavigation();
   const [details, setDetails] = useState({});
   //console.log("Ground Data", groundData)
-  const [loader, setLoading] = useState(false);
   const [tempstate, settempstate] = useState();
   //let uid = localStorage.getItem("uid");
   // const navigate = useNavigate();
@@ -101,6 +101,7 @@ const ArenaScreen = () => {
   const [galleryOpen, setGalleryOpen] = useState(true);
   const [locationOpen, setLocationOpen] = useState(true);
   const [overviewOpen, setOverviewOpen] = useState(true);
+  const [loader, setLoader] = useState(false);
 
   //console.log("details", details);
   //console.log("value12345",groundData?.active)
@@ -159,12 +160,12 @@ const ArenaScreen = () => {
     Badminton: IMAGES.Badmiton,
     'Table Tennis': IMAGES.TableTennis,
     Football: IMAGES.Football,
-    Volleyball: IMAGES.Cricket,
-    Hockey: IMAGES.Badmiton,
-    Basketball: IMAGES.Cricket,
-    Archery: IMAGES.Badmiton,
-    Baseball: IMAGES.Cricket,
-    Softball: IMAGES.Badmiton,
+    Volleyball: IMAGES.Volleyball,
+    Hockey: IMAGES.Hockey,
+    Basketball: IMAGES.Basketball,
+    Archery: IMAGES.Archery,
+    Baseball: IMAGES.Baseball,
+    Softball: IMAGES.Softball,
   };
 
   const handleInputChange = (key, value) => {
@@ -453,6 +454,7 @@ const ArenaScreen = () => {
       end_time: false,
       // active: false,
     };
+    setLoading(true);
     if (groundData?.groundname != '') {
       tempval.groundname = true;
     }
@@ -514,7 +516,7 @@ const ArenaScreen = () => {
         groundData.longitude = '78.16099437904265';
         groundData.city = groundData?.city.toLowerCase();
         //  console.log(groundData, "setGroundData");
-        setLoading(true);
+       
         create = await createGroundData(groundData);
         createcity = await createCity({cityName: groundData?.city});
 
@@ -537,6 +539,7 @@ const ArenaScreen = () => {
       navigate('/login');
       return;
     }
+    setLoader(true);
     let createcity;
     let tempval = {
       groundname: false,
@@ -622,7 +625,9 @@ const ArenaScreen = () => {
         // console.log("Update Values", groundID)
         update = await UpdateGroundData(groundData, groundID);
         createcity = await createCity({cityName: groundData?.city});
-        if (typeof update === 'undefined') {
+        console.log('update',update);
+        setLoader(false);
+        if (update.status === 'success') {
           // toast.success("Update Success", {
           //   position: "top-right",
           //   autoClose: 2000,
@@ -657,7 +662,7 @@ const ArenaScreen = () => {
   const renderItem = ({item}) => (
     <View style={styles.itemContainerIncludes}>
       <CheckBox
-        value={groundData?.includes.includes(item)}
+        value={groundData?.includes?.includes(item)}
         onValueChange={() => handleincludeclick(item)}
         tintColors={{true: '#097E52', false: '#878787'}}
       />
@@ -668,7 +673,7 @@ const ArenaScreen = () => {
   const renderAmenities = ({item}) => (
     <View style={styles.itemContainerIncludes}>
       <CheckBox
-        value={groundData?.amenities.includes(item)}
+        value={groundData?.amenities?.includes(item)}
         onValueChange={() => handleAmenitiesClick(item)}
         tintColors={{true: '#097E52', false: '#878787'}}
       />
@@ -709,7 +714,15 @@ const ArenaScreen = () => {
 
   return (
     <ScrollView style={styles.scrollContainer}>
-      <View style={styles.container}>
+      {loader ?( <View style={styles.loaderContainer}>
+            <ActivityIndicator
+              size={50}
+              color={COLORS.PrimaryColor}
+              animating={loader}
+            />
+            <Text>Loading...</Text>
+          </View>): 
+     ( <View style={styles.container}>
         {/* Basic Info         */}
         <View style={{zIndex: 5000, paddingBottom: 24}}>
           <TouchableOpacity
@@ -882,7 +895,7 @@ const ArenaScreen = () => {
                 </TouchableOpacity>
 
                 <View style={styles.imageContainerUpload}>
-                  {groundData?.coverImage.map((image, index) => (
+                  {groundData?.coverImage?.map((image, index) => (
                     <View key={index} style={styles.imageWrapperUpload}>
                       <Image source={{uri: image}} style={styles.imageUpload} />
                       <TouchableOpacity
@@ -896,7 +909,7 @@ const ArenaScreen = () => {
                       </TouchableOpacity>
                     </View>
                   ))}
-                  {groundData?.coverImage.length === 0 && (
+                  {groundData?.coverImage?.length === 0 && (
                     <Text style={styles.errorText}>* Select cover image</Text>
                   )}
 
@@ -1184,7 +1197,7 @@ const ArenaScreen = () => {
                 </View>
 
                 <View style={styles.imageContainerUpload}>
-                  {groundData?.gallery.map((image, index) => (
+                  {groundData?.gallery?.map((image, index) => (
                     <View key={index} style={styles.imageWrapperUpload}>
                       <Image source={{uri: image}} style={styles.imageUpload} />
                       <TouchableOpacity
@@ -1200,7 +1213,7 @@ const ArenaScreen = () => {
                   ))}
                 </View>
 
-                {groundData?.gallery.length === 0 && (
+                {groundData?.gallery?.length === 0 && (
                   <Text style={styles.errorText}>*Select Gallery Image</Text>
                 )}
               </View>
@@ -1410,7 +1423,8 @@ const ArenaScreen = () => {
             </TouchableOpacity>
           </View>
         )}
-      </View>
+      </View>)
+    }
     </ScrollView>
   );
 };
@@ -1424,6 +1438,13 @@ const styles = StyleSheet.create({
     //alignItems: 'center',
     padding: 20,
     backgroundColor: '#f5f5f5',
+  },
+  loaderContainer: {
+    marginVertical:50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
   },
   inputContainer: {
     marginBottom: 20,
@@ -1451,7 +1472,7 @@ const styles = StyleSheet.create({
 
   dropdown: {
     backgroundColor: '#FAFAFA',
-    borderColor: '#FAFAFA',
+    // borderColor: '#FAFAFA',
     borderRadius: 8,
     height: 60,
   },
