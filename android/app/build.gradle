@@ -79,9 +79,9 @@ android {
         enableHermes: false  // Disable Hermes
     ]
 
-    namespace "com.venzo.turfbookingapplication"
+    namespace "com.venzo.turfmamaadmin"
     defaultConfig {
-        applicationId "com.venzo.turfbookingapplication"
+        applicationId "com.venzo.turfmamaadmin"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

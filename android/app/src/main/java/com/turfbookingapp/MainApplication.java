@@ -1,4 +1,4 @@
-package com.venzo.turfbookingapplication;
+package com.venzo.turfmamaadmin;
 
 import android.app.Application;
 import com.facebook.react.PackageList;

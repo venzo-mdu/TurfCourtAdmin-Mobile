@@ -450,6 +450,7 @@ export const getEventdetailsByArenas = async ({
   }
   try {
     if (groundIds != null) {
+      console.log('gggg',groundIds,otherFilters);
       let data = await fetchBulkData(
         'events',
         'ground_id',

@@ -90,7 +90,7 @@ const BookingScreen = () => {
   const route = useRoute();
   const { groundID } = route?.params || {};
   const containerStyle = groundID ? styles.insideGroundContainer : styles.tabContainer;
-  const [tab, setTab] = useState('Bookings'); 
+  const [tab, setTab] = useState('Bookings');
   const [statusopen, setstatusopen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [filterData, setFilterData] = useState([]);
@@ -131,14 +131,14 @@ const BookingScreen = () => {
   }, [tab, value]);
 
   useEffect(() => {
-      eventData();
+    eventData();
   }, [trigger]);
 
   const eventData = async () => {
     setLoading(false);
     let response1 = await getgroundDataForOwner(uid);
     let groundIds = response1?.map(r => r.ground_id);
-   
+
     if (uid == null) {
       navigate("/login");
     }
@@ -175,22 +175,22 @@ const BookingScreen = () => {
         .endOf("month")
         .format("YYYY-MM-DDTHH:mm");
     }
-   
+
     const otherFilters = [
       { key: "status", operator: "in", value: statusValue },
       { key: "start", operator: ">=", value: startDate },
       { key: "end", operator: "<=", value: endOfMonth },
     ];
-    console.log('otherFilters',otherFilters)
+    // console.log('otherFilters',otherFilters)
     if (
       otherFilters &&
       otherFilters.length > 0
     ) {
-      let events ;
+      let events;
       if (groundID) {
         groundIds = [groundID];
-      } 
-      
+      }
+
       if (groundIds.length > 0) {
         if (groundIds.length > 15) {
           const response1 = await getEventdetailsByArenas({
@@ -198,25 +198,27 @@ const BookingScreen = () => {
             otherFilters,
             order: { key: 'start', dir: 'asc' },
           });
-      
+
           const response2 = await getEventdetailsByArenas({
             groundIds: groundIds.slice(15),
             otherFilters,
             order: { key: 'start', dir: 'asc' },
           });
-      
+
           const data = _.uniqBy([...response1.data, ...response2.data], 'event_id');
           events = data;
         } else {
+          // console.log('otherFilters in else',otherFilters)
           const response = await getEventdetailsByArenas({
             groundIds: groundIds,
             otherFilters,
             order: { key: 'start', dir: 'asc' },
           });
           events = response.data;
+          // console.log('events',events);
         }
       }
-      
+
       setdata(events);
       const groupedData = Object.values(groupByBookId(events));
       setFilterData(groupedData);
@@ -396,7 +398,7 @@ const BookingScreen = () => {
               fontSize: 16,
               paddingBottom: 10,
             }}>
-            {user_name}
+            {`${_.startCase(user_name)}`}
           </Text>
 
           {tab === 'Bookings' && hasAwaitingStatus && (
@@ -414,7 +416,7 @@ const BookingScreen = () => {
                 fontFamily: 'Outfit-Medium',
                 fontSize: 16,
               }}>
-              {ground_name}
+              {`${_.startCase(ground_name)}`}
             </Text>
             <View style={styles.line}></View>
             <Text
@@ -423,7 +425,7 @@ const BookingScreen = () => {
                 fontFamily: 'Outfit-Medium',
                 fontSize: 16,
               }}>
-              {court_name}
+              {`${_.startCase(court_name)}`}
             </Text>
           </View>
           <Text
@@ -540,15 +542,14 @@ const BookingScreen = () => {
         placeholder={'This Month'}
       />
       {!loading ? (
-        <ActivityIndicator
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: '100%',
-            height: '100%',
-          }}
-          size="large"
-        />
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator
+            size={50}
+            color={COLORS.PrimaryColor}
+            animating={!loading}
+          />
+          <Text>Loading...</Text>
+        </View>
       ) : filterData.length !== 0 ? (
         <FlatList
           data={filterData}
@@ -654,7 +655,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginVertical: 10,
-    alignItems: 'center', 
+    alignItems: 'center',
     // height: Dimensions.get('window').height * 0.05,
   },
   tabContainer: {
@@ -663,7 +664,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     // height: Dimensions.get('window').height * 0.055,
     marginTop: 30,
-    alignItems: 'center', 
+    alignItems: 'center',
   },
   tabButton: {
     paddingVertical: 10,
@@ -707,7 +708,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.verticalBar,
     marginHorizontal: 8,
   },
-
+  loaderContainer: {
+    height: '100%',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   text: {
     fontSize: 16,
     color: '#000000',

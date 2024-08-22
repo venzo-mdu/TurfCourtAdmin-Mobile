@@ -77,7 +77,8 @@ const IndexHome = () => {
         setNoData(response?.length === 0);
         setLoading(false);
         const groundIds = response?.map(r => r.ground_id);
-        setGroundIds(groundIds);
+        console.log('groundIds: ', groundIds);     
+         setGroundIds(groundIds);
         // usedispatch(groundIds)
         if (!_.isEmpty(groundIds)) {
           await eventData(groundIds);

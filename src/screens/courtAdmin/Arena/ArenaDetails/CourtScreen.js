@@ -12,9 +12,9 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
-import {StyleSheet} from 'react-native';
-import {IMAGES} from '../../../../assets/constants/global_images';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet } from 'react-native';
+import { IMAGES } from '../../../../assets/constants/global_images';
 import {
   createCourtSlot,
   createNewCourt,
@@ -26,7 +26,7 @@ import {
   updatecourt,
   updateslotdata,
 } from '../../../../firebase/firebaseFunction/groundDetails';
-import {useNavigation, useRoute, useTheme} from '@react-navigation/native';
+import { useNavigation, useRoute, useTheme } from '@react-navigation/native';
 import CommonTextInput from '../../../../components/molecules/CommonTextInput';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DatePicker from 'react-native-date-picker';
@@ -37,20 +37,20 @@ import {
   getcourtevent,
 } from '../../../../firebase/firebaseFunction/eventDetails';
 import _ from 'lodash';
-import {getTimeFormatted} from '../../../../utils/getHours';
+import { getTimeFormatted } from '../../../../utils/getHours';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {USER, USERLOGIN} from '../../..';
+import { USER, USERLOGIN } from '../../..';
 //import Collapsible from 'react-native-collapsible';
 import moment from 'moment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Collapsible from 'react-native-collapsible';
-import {COLORS} from '../../../../assets/constants/global_colors';
+import { COLORS } from '../../../../assets/constants/global_colors';
 
 const CourtScreen = () => {
   const [tab, setTab] = useState('Add Court');
   const [uid, setUid] = useState([]);
   const route = useRoute();
-  const {groundID} = route.params || null;
+  const { groundID } = route.params || null;
   const navigation = useNavigation();
   //console.log("groundID Views", groundID)
   const [groundData, setGroundData] = useState();
@@ -82,10 +82,9 @@ const CourtScreen = () => {
     date: new Date(),
   });
   console.log('availablecourt', availablecourt);
-  const [basicCourtDetailsOpen, setBasicCourtDetailsOpen] = useState(true);
-  const [basicSlotDetailsOpen, setBasicSlotDetailsOpen] = useState(true);
-  const [basicAvailableDetailsOpen, setBasicAvailableDetailsOpen] =
-    useState(true);
+  const [basicCourtDetailsOpen, setBasicCourtDetailsOpen] = useState(false);
+  const [basicSlotDetailsOpen, setBasicSlotDetailsOpen] = useState(false);
+  const [basicAvailableDetailsOpen, setBasicAvailableDetailsOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [AddCourtError, setAddCourtError] = useState(false);
   const [AddCourtTimingError, setAddCourtTimingError] = useState(false);
@@ -146,10 +145,10 @@ const CourtScreen = () => {
   const [blockmodalopen, setblockModalOpen] = useState(false);
   const [valueAvailable, setValueAvailable] = useState(null);
   const [items, setItems] = useState([
-    {label: 'Apple', value: 'apple'},
-    {label: 'Banana', value: 'banana'},
-    {label: 'Pear', value: 'pear'},
-    {label: 'Cricket', value: 'w8SLqfDdGeXXnfA74Ckf'},
+    { label: 'Apple', value: 'apple' },
+    { label: 'Banana', value: 'banana' },
+    { label: 'Pear', value: 'pear' },
+    { label: 'Cricket', value: 'w8SLqfDdGeXXnfA74Ckf' },
   ]);
   //console.log("valuessssss", value)
   const ITEM_HEIGHT = 40;
@@ -209,7 +208,7 @@ const CourtScreen = () => {
       //setLoading(true);
       let court_details = await getCourtsForGround(groundID);
       //     console.log("court_details", court_details)
-      let ground_details = {...groundData, court_details};
+      let ground_details = { ...groundData, court_details };
       // console.log("ground_details", ground_details)
       // setGroundData(ground_details);
       // setgametype(ground_details?.game_type);
@@ -236,7 +235,7 @@ const CourtScreen = () => {
     let availablegame = createCourt?.gametype;
     if (availablegame?.includes(value)) {
       let subarr = availablegame.filter(item => item != value);
-      setCreateCourt({...createCourt, gametype: subarr});
+      setCreateCourt({ ...createCourt, gametype: subarr });
       // console.log(subarr, "availablegame");
     } else {
       setCreateCourt(prevData => ({
@@ -249,7 +248,8 @@ const CourtScreen = () => {
 
   /* Handle Add Cart Game Sections */
   const handleAddCourt = async () => {
-    //console.log("Hi One")
+    // setLoadingView(true);
+    console.log("Hi One")
     if (
       createCourt.court_name == '' ||
       createCourt.default_amount == '' ||
@@ -367,10 +367,10 @@ const CourtScreen = () => {
   };
 
   const IOSSwitch = props => {
-    const {colors} = useTheme();
+    const { colors } = useTheme();
     return (
       <Switch
-        trackColor={{false: '#767577', true: colors.primary}}
+        trackColor={{ false: '#767577', true: colors.primary }}
         thumbColor={props.value ? '#f4f3f4' : '#f4f3f4'}
         ios_backgroundColor="#3e3e3e"
         {...props}
@@ -508,6 +508,8 @@ const CourtScreen = () => {
 
   /* Add Funciton of SLot */
   const handleAddCourtSlot = async () => {
+    console.log('bbb');
+    setLoadingView(true);
     if (
       selectedValue?.Courts == '' ||
       createSlots?.price == '' ||
@@ -531,9 +533,9 @@ const CourtScreen = () => {
         ToastAndroid.show('Past time is not allowed');
         return;
       } else {
-        //setLoading(true);
+        //
         const courtDataBySlot = await getcourtevent(selectedValue?.Courts);
-        //setLoading(false);
+        setLoadingView(false);
 
         if (courtDataBySlot.length != 0) {
           const isExist = courtDataBySlot.filter(item => {
@@ -626,7 +628,7 @@ const CourtScreen = () => {
       isActive: true,
     });
     setValue(null);
-    setSelectedValue({...selectedValue, Courts: '', selectedEditslot: ''});
+    setSelectedValue({ ...selectedValue, Courts: '', selectedEditslot: '' });
     grndData();
     console.log('End Game');
     setSlotModalOpen(false);
@@ -799,14 +801,12 @@ const CourtScreen = () => {
     if (typeof date === 'object') {
       start = `${date.getFullYear()}-${(date.getMonth() + 1)
         .toString()
-        .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${
-        groundData?.start_time
-      }`;
+        .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${groundData?.start_time
+        }`;
       end = `${date.getFullYear()}-${(date.getMonth() + 1)
         .toString()
-        .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${
-        groundData?.end_time
-      }`;
+        .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${groundData?.end_time
+        }`;
     } else {
       start = `${date}T${groundData?.start_time}`;
       end = `${date}T${groundData?.end_time}`;
@@ -979,7 +979,7 @@ const CourtScreen = () => {
           })}`,
           end: `${availablecourt?.date}T${new Date(slot.end).toLocaleTimeString(
             'en-US',
-            {hour: '2-digit', minute: '2-digit', hour12: false},
+            { hour: '2-digit', minute: '2-digit', hour12: false },
           )}`,
         };
         let currentslot = courtslot?.slotData?.find(item => {
@@ -1010,6 +1010,8 @@ const CourtScreen = () => {
       //console.log("response handle Booking", response)
       setLoadingView(false);
       if (response?.status == 'Success') {
+    
+        setLoadingView(true);
         setblockModalOpen(false);
         handleReset();
         ToastAndroid.showWithGravity(
@@ -1128,7 +1130,7 @@ const CourtScreen = () => {
           })}`,
           end: `${availablecourt?.date}T${new Date(slot.end).toLocaleTimeString(
             'en-US',
-            {hour: '2-digit', minute: '2-digit', hour12: false},
+            { hour: '2-digit', minute: '2-digit', hour12: false },
           )}`,
         };
         let currentslot = courtslot?.slotData?.find(item => {
@@ -1342,11 +1344,11 @@ const CourtScreen = () => {
     }));
   };
 
-  const CourtCard = ({item, handlemodal, handleEditCourt}) => {
-    const {colors} = useTheme();
+  const CourtCard = ({ item, handlemodal, handleEditCourt }) => {
+    const { colors } = useTheme();
 
     return (
-      <View style={[styles.cardCourtCard, {backgroundColor: colors.card}]}>
+      <View style={[styles.cardCourtCard, { backgroundColor: colors.card }]}>
         <View style={styles.rowCourtCard}>
           <View>
             <Text style={styles.courtNameCourtCard}>{item.court_name}</Text>
@@ -1360,7 +1362,7 @@ const CourtScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-        <View style={[styles.rowCourtCard, {paddingTop: 40}]}>
+        <View style={[styles.rowCourtCard, { paddingTop: 40 }]}>
           <Text style={styles.priceCourtCard}>INR {item.default_amount}</Text>
           <View style={styles.rowCourtCard}>
             <Text style={styles.blockCourtTextCourtCard}>Block Court</Text>
@@ -1374,7 +1376,7 @@ const CourtScreen = () => {
     );
   };
 
-  const renderItemGame = ({item}) => (
+  const renderItemGame = ({ item }) => (
     <View style={styles.itemContainerGame}>
       <TouchableOpacity onPress={() => handleGameclick(item)}>
         <Image style={styles.imageGame} source={iconsss[item]} />
@@ -1416,81 +1418,84 @@ const CourtScreen = () => {
               />
             </TouchableOpacity>
             <Collapsible collapsed={basicCourtDetailsOpen}>
-            <View
-              style={{
-                zIndex: 2000,
-                padding: 10,
-                marginBottom: 20,
-                backgroundColor: '#fff',
-                borderBottomRightRadius: 12,
-                borderBottomLeftRadius: 12,
-              }}>
-              <View>
-                <FlatList
-                  data={gametype}
-                  renderItem={renderItemGame}
-                  keyExtractor={item => item}
-                  numColumns={3}
-                  columnWrapperStyle={styles.rowGame}
-                />
-                {AddCourtError && createCourt.gametype === '' && (
-                  <Text style={styles.errorText}>
-                    *Select appropriate values
-                  </Text>
-                )}
+            <View style={{ backgroundColor: '#fff',paddingHorizontal:15,borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,}}>
+              <View
+                style={{
+                  zIndex: 2000,
+                  padding: 10,
+                  marginBottom: 20,
+                  backgroundColor: '#fff',
+                  borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,
+                }}>
+                <View>
+                  <FlatList
+                    data={gametype}
+                    renderItem={renderItemGame}
+                    keyExtractor={item => item}
+                    numColumns={3}
+                    columnWrapperStyle={styles.rowGame}
+                  />
+                  {AddCourtError && createCourt.gametype === '' && (
+                    <Text style={styles.errorText}>
+                      *Select appropriate values
+                    </Text>
+                  )}
+                </View>
               </View>
-            </View>
-            <View>
-              <View style={{paddingTop: 10}}>
-                <CommonTextInput
-                  label="Court Name"
-                  value={createCourt?.court_name}
-                  onChangeText={text =>
-                    setCreateCourt({...createCourt, court_name: text})
-                  }
+              <View>
+                <View style={{ paddingTop: 10 }}>
+                  <CommonTextInput
+                    label="Court Name"
+                    value={createCourt?.court_name}
+                    onChangeText={text =>
+                      setCreateCourt({ ...createCourt, court_name: text })
+                    }
                   //widthStyle={true}
-                />
-                {AddCourtError && createCourt.court_name === '' && (
-                  <Text style={styles.errorText}>
-                    *Enter appropriate values
+                  />
+                  {AddCourtError && createCourt.court_name === '' && (
+                    <Text style={styles.errorText}>
+                      *Enter appropriate values
+                    </Text>
+                  )}
+                </View>
+                <View>
+                  <CommonTextInput
+                    label="Default price"
+                    value={createCourt?.default_amount}
+                    onChangeText={text =>
+                      setCreateCourt({ ...createCourt, default_amount: text })
+                    }
+                  // widthStyle={true}
+                  />
+                  {AddCourtError && createCourt.default_amount === '' && (
+                    <Text style={styles.errorText}>
+                      *Enter appropriate values
+                    </Text>
+                  )}
+                </View>
+                <TouchableOpacity
+                  style={styles.addButtonRule}
+                  onPress={handleAddCourt}>
+                  <Text style={styles.addButtonTextRule}>
+                    {addEdit == 'Add' ? 'Add' : 'Update'}
                   </Text>
-                )}
+                </TouchableOpacity>
               </View>
               <View>
-                <CommonTextInput
-                  label="Default price"
-                  value={createCourt?.default_amount}
-                  onChangeText={text =>
-                    setCreateCourt({...createCourt, default_amount: text})
-                  }
-                  // widthStyle={true}
-                />
-                {AddCourtError && createCourt.default_amount === '' && (
-                  <Text style={styles.errorText}>
-                    *Enter appropriate values
-                  </Text>
-                )}
+                {groundData?.court_details?.map(item => (
+                  <CourtCard
+                    key={item.id}
+                    item={item}
+                    handlemodal={handlemodal}
+                    handleEditCourt={handleEditCourt}
+                  />
+                ))}
               </View>
-              <TouchableOpacity
-                style={styles.addButtonRule}
-                onPress={handleAddCourt}>
-                <Text style={styles.addButtonTextRule}>
-                  {addEdit == 'Add' ? 'Add' : 'Update'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View>
-              {groundData?.court_details?.map(item => (
-                <CourtCard
-                  key={item.id}
-                  item={item}
-                  handlemodal={handlemodal}
-                  handleEditCourt={handleEditCourt}
-                />
-              ))}
-            </View>
+              </View>
             </Collapsible>
-            <View style={{paddingTop: 15}}>
+            <View style={{ paddingTop: 15 }}>
               <TouchableOpacity
                 style={[
                   styles.accordionHeader,
@@ -1506,7 +1511,8 @@ const CourtScreen = () => {
                   size={24}
                 />
               </TouchableOpacity>
-              {/* <Collapsible collapsed={basicSlotDetailsOpen}> */}
+
+              <Collapsible collapsed={basicSlotDetailsOpen}>
               {/* <View>
     <Text style={styles.labelSlot}>Add Slot Timing</Text>
     </View> */}
@@ -1548,7 +1554,7 @@ const CourtScreen = () => {
                   label="Price"
                   value={createSlots.price}
                   onChangeText={text =>
-                    setCreateslots({...createSlots, price: text})
+                    setCreateslots({ ...createSlots, price: text })
                   }
                   widthStyle={false}
                 />
@@ -1575,8 +1581,8 @@ const CourtScreen = () => {
                       ? createSlots.date
                         ? new Date(createSlots.date).toLocaleDateString('en-GB')
                         : new Date(createSlots.createdAt).toLocaleDateString(
-                            'en-GB',
-                          )
+                          'en-GB',
+                        )
                       : 'Select Date'}
                   </Text>
                 </TouchableOpacity>
@@ -1686,7 +1692,7 @@ const CourtScreen = () => {
                     </Text>
                   </TouchableOpacity>
                   <DatePicker
-                    style={{fontFamily: 'Outfit-Regular'}}
+                    style={{ fontFamily: 'Outfit-Regular' }}
                     modal
                     open={openEndPicker}
                     date={new Date()}
@@ -1724,7 +1730,7 @@ const CourtScreen = () => {
                   </TouchableOpacity>
                 </View>
                 {/* New View of Add Slots */}
-                <View style={{paddingTop: 15}}>
+                <View style={{ paddingTop: 15 }}>
                   {groundData?.court_details?.length !== 0 && (
                     <>
                       {courtslot &&
@@ -1814,8 +1820,9 @@ const CourtScreen = () => {
                   )}
                 </View>
               </View>
-              {/* </Collapsible> */}
-            </View>
+              </Collapsible>
+            </View >
+            <View style={{ paddingTop: 15 }}>
             <TouchableOpacity
               style={[
                 styles.accordionHeader,
@@ -1835,7 +1842,7 @@ const CourtScreen = () => {
                 size={24}
               />
             </TouchableOpacity>
-            {/* <Collapsible collapsed={basicAvailableDetailsOpen}> */}
+            <Collapsible collapsed={basicAvailableDetailsOpen}>
             {/* <View>
     <Text style={styles.labelSlot}>Available Timing</Text>
     </View> */}
@@ -1908,7 +1915,7 @@ const CourtScreen = () => {
                         ]}
                         disabled={item.isbooked}
                         onPress={() => handlebooking(item, index)}>
-                        <Text style={{color: item?.textColor}}>
+                        <Text style={{ color: item?.textColor }}>
                           {gttime.Time}
                         </Text>
                       </TouchableOpacity>
@@ -1981,7 +1988,8 @@ const CourtScreen = () => {
                 </TouchableOpacity>
               </View>
             </View>
-            {/* </Collapsible> */}
+            </Collapsible>
+            </View>
             {/* Modal For Create Court */}
             <Modal
               visible={modalOpen}
@@ -2476,11 +2484,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginVertical: 8,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-    width: Dimensions.get('window').width * 0.9,
+    width: Dimensions.get('window').width * 0.82,
   },
   rowCourtCard: {
     flexDirection: 'row',
@@ -2512,7 +2520,7 @@ const styles = StyleSheet.create({
   },
   dropdownSlot: {
     backgroundColor: '#fafafa',
-    borderColor: '#ccc',
+    //borderColor: '#ccc',
     marginBottom: 16,
   },
   datePickerSlot: {
@@ -2522,6 +2530,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fafafa',
+    backgroundColor: '#fff',
     padding: 10,
     borderRadius: 5,
     marginBottom: 16,
@@ -2529,6 +2538,7 @@ const styles = StyleSheet.create({
   buttonTextSlot: {
     color: '#000000',
     fontSize: 16,
+    marginVertical: 8,
   },
   inputSlotDateView: {
     backgroundColor: '#FAFAFA',
@@ -2543,7 +2553,8 @@ const styles = StyleSheet.create({
   inputDateViewSlot: {
     height: 60,
     borderRadius: 12,
-    backgroundColor: '#FAFAFA',
+    //backgroundColor: '#FAFAFA',
+    backgroundColor: '#fff',
     paddingHorizontal: 10,
     fontFamily: 'Outfit-Regular',
     fontSize: 20,
@@ -2555,6 +2566,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 20,
+    color: '#fff',
   },
   /* Available Booking Booked Courttimes */
   buttonContainerAvailable: {
