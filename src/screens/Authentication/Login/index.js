@@ -4,26 +4,17 @@ import React, {useEffect, useRef, useState} from 'react';
 import {
   Image,
   ImageBackground,
-  Modal,
   SafeAreaView,
   Text,
-  TextInput,
   ToastAndroid,
   TouchableOpacity,
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Keyboard,
   View,
-  ActivityIndicator,
 } from 'react-native';
 import {ROLE, USERCREATE, USERBOOTOM, USERLOGIN} from '../..';
 import {COLORS} from '../../../assets/constants/global_colors';
-import {
-  Outfit,
-  PoppinsMedium,
-  PoppinsRegular,
-  PoppinsSemiBold,
-} from '../../../assets/constants/global_fonts';
 import {IMAGES} from '../../../assets/constants/global_images';
 import {StatusBarCommon} from '../../../components';
 import {FirebaseRecaptchaVerifierModal} from 'expo-firebase-recaptcha';
@@ -34,7 +25,6 @@ import {
   loginmobile,
   loginverifyOtp,
 } from '../../../firebase/firebaseFunction/auth';
-import {FetchDataById} from '../../../firebase/firebaseFunction/crud';
 import {hS, mS} from '../../../utils/metrics';
 //import { UserLoginScreenStyles } from '../../User/Create/styles';
 import {UserLoginScreenStyles, UserOtpScreenStyles} from '../Create/styles';
@@ -54,6 +44,7 @@ const UserLoginScreen = () => {
   const [verificationId, setVerificationID] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [enterOTP, setEnterOTP] = useState(false);
+  const [confirmation, setConfirmation] = useState(null);
 
   const OTPref = useRef(null);
 
@@ -62,15 +53,78 @@ const UserLoginScreen = () => {
     setVerificationCode('');
   };
 
+  // const SendOTPFn = async () => {
+  //   if (userPhone?.length === 13) {
+  //     if (verificationId !== '') {
+  //       setEnterOTP(true);
+  //     } else {
+  //       const res = await loginmobile(userPhone);
+  //       console.log('ResLogin:', res);
+  //       if (res.error != null) {
+  //         setEnterOTP(false);
+  //         ToastAndroid.show(res.msg, ToastAndroid.SHORT);
+  //       } else {
+  //         setConfirmation(res.confirmation); // Save confirmation object
+  //         setVerificationID(res.verificationId);
+  //         setEnterOTP(true);
+  //         setSeconds(30);
+  //       }
+  //     }
+  //   } else {
+  //     ToastAndroid.show('Enter a valid phone number', ToastAndroid.SHORT);
+  //   }
+  // };
+
+  // const LoginFn = async () => {
+  //   if (verificationCode?.length === 6) {
+  //     const response = await loginverifyOtp(verificationCode, confirmation); // Use confirmation object
+  //     console.log('response---', response, verificationCode, confirmation);
+
+  //     if (!response.error) {
+  //       if (response?.data?.user_id !== '' && response?.data != null) {
+  //         const res = response?.data;
+  //         console.log('res Vies', res);
+  //         if (res?.usertype !== '') {
+  //           setUserPhone('');
+  //           setVerificationCode('');
+
+  //           const jsonValue = JSON.stringify(res);
+  //           console.log('jsonValue', jsonValue);
+  //           await AsyncStorage.setItem('res-data', jsonValue);
+
+  //           if (res?.owner === true) {
+  //             navigation.replace(USERBOOTOM);
+  //             ToastAndroid.show('Logged In Successfully', ToastAndroid.SHORT);
+  //           } else {
+  //             navigation.replace(USERBOOTOM);
+  //             ToastAndroid.show('You are not the owner', ToastAndroid.SHORT);
+  //           }
+  //         }
+  //       }
+  //     } else {
+  //       OTPref.current = null;
+  //     }
+  //   } else {
+  //     ToastAndroid.show('Enter a valid OTP', ToastAndroid.SHORT);
+  //   }
+  // };
+
   const SendOTPFn = async () => {
     if (userPhone?.length == 13) {
       if (verificationId != '') {
         setEnterOTP(true);
       } else {
         const res = await loginmobile(userPhone, recaptchaVerifier);
-        setVerificationID(res.verificationId);
-        setEnterOTP(true);
-        setSeconds(30);
+        // const res = await loginmobile(userPhone);
+        console.log('ResLogin: ', res);
+        if (res.error != null) {
+          setEnterOTP(false);
+          ToastAndroid.show(res.msg, ToastAndroid.SHORT);
+        } else {
+          setVerificationID(res.verificationId);
+          setEnterOTP(true);
+          setSeconds(30);
+        }
       }
     } else {
       ToastAndroid.show('Enter valid phone number', ToastAndroid.SHORT);
@@ -182,7 +236,7 @@ const UserLoginScreen = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView>
+      <KeyboardAvoidingView style={{flex: 1}}>
         <ImageBackground
           style={{width: '100%', height: '100%'}}
           source={IMAGES.LoginBgImage}
@@ -193,6 +247,7 @@ const UserLoginScreen = () => {
             <FirebaseRecaptchaVerifierModal
               ref={recaptchaVerifier}
               firebaseConfig={firebaseConfig}
+              attemptInvisibleVerification={true}
             />
             <View style={UserLoginScreenStyles.logoContainer}>
               <Image source={IMAGES.logoImage} resizeMode="contain" />
