@@ -95,7 +95,6 @@ const CourtScreen = () => {
   const [courtslot, setCourtslot] = useState();
   const tabs = ['Add Court', 'Add Court Time', 'Available Timings'];
   const [gametype, setgametype] = useState([]);
-  console.log('gametype', gametype);
   //const [blockmodalopen, setblockModalOpen] = useState(false);
   const [blockerrormodalopen, setblockerrorModalOpen] = useState(false);
   const [unblockerrormodalopen, setunblockerrorModalOpen] = useState(false);
@@ -141,7 +140,7 @@ const CourtScreen = () => {
   //console.log("courtItemsValus", courtItems);
   const [open, setOpen] = useState(false);
   const [openAvailable, setOpenAvailable] = useState(false);
-  const [value, setValue] = useState(null);
+  const [value, setValue] = useState('');
   const [blockmodalopen, setblockModalOpen] = useState(false);
   const [valueAvailable, setValueAvailable] = useState(null);
   const [items, setItems] = useState([
@@ -263,6 +262,57 @@ const CourtScreen = () => {
     }
   };
 
+  const handleAddCourtSlot = async () => {
+    if (
+      selectedValue.Courts == '' ||
+      createSlots.price == '' ||
+      createSlots.starttime == '' ||
+      createSlots.endtime == ''
+    ) {
+      setAddCourtTimingError(true);
+    }
+    else {
+      console.log('createSlots.date',createSlots.date);
+      const startT = `${createSlots.date}T${createSlots.starttime}`;
+      const endT = `${createSlots.date}T${createSlots.endtime}`;
+      const newStartTime = new Date(startT);
+      const newEndTime = new Date(endT);
+      const currentDateTime = new Date();
+      if (
+        newStartTime > newEndTime ||
+        newStartTime < currentDateTime ||
+        newEndTime < currentDateTime
+      ) {
+        ToastAndroid.show('Past time is not allowed');
+        return;
+      } else {
+        //
+        const courtDataBySlot = await getcourtevent(selectedValue?.Courts);
+        setLoadingView(false);
+
+        if (courtDataBySlot.length != 0) {
+          const isExist = courtDataBySlot.filter(item => {
+            return (
+              (new Date(item.start) < newStartTime &&
+                new Date(item.end) < newStartTime) == false &&
+              (new Date(item.start) > newEndTime &&
+                new Date(item.end) > newEndTime) == false
+            );
+          });
+          if (!isExist.length) {
+            setSlotModalOpen(true);
+            setAddCourtTimingError(false);
+          } else {
+            setCreateEditSlotWarning(true);
+          }
+        } else {
+          setSlotModalOpen(true);
+          setAddCourtTimingError(false);
+        }
+      }
+    }
+  };
+
   /* Create Court Confirmation Function */
   const handleCreateCourt = async () => {
     if (editcourtdata != null && Object.keys(editcourtdata).length != 0) {
@@ -370,7 +420,7 @@ const CourtScreen = () => {
     const { colors } = useTheme();
     return (
       <Switch
-        trackColor={{ false: '#767577', true: colors.primary }}
+        trackColor={{ false: '#000', true: 'green' }}
         thumbColor={props.value ? '#f4f3f4' : '#f4f3f4'}
         ios_backgroundColor="#3e3e3e"
         {...props}
@@ -495,7 +545,7 @@ const CourtScreen = () => {
 
   useEffect(() => {
     if (availablecourt?.Courts !== null) {
-      console.log('availablecourt?.Courts', availablecourt?.Courts);
+      // console.log('availablecourt?.Courts', availablecourt?.Courts);
       //  setAvailablecourt((prev) => ({
       //    ...prev,
       //    Courts: valueAvailable,
@@ -503,62 +553,11 @@ const CourtScreen = () => {
       handleavailablecourt(availablecourt?.Courts);
     }
   }, [availablecourt?.Courts]);
-  console.log('availablecourt?.Courts----', availablecourt?.Courts);
+  // console.log('availablecourt?.Courts----', availablecourt?.Courts);
   //console.log("availableCourts", availablecourt, valueAvailable)
 
   /* Add Funciton of SLot */
-  const handleAddCourtSlot = async () => {
-    console.log('bbb');
-    setLoadingView(true);
-    if (
-      selectedValue?.Courts == '' ||
-      createSlots?.price == '' ||
-      createSlots?.date == '' ||
-      createSlots?.starttime == '' ||
-      createSlots?.endtime == ''
-    ) {
-      setAddCourtTimingError(true);
-      ToastAndroid.show('Past time is not allowed');
-    } else {
-      const startT = `${createSlots.date}T${createSlots.starttime}`;
-      const endT = `${createSlots.date}T${createSlots.endtime}`;
-      const newStartTime = new Date(startT);
-      const newEndTime = new Date(endT);
-      const currentDateTime = new Date();
-      if (
-        newStartTime > newEndTime ||
-        newStartTime < currentDateTime ||
-        newEndTime < currentDateTime
-      ) {
-        ToastAndroid.show('Past time is not allowed');
-        return;
-      } else {
-        //
-        const courtDataBySlot = await getcourtevent(selectedValue?.Courts);
-        setLoadingView(false);
 
-        if (courtDataBySlot.length != 0) {
-          const isExist = courtDataBySlot.filter(item => {
-            return (
-              (new Date(item.start) < newStartTime &&
-                new Date(item.end) < newStartTime) == false &&
-              (new Date(item.start) > newEndTime &&
-                new Date(item.end) > newEndTime) == false
-            );
-          });
-          if (!isExist.length) {
-            setSlotModalOpen(true);
-            setAddCourtTimingError(false);
-          } else {
-            setCreateEditSlotWarning(true);
-          }
-        } else {
-          setSlotModalOpen(true);
-          setAddCourtTimingError(false);
-        }
-      }
-    }
-  };
 
   const handleCourtslot = async () => {
     createSlots.start = `${createSlots?.date}T${createSlots?.starttime}`;
@@ -936,6 +935,7 @@ const CourtScreen = () => {
   };
 
   const handleblock = async () => {
+    console.log('bbb');
     if (uid == null) {
       navigation.navigate(USERLOGIN);
       return;
@@ -1007,11 +1007,9 @@ const CourtScreen = () => {
       bookedDataList = results.flat();
       //console.log("results", results)
       const response = await createNewBlockEvent(Addcartdatas);
-      //console.log("response handle Booking", response)
+      console.log("response handle Booking", response)
       setLoadingView(false);
       if (response?.status == 'Success') {
-    
-        setLoadingView(true);
         setblockModalOpen(false);
         handleReset();
         ToastAndroid.showWithGravity(
@@ -1040,6 +1038,7 @@ const CourtScreen = () => {
   };
 
   const handleblockmodal = () => {
+    console.log('vvv');
     if (uid == null) {
       navigation.navigate(USERLOGIN);
       return;
@@ -1089,6 +1088,7 @@ const CourtScreen = () => {
   };
 
   const handleUnblock = async () => {
+    console.log('jjj');
     if (uid == null) {
       navigation.navigate(USERLOGIN);
       return;
@@ -1162,10 +1162,11 @@ const CourtScreen = () => {
         await changeEventStatus(datum?.event_id, 'Unblocked');
       });
       console.log('mapcosnt', mapcosnt);
-      setLoadingView(false);
+
       if (mapcosnt?.length) {
         setunblockModalOpen(false);
         handleReset();
+        setLoadingView(false)
         // toast.success("Unblocking Success", {
         //   position: "top-right",
         //   autoClose: 2000,
@@ -1352,9 +1353,10 @@ const CourtScreen = () => {
         <View style={styles.rowCourtCard}>
           <View>
             <Text style={styles.courtNameCourtCard}>{item.court_name}</Text>
-            <Text style={styles.gameTypeCourtCard}>
-              {item.gametype.join(' | ')}
-            </Text>
+            <View style={styles.gameTypeContainer}>
+              <Text style={styles.gameTypeCourtCard}>
+                {item.gametype.join(' | ')}
+              </Text></View>
           </View>
           <View>
             <TouchableOpacity onPress={() => handleEditCourt(item)}>
@@ -1397,7 +1399,12 @@ const CourtScreen = () => {
     <>
       {loader ? (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#097E52" />
+          <ActivityIndicator
+            size={50}
+            color={COLORS.PrimaryColor}
+            animating={loader}
+          />
+          <Text>Loading...</Text>
         </View>
       ) : (
         <ScrollView style={styles.scrollContainer}>
@@ -1417,82 +1424,88 @@ const CourtScreen = () => {
                 size={24}
               />
             </TouchableOpacity>
+
             <Collapsible collapsed={basicCourtDetailsOpen}>
-            <View style={{ backgroundColor: '#fff',paddingHorizontal:15,borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,}}>
-              <View
-                style={{
-                  zIndex: 2000,
-                  padding: 10,
-                  marginBottom: 20,
-                  backgroundColor: '#fff',
-                  borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,
-                }}>
-                <View>
-                  <FlatList
-                    data={gametype}
-                    renderItem={renderItemGame}
-                    keyExtractor={item => item}
-                    numColumns={3}
-                    columnWrapperStyle={styles.rowGame}
-                  />
-                  {AddCourtError && createCourt.gametype === '' && (
-                    <Text style={styles.errorText}>
-                      *Select appropriate values
-                    </Text>
-                  )}
+              <View style={{
+                backgroundColor: '#fff', paddingHorizontal: 15, borderBottomRightRadius: 12,
+                borderBottomLeftRadius: 12,
+              }}>
+                <View style={styles.horizontalBar} />
+                <View
+                  style={{
+                    zIndex: 2000,
+                    padding: 10,
+                    // marginBottom: 20,
+                    backgroundColor: COLORS.fieldColor,
+                    borderBottomRightRadius: 12,
+                    borderBottomLeftRadius: 12,
+                  }}>
+                  <View>
+
+                    <FlatList
+                      data={gametype}
+                      renderItem={renderItemGame}
+                      keyExtractor={item => item}
+                      numColumns={3}
+                      columnWrapperStyle={styles.rowGame}
+                    />
+
+                  </View>
                 </View>
-              </View>
-              <View>
-                <View style={{ paddingTop: 10 }}>
-                  <CommonTextInput
-                    label="Court Name"
-                    value={createCourt?.court_name}
-                    onChangeText={text =>
-                      setCreateCourt({ ...createCourt, court_name: text })
-                    }
-                  //widthStyle={true}
-                  />
-                  {AddCourtError && createCourt.court_name === '' && (
-                    <Text style={styles.errorText}>
-                      *Enter appropriate values
-                    </Text>
-                  )}
-                </View>
-                <View>
-                  <CommonTextInput
-                    label="Default price"
-                    value={createCourt?.default_amount}
-                    onChangeText={text =>
-                      setCreateCourt({ ...createCourt, default_amount: text })
-                    }
-                  // widthStyle={true}
-                  />
-                  {AddCourtError && createCourt.default_amount === '' && (
-                    <Text style={styles.errorText}>
-                      *Enter appropriate values
-                    </Text>
-                  )}
-                </View>
-                <TouchableOpacity
-                  style={styles.addButtonRule}
-                  onPress={handleAddCourt}>
-                  <Text style={styles.addButtonTextRule}>
-                    {addEdit == 'Add' ? 'Add' : 'Update'}
+                {AddCourtError && createCourt.gametype.length === 0 && (
+                  <Text style={styles.errorText}>
+                    *Select appropriate values
                   </Text>
-                </TouchableOpacity>
-              </View>
-              <View>
-                {groundData?.court_details?.map(item => (
-                  <CourtCard
-                    key={item.id}
-                    item={item}
-                    handlemodal={handlemodal}
-                    handleEditCourt={handleEditCourt}
-                  />
-                ))}
-              </View>
+                )}
+                <View>
+                  <View style={{ paddingTop: 10 }}>
+                    <CommonTextInput
+                      label="Court Name"
+                      value={createCourt?.court_name}
+                      onChangeText={text =>
+                        setCreateCourt({ ...createCourt, court_name: text })
+                      }
+                    //widthStyle={true}
+                    />
+                    {AddCourtError && createCourt.court_name === '' && (
+                      <Text style={styles.errorText}>
+                        *Enter appropriate values
+                      </Text>
+                    )}
+                  </View>
+                  <View style={{ paddingTop: 10 }}>
+                    <CommonTextInput
+                      label="Default price"
+                      value={createCourt?.default_amount}
+                      onChangeText={text =>
+                        setCreateCourt({ ...createCourt, default_amount: text })
+                      }
+                    // widthStyle={true}
+                    />
+                    {AddCourtError && createCourt.default_amount === '' && (
+                      <Text style={styles.errorText}>
+                        *Enter appropriate values
+                      </Text>
+                    )}
+                  </View>
+                  <TouchableOpacity
+                    style={styles.addButtonRule}
+                    onPress={handleAddCourt}>
+                    <Text style={styles.addButtonTextRule}>
+                      {addEdit == 'Add' ? 'Add' : 'Update'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <View>
+                  {groundData?.court_details?.map(item => (
+                    <CourtCard
+                      key={item.id}
+                      item={item}
+                      handlemodal={handlemodal}
+                      handleEditCourt={handleEditCourt}
+                    />
+                  ))}
+                </View>
               </View>
             </Collapsible>
             <View style={{ paddingTop: 15 }}>
@@ -1513,482 +1526,442 @@ const CourtScreen = () => {
               </TouchableOpacity>
 
               <Collapsible collapsed={basicSlotDetailsOpen}>
-              {/* <View>
+                {/* <View>
     <Text style={styles.labelSlot}>Add Slot Timing</Text>
     </View> */}
-              <View>
-                <Text style={styles.labelSlot}>Courts</Text>
-                {/* <DropDownPicker
-        open={openCourtDropdown}
-        value={selectedValue?.Courts}
-        items={courtItems}
-        setOpen={setOpenCourtDropdown}
-        setValue={handleCourtChange}
-        setItems={setCourtItems}
-        placeholder="Select Court"
-        style={styles.dropdownSlot}
-        dropDownStyle={styles.dropdownSlot}
-      /> */}
-                <DropDownPicker
-                  open={open}
-                  value={value}
-                  items={courtItems}
-                  setOpen={setOpen}
-                  setValue={setValue}
-                  setItems={setItems}
-                  placeholder={'Select Court'}
-                  //maxHeight={500}
-                  maxHeight={calculatedHeight}
-                  zIndex={3000}
-                  zIndexInverse={3000}
-                  style={styles.dropdownSlot}
-                  dropDownStyle={styles.dropdownSlot}
-                />
-                {AddCourtTimingError && selectedValue.Courts === '' && (
-                  <Text style={styles.errorText}>
-                    *Select appropriate values
-                  </Text>
-                )}
-
-                <CommonTextInput
-                  label="Price"
-                  value={createSlots.price}
-                  onChangeText={text =>
-                    setCreateslots({ ...createSlots, price: text })
-                  }
-                  widthStyle={false}
-                />
-                {AddCourtTimingError && createSlots.price === '' && (
-                  <Text style={styles.errorText}>
-                    *Enter appropriate values
-                  </Text>
-                )}
-
-                <Text style={styles.labelSlot}>Date</Text>
-                {/* <DatePicker
-        date={createSlots.date}
-        onDateChange={handleDateChange}
-        minimumDate={new Date()}
-        mode="date"
-        style={styles.datePickerSlot}
-      /> */}
-                <TouchableOpacity
-                  style={styles.buttonSlot}
-                  onPress={() => setOpenDatePicker(true)}>
-                  <Text style={styles.buttonTextSlot}>
-                    {' '}
-                    {createSlots.date
-                      ? createSlots.date
-                        ? new Date(createSlots.date).toLocaleDateString('en-GB')
-                        : new Date(createSlots.createdAt).toLocaleDateString(
-                          'en-GB',
-                        )
-                      : 'Select Date'}
-                  </Text>
-                </TouchableOpacity>
-                <DatePicker
-                  modal
-                  mode="date"
-                  open={openDatePicker}
-                  date={
-                    createSlots.date
-                      ? new Date(createSlots.date)
-                      : new Date(createSlots.createdAt)
-                  }
-                  minimumDate={new Date()}
-                  onConfirm={date => {
-                    setOpenDatePicker(false);
-                    handleDateChange(date);
-                  }}
-                  onCancel={() => {
-                    setOpenDatePicker(false);
-                  }}
-                />
-                {/* <Text style={styles.labelSlot}>Start Timing</Text>
-      <TouchableOpacity style={styles.inputSlotDateView} onPress={() => setOpenStartPicker(true)}>
-        <Text style={styles.inputSlotText}>{createSlots.starttime ? formatTimeSlot(createSlots.starttime) : 'Select Time'}</Text>
-      </TouchableOpacity>
-      <DatePicker
-        modal
-        open={openStartPicker}
-        date={createSlots.starttime}
-        mode="time"
-        onConfirm={(date) => {
-          setOpenStartPicker(false);
-          handleTimeChange('starttime', date);
-        }}
-        onCancel={() => {
-          setOpenStartPicker(false);
-        }}
-      />
-      {AddCourtTimingError && !createSlots.starttime && (
-        <Text style={styles.errorText}>*Enter start time</Text>
-      )}
-
-      <Text style={styles.labelSlot}>End Timing</Text>
-      <TouchableOpacity style={styles.inputSlotDateView} onPress={() => setOpenEndPicker(true)}>
-        <Text style={styles.inputSlotText}>{createSlots.endtime ? formatTimeSlot(createSlots.endtime) : 'Select Time'}</Text>
-      </TouchableOpacity>
-      <DatePicker
-        modal
-        open={openEndPicker}
-        date={createSlots.endtime}
-        mode="time"
-        onConfirm={(date) => {
-          setOpenEndPicker(false);
-          handleTimeChange('endtime', date);
-        }}
-        onCancel={() => {
-          setOpenEndPicker(false);
-        }}
-      />
-      {AddCourtTimingError && !createSlots.endtime && (
-        <Text style={styles.errorText}>*Enter end time</Text>
-      )} */}
-                <View style={styles.inputContainer}>
-                  <Text style={styles.labelSlot}>Start Time</Text>
-                  <TouchableOpacity
-                    style={styles.inputDateViewSlot}
-                    onPress={() => setOpenStartPicker(true)}>
-                    <Text style={styles.inputTextSlot}>
-                      {createSlots?.starttime || 'Select Time'}
-                    </Text>
-                  </TouchableOpacity>
-                  <DatePicker
-                    modal
-                    open={openStartPicker}
-                    date={new Date()}
-                    mode="time"
-                    minimumDate={new Date()}
-                    onConfirm={date => {
-                      const now = new Date();
-                      //               if (date < now) {
-                      //   Alert.alert("Invalid Time", "You cannot select a past time.");
-                      //   setOpenStartPicker(false);
-                      //   return;
-                      // }
-                      setOpenStartPicker(false);
-                      //handleInputChange('start_time', date);
-                      setCreateslots(prevState => ({
-                        ...prevState,
-                        ['starttime']: formatTime(date),
-                      }));
-                    }}
-                    onCancel={() => {
-                      setOpenStartPicker(false);
-                    }}
+                <View style={{
+                  backgroundColor: '#fff', paddingHorizontal: 15, borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,
+                }}>
+                  <View style={styles.horizontalBar} />
+                  <Text style={styles.labelSlot}>Courts</Text>
+                  {console.log('value', value)}
+                  <DropDownPicker
+                    open={open}
+                    value={value}
+                    items={courtItems}
+                    setOpen={setOpen}
+                    setValue={setValue}
+                    setItems={setItems}
+                    placeholder={'Select Court'}
+                    //maxHeight={500}
+                    maxHeight={calculatedHeight}
+                    zIndex={3000}
+                    zIndexInverse={3000}
+                    style={styles.dropdownSlot}
+                    dropDownStyle={styles.dropdownSlot}
+                    dropDownContainerStyle={{ borderColor: COLORS.fieldBorderColor, backgroundColor: '#fafafa', }}
                   />
-                  {!createSlots?.starttime && AddCourtTimingError && (
-                    <Text style={styles.errorText}>*Enter start time</Text>
-                  )}
-                </View>
-                <View style={styles.inputContainer}>
-                  <Text style={styles.labelSlot}>End Time</Text>
-                  <TouchableOpacity
-                    style={styles.inputDateViewSlot}
-                    onPress={() => setOpenEndPicker(true)}>
-                    <Text style={styles.inputTextSlot}>
-                      {createSlots?.endtime || 'Select Time'}
+                  {AddCourtTimingError && selectedValue.Courts && (
+                    <Text style={styles.errorText}>
+                      *Select appropriate values
                     </Text>
-                  </TouchableOpacity>
-                  <DatePicker
-                    style={{ fontFamily: 'Outfit-Regular' }}
-                    modal
-                    open={openEndPicker}
-                    date={new Date()}
-                    mode="time"
-                    minimumDate={new Date()}
-                    onConfirm={date => {
-                      const nowEnd = new Date();
-                      //               if (date < nowEnd) {
-                      //   Alert.alert("Invalid Time", "You cannot select a past time.");
-                      //   setOpenStartPicker(false);
-                      //   return;
-                      // }
-                      setOpenEndPicker(false);
-                      //handleInputChange('end_time', date);
-                      setCreateslots(prevState => ({
-                        ...prevState,
-                        ['endtime']: formatTime(date),
-                      }));
-                    }}
-                    onCancel={() => {
-                      setOpenEndPicker(false);
-                    }}
+                  )}
+                  {console.log('price', createSlots?.price)}
+                  <CommonTextInput
+                    label="Price"
+                    value={createSlots?.price}
+                    onChangeText={text =>
+                      setCreateslots({ ...createSlots, price: text })
+                    }
+                  //widthStyle={true}
                   />
-                  {!createSlots?.endtime && AddCourtTimingError && (
-                    <Text style={styles.errorText}>*Enter end time</Text>
-                  )}
-                </View>
-                <View>
-                  <TouchableOpacity
-                    style={styles.addButtonRule}
-                    onPress={handleAddCourtSlot}>
-                    <Text style={styles.addButtonTextRule}>
-                      {addEdit == 'Add' ? 'Add' : 'Update'}
+                  {AddCourtTimingError && createSlots.price == '' && (
+                    <Text style={styles.errorText}>
+                      *Enter appropriate values
                     </Text>
-                  </TouchableOpacity>
-                </View>
-                {/* New View of Add Slots */}
-                <View style={{ paddingTop: 15 }}>
-                  {groundData?.court_details?.length !== 0 && (
-                    <>
-                      {courtslot &&
-                        Object.values(courtslot).map((item, index) => {
-                          let sortslotdata =
-                            item?.slotData?.sort(compareByDate);
-                          let activeSlotData = sortslotdata?.filter(
-                            item => item?.isActive,
-                          );
+                  )}
+                  <View>
+                    <Text style={styles.labelSlot}>Date</Text>
+                    <TouchableOpacity
+                      style={styles.buttonSlot}
+                      onPress={() => setOpenDatePicker(true)}>
+                      <Text style={styles.buttonTextSlot}>
+                        {' '}
+                        {createSlots.date
+                          ? createSlots.date
+                            ? new Date(createSlots.date).toLocaleDateString('en-GB')
+                            : new Date(createSlots.createdAt).toLocaleDateString(
+                              'en-GB',
+                            )
+                          : 'Select Date'}
 
-                          return (
-                            <View key={index} style={styles.cardSlot}>
-                              <TouchableOpacity
-                                onPress={() => toggleSection(index)}>
-                                <View style={styles.cardHeaderSlot}>
-                                  {/* <Text style={styles.groundNameSlot}>{groundData.groundname}</Text> */}
-                                  <Text style={styles.courtNameSlot}>
-                                    {item.court_name}
-                                  </Text>
-                                  <Ionicons
-                                    name={
-                                      !activeSections[index]
-                                        ? 'chevron-down'
-                                        : 'chevron-up'
-                                    }
-                                    size={24}
-                                    style={styles.icon}
-                                  />
-                                </View>
-                              </TouchableOpacity>
-                              <Collapsible collapsed={!activeSections[index]}>
-                                {activeSlotData?.length ? (
-                                  <View style={styles.dividerSlot} />
-                                ) : null}
-                                {activeSlotData?.map((slot, slotIndex) => {
-                                  const startTimeFormatted = getTimeFormatted(
-                                    slot.start,
-                                  );
-                                  const endTimeFormatted = getTimeFormatted(
-                                    slot.end,
-                                  );
-                                  return (
-                                    <View
-                                      key={slotIndex}
-                                      style={styles.slotDetailsSlot}>
-                                      <View style={styles.slotTimeSlot}>
-                                        <Text style={styles.slotTimeSlotText}>
-                                          {startTimeFormatted.formatedate}
-                                        </Text>
+                      </Text>
+                    </TouchableOpacity>
+                    <DatePicker
+                      modal
+                      mode="date"
+                      open={openDatePicker}
+                      date={
+                        createSlots.date
+                          ? new Date(createSlots.date)
+                          : new Date(createSlots.createdAt)
+                      }
+                      minimumDate={new Date()}
+                      onConfirm={date => {
+                        setOpenDatePicker(false);
+                        handleDateChange(date);
+                      }}
+                      onCancel={() => {
+                        setOpenDatePicker(false);
+                      }}
+                    />
+                  </View>
+
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.labelSlot}>Start Time</Text>
+                    <TouchableOpacity
+                      style={styles.inputDateViewSlot}
+                      onPress={() => setOpenStartPicker(true)}>
+                      <Text style={styles.inputTextSlot}>
+                        {createSlots?.starttime || 'Select Time'}
+                      </Text>
+                    </TouchableOpacity>
+                    <DatePicker
+                      modal
+                      open={openStartPicker}
+                      date={new Date()}
+                      mode="time"
+                      minimumDate={new Date()}
+                      onConfirm={date => {
+                        const now = new Date();
+                        setOpenStartPicker(false);
+                        setCreateslots(prevState => ({
+                          ...prevState,
+                          ['starttime']: formatTime(date),
+                        }));
+                      }}
+                      onCancel={() => {
+                        setOpenStartPicker(false);
+                      }}
+                    />
+                    {AddCourtTimingError && createSlots.starttime == '' && (
+                      <Text style={styles.errorText}>*Enter start time</Text>
+                    )}
+                  </View>
+                  {console.log('price', createSlots?.endtime)}
+                  {console.log('price', createSlots?.starttime)}
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.labelSlot}>End Time</Text>
+                    <TouchableOpacity
+                      style={styles.inputDateViewSlot}
+                      onPress={() => setOpenEndPicker(true)}>
+                      <Text style={styles.inputTextSlot}>
+                        {createSlots?.endtime || 'Select Time'}
+                      </Text>
+                    </TouchableOpacity>
+                    <DatePicker
+                      style={{ fontFamily: 'Outfit-Regular' }}
+                      modal
+                      open={openEndPicker}
+                      date={new Date()}
+                      mode="time"
+                      minimumDate={new Date()}
+                      onConfirm={date => {
+                        const nowEnd = new Date();
+                        //               if (date < nowEnd) {
+                        //   Alert.alert("Invalid Time", "You cannot select a past time.");
+                        //   setOpenStartPicker(false);
+                        //   return;
+                        // }
+                        setOpenEndPicker(false);
+                        //handleInputChange('end_time', date);
+                        setCreateslots(prevState => ({
+                          ...prevState,
+                          ['endtime']: formatTime(date),
+                        }));
+                      }}
+                      onCancel={() => {
+                        setOpenEndPicker(false);
+                      }}
+                    />
+                    {AddCourtTimingError && createSlots.endtime == '' && (
+                      <Text style={styles.errorText}>*Enter end time</Text>
+                    )}
+                  </View>
+                  <View>
+                    <TouchableOpacity
+                      style={styles.addButtonRule}
+                      onPress={handleAddCourtSlot}>
+                      <Text style={styles.addButtonTextRule}>
+                        {addEdit == 'Add' ? 'Add' : 'Update'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  {/* New View of Add Slots */}
+                  <View style={{ paddingTop: 15 }}>
+                    {groundData?.court_details?.length !== 0 && (
+                      <>
+                        {courtslot &&
+                          Object.values(courtslot).map((item, index) => {
+                            let sortslotdata =
+                              item?.slotData?.sort(compareByDate);
+                            let activeSlotData = sortslotdata?.filter(
+                              item => item?.isActive,
+                            );
+
+                            return (
+                              <View key={index} style={styles.cardSlot}>
+                                <TouchableOpacity
+                                  onPress={() => toggleSection(index)}>
+                                  <View style={styles.cardHeaderSlot}>
+                                    {/* <Text style={styles.groundNameSlot}>{groundData.groundname}</Text> */}
+                                    <Text style={styles.courtNameSlot}>
+                                      {item.court_name}
+                                    </Text>
+                                    <Ionicons
+                                      name={
+                                        !activeSections[index]
+                                          ? 'chevron-down'
+                                          : 'chevron-up'
+                                      }
+                                      size={24}
+                                      style={styles.icon}
+                                    />
+                                  </View>
+                                </TouchableOpacity>
+                                <Collapsible collapsed={!activeSections[index]}>
+                                  {activeSlotData?.length ? (
+                                    <View style={styles.dividerSlot} />
+                                  ) : <Text style={{ alignItems: 'center' }}>No Data</Text>}
+                                  {activeSlotData?.map((slot, slotIndex) => {
+                                    { console.log('start', slot.start, slot.end) }
+
+                                    const startTimeFormatted = getTimeFormatted(
+                                      slot.start,
+                                    );
+                                    const endTimeFormatted = getTimeFormatted(
+                                      slot.end,
+                                    );
+                                    { console.log('startTimeFormatted', startTimeFormatted, endTimeFormatted) }
+                                    return (
+
+                                      <View
+                                        key={slotIndex}
+                                        style={styles.slotDetailsSlot}>
+                                        <View style={styles.slotTimeSlot}>
+                                          <Text style={styles.slotTimeSlotText}>
+                                            {startTimeFormatted.formatedate}
+                                          </Text>
+                                          <Text
+                                            style={
+                                              styles.slotTimeSlotText
+                                            }>{`${startTimeFormatted.Time} - ${endTimeFormatted.Time}`}</Text>
+                                        </View>
                                         <Text
                                           style={
-                                            styles.slotTimeSlotText
-                                          }>{`${startTimeFormatted.Time} - ${endTimeFormatted.Time}`}</Text>
+                                            styles.slotPriceSlot
+                                          }>{`₹${slot.price}`}</Text>
+                                        <View style={styles.actionsSlot}>
+                                          <TouchableOpacity
+                                            onPress={() =>
+                                              handleSlotdelete(slot)
+                                            }>
+                                            {/* <Text>Delete</Text> */}
+                                            <Image
+                                              source={IMAGES.DeleteIcons}
+                                              style={styles.actionIconSlot}
+                                            />
+                                          </TouchableOpacity>
+                                          <TouchableOpacity
+                                            onPress={() => handleSlotedit(slot)}>
+                                            <Image
+                                              source={IMAGES.EditIcons}
+                                              style={styles.actionIconSlot}
+                                            />
+                                            {/* <Text>Edit</Text> */}
+                                          </TouchableOpacity>
+                                        </View>
                                       </View>
-                                      <Text
-                                        style={
-                                          styles.slotPriceSlot
-                                        }>{`₹${slot.price}`}</Text>
-                                      <View style={styles.actionsSlot}>
-                                        <TouchableOpacity
-                                          onPress={() =>
-                                            handleSlotdelete(slot)
-                                          }>
-                                          {/* <Text>Delete</Text> */}
-                                          <Image
-                                            source={IMAGES.DeleteIcons}
-                                            style={styles.actionIconSlot}
-                                          />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                          onPress={() => handleSlotedit(slot)}>
-                                          <Image
-                                            source={IMAGES.EditIcons}
-                                            style={styles.actionIconSlot}
-                                          />
-                                          {/* <Text>Edit</Text> */}
-                                        </TouchableOpacity>
-                                      </View>
-                                    </View>
-                                  );
-                                })}
-                              </Collapsible>
-                            </View>
-                          );
-                        })}
-                    </>
-                  )}
+
+                                    );
+                                  })}
+                                </Collapsible>
+                              </View>
+                            );
+                          })}
+                      </>
+                    )}
+                  </View>
                 </View>
-              </View>
               </Collapsible>
             </View >
+
             <View style={{ paddingTop: 15 }}>
-            <TouchableOpacity
-              style={[
-                styles.accordionHeader,
-                !basicAvailableDetailsOpen
-                  ? styles.openHeader
-                  : styles.closedHeader,
-              ]}
-              onPress={() =>
-                setBasicAvailableDetailsOpen(!basicAvailableDetailsOpen)
-              }
-              activeOpacity={1}>
-              <Text style={styles.accordionHeaderText}>Available Timing</Text>
-              <Ionicons
-                name={
-                  !basicAvailableDetailsOpen ? 'chevron-up' : 'chevron-down'
+              <TouchableOpacity
+                style={[
+                  styles.accordionHeader,
+                  !basicAvailableDetailsOpen
+                    ? styles.openHeader
+                    : styles.closedHeader,
+                ]}
+                onPress={() =>
+                  setBasicAvailableDetailsOpen(!basicAvailableDetailsOpen)
                 }
-                size={24}
-              />
-            </TouchableOpacity>
-            <Collapsible collapsed={basicAvailableDetailsOpen}>
-            {/* <View>
+                activeOpacity={1}>
+                <Text style={styles.accordionHeaderText}>Available Timing</Text>
+                <Ionicons
+                  name={
+                    !basicAvailableDetailsOpen ? 'chevron-up' : 'chevron-down'
+                  }
+                  size={24}
+                />
+              </TouchableOpacity>
+              <Collapsible collapsed={basicAvailableDetailsOpen}>
+                {/* <View>
     <Text style={styles.labelSlot}>Available Timing</Text>
     </View> */}
-            <View>
-              <Text style={styles.labelSlot}>Courts</Text>
-              <DropDownPicker
-                open={openAvailable}
-                value={valueAvailable}
-                items={courtItems}
-                setOpen={setOpenAvailable}
-                setValue={setValueAvailable}
-                setItems={setItems}
-                placeholder={'Select Court'}
-                maxHeight={calculatedHeight}
-                zIndex={1000}
-                zIndexInverse={3000}
-                style={styles.dropdownSlot}
-                dropDownStyle={styles.dropdownSlot}
-              />
-              {AddCourtTimingError && availablecourt.Courts === '' && (
-                <Text style={styles.errorText}>*Select appropriate values</Text>
-              )}
-              <Text style={styles.labelSlot}>Date</Text>
-              {/* <DatePicker
+                <View style={{
+                  backgroundColor: '#fff', paddingHorizontal: 15, borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,
+                }}>
+                  <View style={styles.horizontalBar} />
+                  <View>
+                    <Text style={styles.labelSlot}>Courts</Text>
+                    <DropDownPicker
+                      open={openAvailable}
+                      value={valueAvailable}
+                      items={courtItems}
+                      setOpen={setOpenAvailable}
+                      setValue={setValueAvailable}
+                      setItems={setItems}
+                      placeholder={'Select Court'}
+                      maxHeight={calculatedHeight}
+                      zIndex={1000}
+                      zIndexInverse={3000}
+                      style={styles.dropdownSlot}
+                      dropDownContainerStyle={{
+                        backgroundColor: '#FAFAFA',
+                        borderColor: COLORS.fieldBorderColor,
+                        borderWidth: 1,
+                      }}
+                      dropDownStyle={styles.dropdownSlot}
+                    />
+                    {/* {AddCourtTimingError && availablecourt.Courts === '' && (
+                      <Text style={styles.errorText}>*Select appropriate values</Text>
+                    )} */}
+                    <Text style={styles.labelSlot}>Date</Text>
+                    {/* <DatePicker
         date={createSlots.date}
         onDateChange={handleDateChange}
         minimumDate={new Date()}
         mode="date"
         style={styles.datePickerSlot}
       /> */}
-              <TouchableOpacity
-                style={styles.buttonSlot}
-                onPress={() => setOpenAvailableDatePicker(true)}>
-                <Text style={styles.buttonTextSlot}>
-                  {' '}
-                  {availablecourt.date
-                    ? new Date(availablecourt.date).toLocaleDateString('en-GB')
-                    : 'Select Date'}
-                </Text>
-              </TouchableOpacity>
-              <DatePicker
-                modal
-                mode="date"
-                open={openAvailableDatePicker}
-                date={new Date(availablecourt.date)}
-                minimumDate={new Date()}
-                onConfirm={date => {
-                  setOpenAvailableDatePicker(false);
-                  handleavialbleDateChange(date);
-                }}
-                onCancel={() => {
-                  setOpenAvailableDatePicker(false);
-                }}
-              />
-            </View>
-            <View>
-              {courtTime?.length ? (
-                <View style={styles.buttonContainerAvailable}>
-                  {courtTime.map((item, index) => {
-                    let gttime = getTimeFormatted(item?.start);
-                    return (
-                      <TouchableOpacity
-                        key={index}
-                        style={[
-                          styles.buttonAvailable,
-                          {
-                            borderColor: item?.bordercolor,
-                            backgroundColor: item?.backgroundColor,
-                          },
-                        ]}
-                        disabled={item.isbooked}
-                        onPress={() => handlebooking(item, index)}>
-                        <Text style={{ color: item?.textColor }}>
-                          {gttime.Time}
+                    <TouchableOpacity
+                      style={styles.buttonSlot}
+                      onPress={() => setOpenAvailableDatePicker(true)}>
+                      <Text style={styles.buttonTextSlot}>
+                        {' '}
+                        {availablecourt.date
+                          ? new Date(availablecourt.date).toLocaleDateString('en-GB')
+                          : 'Select Date'}
+                      </Text>
+                    </TouchableOpacity>
+                    <DatePicker
+                      modal
+                      mode="date"
+                      open={openAvailableDatePicker}
+                      date={new Date(availablecourt.date)}
+                      minimumDate={new Date()}
+                      onConfirm={date => {
+                        setOpenAvailableDatePicker(false);
+                        handleavialbleDateChange(date);
+                      }}
+                      onCancel={() => {
+                        setOpenAvailableDatePicker(false);
+                      }}
+                    />
+                  </View>
+                  <View>
+                    {courtTime?.length ? (
+                      <View style={styles.buttonContainerAvailable}>
+                        {courtTime.map((item, index) => {
+                          let gttime = getTimeFormatted(item?.start);
+                          return (
+                            <TouchableOpacity
+                              key={index}
+                              style={[
+                                styles.buttonAvailable,
+                                {
+                                  borderColor: item?.bordercolor,
+                                  backgroundColor: item?.backgroundColor,
+                                },
+                              ]}
+                              disabled={item.isbooked}
+                              onPress={() => handlebooking(item, index)}>
+                              <Text style={{ color: item?.textColor }}>
+                                {gttime.Time}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    ) : (
+                      <View style={styles.noSelectionContainerAvailable}>
+                        <Text>Select the appropriate values</Text>
+                      </View>
+                    )}
+
+                    <View style={styles.legendContainerAvailable}>
+                      <View style={styles.legendItemAvailable}>
+                        <Image
+                          source={IMAGES.BookedRec}
+                          style={styles.iconAvailable}
+                        />
+                        <Text style={styles.legendTextAvailable}>Booked</Text>
+                      </View>
+                      <View style={styles.legendItemAvailable}>
+                        <Image
+                          source={IMAGES.AvailableRec}
+                          style={styles.iconAvailable}
+                        />
+                        <Text style={styles.legendTextAvailable}>Available</Text>
+                      </View>
+                      <View style={styles.legendItemAvailable}>
+                        <Image
+                          source={IMAGES.SelectedRec}
+                          style={styles.iconAvailable}
+                        />
+                        <Text style={styles.legendTextAvailable}>Selected</Text>
+                      </View>
+                      <View style={styles.legendItemAvailable}>
+                        <Image source={IMAGES.AvailableRec} style={styles.iconAvailable} />
+                        <Text
+                          style={styles.legendTextAvailable}>
+                          Current slot
                         </Text>
+                      </View>
+                      <View style={styles.legendItemAvailable}>
+                        <Image
+                          source={IMAGES.BlockedRec}
+                          style={styles.iconAvailable}
+                        />
+                        <Text
+                          style={[
+                            styles.legendTextAvailable,
+                            styles.noWrapTextAvailable,
+                          ]}>
+                          Blocked slot
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.footerButtonsCartData}>
+                      <TouchableOpacity
+                        style={styles.resetButtonCartData}
+                        onPress={handleunblockmodal}>
+                        <Text style={styles.buttonTextCartData}>UnBlock Court</Text>
                       </TouchableOpacity>
-                    );
-                  })}
+                      <TouchableOpacity
+                        style={styles.paymentButtonCartData}
+                        onPress={handleblockmodal}>
+                        <Text style={styles.buttonTextCartData}>Block Court</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
                 </View>
-              ) : (
-                <View style={styles.noSelectionContainerAvailable}>
-                  <Text>Select the appropriate values</Text>
-                </View>
-              )}
-
-              <View style={styles.legendContainerAvailable}>
-                <View style={styles.legendItemAvailable}>
-                  <Image
-                    source={IMAGES.BookedRec}
-                    style={styles.iconAvailable}
-                  />
-                  <Text style={styles.legendTextAvailable}>Booked</Text>
-                </View>
-                <View style={styles.legendItemAvailable}>
-                  <Image
-                    source={IMAGES.AvailableRec}
-                    style={styles.iconAvailable}
-                  />
-                  <Text style={styles.legendTextAvailable}>Available</Text>
-                </View>
-                <View style={styles.legendItemAvailable}>
-                  <Image
-                    source={IMAGES.SelectedRec}
-                    style={styles.iconAvailable}
-                  />
-                  <Text style={styles.legendTextAvailable}>Selected</Text>
-                </View>
-                <View style={styles.legendItemAvailable}>
-                  <Image source={IMAGES.AvailableRec} style={styles.icon} />
-                  <Text
-                    style={[
-                      styles.legendTextAvailable,
-                      styles.noWrapTextAvailable,
-                    ]}>
-                    Current slot
-                  </Text>
-                </View>
-                <View style={styles.legendItemAvailable}>
-                  <Image
-                    source={IMAGES.BlockedRec}
-                    style={styles.iconAvailable}
-                  />
-                  <Text
-                    style={[
-                      styles.legendTextAvailable,
-                      styles.noWrapTextAvailable,
-                    ]}>
-                    Blocked slot
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.footerButtonsCartData}>
-                <TouchableOpacity
-                  style={styles.resetButtonCartData}
-                  onPress={handleunblockmodal}>
-                  <Text style={styles.buttonTextCartData}>UnBlock Court</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.paymentButtonCartData}
-                  onPress={handleblockmodal}>
-                  <Text style={styles.buttonTextCartData}>Block Court</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-            </Collapsible>
+              </Collapsible>
             </View>
             {/* Modal For Create Court */}
             <Modal
@@ -1998,14 +1971,30 @@ const CourtScreen = () => {
               animationType="slide">
               <View style={styles.modalCreateCourtOverlay}>
                 <View style={styles.modalCreateCourtContainer}>
-                  <View style={styles.headerCreateCourt}>
-                    <Text style={styles.modalCreateCourtText}>
-                      Are you sure you want to Create a Court?
-                    </Text>
-                    <TouchableOpacity onPress={() => setModalOpen(false)}>
-                      <Text style={styles.closeCreateCourtButton}>X</Text>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 5,
+                      right: 5,
+                    }}>
+                    <TouchableOpacity
+                      onPress={() => setModalOpen(false)}>
+                      <Ionicons
+                        name="close-circle-outline"
+                        size={24}
+                        color={COLORS.PrimaryColor}
+                      />
                     </TouchableOpacity>
                   </View>
+
+
+                  <Text style={styles.modalCreateCourtText}>
+                    {addEdit == 'Add'
+                      ? 'Are you sure you want to Create a Slot?'
+                      : 'Are you sure you want to Update a Slot?'}
+                  </Text>
+
+
                   <View style={styles.buttonCreateCourtContainer}>
                     <TouchableOpacity
                       style={[
@@ -2028,6 +2017,7 @@ const CourtScreen = () => {
                 </View>
               </View>
             </Modal>
+
             <Modal
               visible={changestatusmodal}
               transparent={true}
@@ -2035,15 +2025,26 @@ const CourtScreen = () => {
               animationType="slide">
               <View style={styles.modalCreateCourtOverlay}>
                 <View style={styles.modalCreateCourtContainer}>
-                  <View style={styles.headerCreateCourt}>
-                    <Text style={styles.modalCreateCourtText}>
-                      Are you sure you want to Change Court Status?
-                    </Text>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 5,
+                      right: 5,
+                    }}>
                     <TouchableOpacity
                       onPress={() => setChangestatusmodal(false)}>
-                      <Text style={styles.closeCreateCourtButton}>X</Text>
+                      <Ionicons
+                        name="close-circle-outline"
+                        size={24}
+                        color={COLORS.PrimaryColor}
+                      />
                     </TouchableOpacity>
                   </View>
+                  <Text style={styles.modalCreateCourtText}>
+                    Are you sure you want to Change Court Status?
+                  </Text>
+
+
                   <View style={styles.buttonCreateCourtContainer}>
                     <TouchableOpacity
                       style={[
@@ -2066,6 +2067,7 @@ const CourtScreen = () => {
                 </View>
               </View>
             </Modal>
+
             <Modal
               visible={SlotmodalOpen}
               transparent={true}
@@ -2073,16 +2075,27 @@ const CourtScreen = () => {
               animationType="slide">
               <View style={styles.modalCreateCourtOverlay}>
                 <View style={styles.modalCreateCourtContainer}>
-                  <View style={styles.headerCreateCourt}>
-                    <Text style={styles.modalCreateCourtText}>
-                      {addEdit == 'Add'
-                        ? 'Are you sure you want to Create a Slot?'
-                        : 'Are you sure you want to Update a Slot?'}
-                    </Text>
-                    <TouchableOpacity onPress={() => setSlotModalOpen(false)}>
-                      <Text style={styles.closeCreateCourtButton}>X</Text>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 5,
+                      right: 5,
+                    }}>
+                    <TouchableOpacity
+                      onPress={() => setSlotModalOpen(false)}>
+                      <Ionicons
+                        name="close-circle-outline"
+                        size={24}
+                        color={COLORS.PrimaryColor}
+                      />
                     </TouchableOpacity>
                   </View>
+                  <Text style={styles.modalCreateCourtText}>
+                    {addEdit == 'Add'
+                      ? 'Are you sure you want to Create a Slot?'
+                      : 'Are you sure you want to Update a Slot?'}
+                  </Text>
+
                   <View style={styles.buttonCreateCourtContainer}>
                     <TouchableOpacity
                       style={[
@@ -2105,6 +2118,8 @@ const CourtScreen = () => {
                 </View>
               </View>
             </Modal>
+
+
             <Modal
               visible={CreateSlotWarning}
               transparent={true}
@@ -2112,16 +2127,28 @@ const CourtScreen = () => {
               animationType="slide">
               <View style={styles.modalCreateCourtOverlay}>
                 <View style={styles.modalCreateCourtContainer}>
-                  <View style={styles.headerCreateCourt}>
-                    <Text style={styles.modalCreateCourtText}>
-                      Cannot create slot as another slot already exists in the
-                      chosen time range.
-                    </Text>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                    }}>
                     <TouchableOpacity
-                      onPress={() => setCreateSlotWarning(false)}>
-                      <Text style={styles.closeCreateCourtButton}>X</Text>
+                      onPress={() => {
+                        setCreateSlotWarning(false)
+                      }}>
+                      <Ionicons
+                        name="close-circle-outline"
+                        size={24}
+                        color={COLORS.PrimaryColor}
+                      />
                     </TouchableOpacity>
                   </View>
+                  <Text style={styles.modalCreateCourtText}>
+                    Cannot create slot as another slot already exists in the
+                    chosen time range.
+                  </Text>
+
                   {/* <View style={styles.buttonCreateCourtContainer}>
             <TouchableOpacity
               style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
@@ -2139,6 +2166,8 @@ const CourtScreen = () => {
                 </View>
               </View>
             </Modal>
+
+
             <Modal
               visible={CreateEditSlotWarning}
               transparent={true}
@@ -2146,16 +2175,27 @@ const CourtScreen = () => {
               animationType="slide">
               <View style={styles.modalCreateCourtOverlay}>
                 <View style={styles.modalCreateCourtContainer}>
-                  <View style={styles.headerCreateCourt}>
-                    <Text style={styles.modalCreateCourtText}>
-                      Cannot create slot as an event already exists in the
-                      chosen time range.
-                    </Text>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                    }}>
                     <TouchableOpacity
-                      onPress={() => setCreateEditSlotWarning(false)}>
-                      <Text style={styles.closeCreateCourtButton}>X</Text>
+                      onPress={() => {
+                        setCreateEditSlotWarning(false)
+                      }}>
+                      <Ionicons
+                        name="close-circle-outline"
+                        size={24}
+                        color={COLORS.PrimaryColor}
+                      />
                     </TouchableOpacity>
                   </View>
+                  <Text style={styles.modalCreateCourtText}>
+                    Cannot create slot as an event already exists in the
+                    chosen time range.
+                  </Text>
                   {/* <View style={styles.buttonCreateCourtContainer}>
             <TouchableOpacity
               style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
@@ -2173,6 +2213,8 @@ const CourtScreen = () => {
                 </View>
               </View>
             </Modal>
+
+
             <Modal
               visible={blockmodalopen}
               transparent={true}
@@ -2180,14 +2222,28 @@ const CourtScreen = () => {
               animationType="slide">
               <View style={styles.modalCreateCourtOverlay}>
                 <View style={styles.modalCreateCourtContainer}>
-                  <View style={styles.headerCreateCourt}>
-                    <Text style={styles.modalCreateCourtText}>
-                      Are you sure you want to block the selected slots?
-                    </Text>
-                    <TouchableOpacity onPress={() => setblockModalOpen(false)}>
-                      <Text style={styles.closeCreateCourtButton}>X</Text>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 5,
+                      right: 5,
+                    }}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setblockModalOpen(false)
+                      }}>
+                      <Ionicons
+                        name="close-circle-outline"
+                        size={24}
+                        color={COLORS.PrimaryColor}
+                      />
                     </TouchableOpacity>
                   </View>
+                  <Text style={styles.modalCreateCourtText}>
+                    Are you sure you want to block the selected slots?
+                  </Text>
+
+
                   <View style={styles.buttonCreateCourtContainer}>
                     <TouchableOpacity
                       style={[
@@ -2210,6 +2266,7 @@ const CourtScreen = () => {
                 </View>
               </View>
             </Modal>
+
             <Modal
               visible={blockerrormodalopen}
               transparent={true}
@@ -2217,16 +2274,28 @@ const CourtScreen = () => {
               animationType="slide">
               <View style={styles.modalCreateCourtOverlay}>
                 <View style={styles.modalCreateCourtContainer}>
-                  <View style={styles.headerCreateCourt}>
-                    <Text style={styles.modalCreateCourtText}>
-                      Cannot block slot as an blocked slot exists in the chosen
-                      time range.
-                    </Text>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                    }}>
                     <TouchableOpacity
-                      onPress={() => setblockerrorModalOpen(false)}>
-                      <Text style={styles.closeCreateCourtButton}>X</Text>
+                      onPress={() => {
+                        setblockerrorModalOpen(false)
+                      }}>
+                      <Ionicons
+                        name="close-circle-outline"
+                        size={24}
+                        color={COLORS.PrimaryColor}
+                      />
                     </TouchableOpacity>
                   </View>
+                  <Text style={styles.modalCreateCourtText}>
+                    Cannot block slot as an blocked slot exists in the chosen
+                    time range.
+                  </Text>
+
                   {/* <View style={styles.buttonCreateCourtContainer}>
             <TouchableOpacity
               style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
@@ -2244,6 +2313,7 @@ const CourtScreen = () => {
                 </View>
               </View>
             </Modal>
+
             <Modal
               visible={unblockmodalopen}
               transparent={true}
@@ -2251,15 +2321,26 @@ const CourtScreen = () => {
               animationType="slide">
               <View style={styles.modalCreateCourtOverlay}>
                 <View style={styles.modalCreateCourtContainer}>
-                  <View style={styles.headerCreateCourt}>
-                    <Text style={styles.modalCreateCourtText}>
-                      Are you sure you want to unblock the selected slots?
-                    </Text>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                    }}>
                     <TouchableOpacity
-                      onPress={() => setunblockModalOpen(false)}>
-                      <Text style={styles.closeCreateCourtButton}>X</Text>
+                      onPress={() => {
+                        setunblockModalOpen(false)
+                      }}>
+                      <Ionicons
+                        name="close-circle-outline"
+                        size={24}
+                        color={COLORS.PrimaryColor}
+                      />
                     </TouchableOpacity>
                   </View>
+                  <Text style={styles.modalCreateCourtText}>
+                    Are you sure you want to unblock the selected slots?
+                  </Text>
                   <View style={styles.buttonCreateCourtContainer}>
                     <TouchableOpacity
                       style={[
@@ -2282,6 +2363,7 @@ const CourtScreen = () => {
                 </View>
               </View>
             </Modal>
+
             <Modal
               visible={unblockerrormodalopen}
               transparent={true}
@@ -2289,16 +2371,28 @@ const CourtScreen = () => {
               animationType="slide">
               <View style={styles.modalCreateCourtOverlay}>
                 <View style={styles.modalCreateCourtContainer}>
-                  <View style={styles.headerCreateCourt}>
-                    <Text style={styles.modalCreateCourtText}>
-                      Cannot unblock slot as an unblocked slot exists in the
-                      chosen time range.
-                    </Text>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 5,
+                      right: 5,
+                    }}>
                     <TouchableOpacity
-                      onPress={() => setunblockerrorModalOpen(false)}>
-                      <Text style={styles.closeCreateCourtButton}>X</Text>
+                      onPress={() => {
+                        setunblockerrorModalOpen(false)
+                      }}>
+                      <Ionicons
+                        name="close-circle-outline"
+                        size={24}
+                        color={COLORS.PrimaryColor}
+                      />
                     </TouchableOpacity>
                   </View>
+                  <Text style={styles.modalCreateCourtText}>
+                    Cannot unblock slot as an unblocked slot exists in the
+                    chosen time range.
+                  </Text>
+
                   {/* <View style={styles.buttonCreateCourtContainer}>
             <TouchableOpacity
               style={[styles.buttonCreateCourt, styles.cancelCreateCourtButton]}
@@ -2316,6 +2410,7 @@ const CourtScreen = () => {
                 </View>
               </View>
             </Modal>
+
           </View>
         </ScrollView>
       )}
@@ -2345,7 +2440,7 @@ const styles = StyleSheet.create({
     margin: 5,
     padding: 10,
     borderRadius: 5,
-    backgroundColor: COLORS.fieldColor,
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2419,6 +2514,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingTop: 10,
     paddingBottom: 10,
+    marginVertical: 10,
   },
   addButtonTextRule: {
     color: '#fff',
@@ -2445,9 +2541,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
   },
+  loaderContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
   modalCreateCourtText: {
+
     fontSize: 14,
     textAlign: 'center',
+    paddingTop: 10,
   },
   closeCreateCourtButton: {
     color: 'red',
@@ -2456,26 +2560,36 @@ const styles = StyleSheet.create({
   buttonCreateCourtContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    paddingVertical: 10,
   },
   buttonCreateCourt: {
     paddingVertical: 10,
-    paddingHorizontal: 20,
     borderRadius: 8,
     marginHorizontal: 5,
   },
   cancelCreateCourtButton: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: 'red',
+    width: 80,
+  },
+  horizontalBar: {
+    height: 1,
+    backgroundColor: '#F3F4F6',
+    width: '100%',
+    marginVertical: 10,
   },
   confirmCreateCourtButton: {
-    backgroundColor: '#192335',
+    width: 80,
+    backgroundColor: 'green',
     borderRadius: 12,
   },
   cancelCreateCourtButtonText: {
-    color: '#000',
+    textAlign: 'center',
+    color: '#fff',
   },
   confirmCreateCourtButtonText: {
     color: '#FFF',
     padding: 10,
+    textAlign: 'center',
   },
 
   /* Court Card Details Of Switch */
@@ -2483,6 +2597,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     marginVertical: 8,
+    marginBottom: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -2498,6 +2613,9 @@ const styles = StyleSheet.create({
   courtNameCourtCard: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  gameTypeContainer: {
+    marginRight: 40,
   },
   gameTypeCourtCard: {
     fontSize: 14,
@@ -2518,10 +2636,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: '#333',
   },
+
   dropdownSlot: {
     backgroundColor: '#fafafa',
-    //borderColor: '#ccc',
+    borderColor: COLORS.fieldBorderColor,
     marginBottom: 16,
+    height: 60,
   },
   datePickerSlot: {
     marginBottom: 16,
@@ -2530,10 +2650,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fafafa',
-    backgroundColor: '#fff',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 12,
     marginBottom: 16,
+    height: 60,
+    borderColor: COLORS.fieldBorderColor,
+    borderWidth: 1,
   },
   buttonTextSlot: {
     color: '#000000',
@@ -2553,12 +2675,13 @@ const styles = StyleSheet.create({
   inputDateViewSlot: {
     height: 60,
     borderRadius: 12,
-    //backgroundColor: '#FAFAFA',
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA',
     paddingHorizontal: 10,
     fontFamily: 'Outfit-Regular',
     fontSize: 20,
     justifyContent: 'center',
+    borderColor: COLORS.fieldBorderColor,
+    borderWidth: 1,
   },
   inputTextSlot: {
     fontSize: 16,
@@ -2594,8 +2717,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    paddingHorizontal: 10,
   },
   legendItemAvailable: {
+    width: '50%',
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 4,
@@ -2617,21 +2742,19 @@ const styles = StyleSheet.create({
   footerButtonsCartData: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginVertical: 20,
   },
   resetButtonCartData: {
     backgroundColor: '#097E52',
     borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 15,
     width: '48%',
     alignItems: 'center',
   },
   paymentButtonCartData: {
     backgroundColor: '#192335',
     borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 15,
     width: '48%',
     alignItems: 'center',
   },

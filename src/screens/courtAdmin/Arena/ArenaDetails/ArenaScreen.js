@@ -1258,7 +1258,7 @@ const ArenaScreen = () => {
                 },
               ]}>
               <View>
-                <Text style={styles.label}>Locations</Text>
+                {/* <Text style={styles.label}>Locations</Text> */}
                 <View style={styles.stack}>
                   <CommonTextInput
                     label="State"
@@ -1472,9 +1472,10 @@ const styles = StyleSheet.create({
 
   dropdown: {
     backgroundColor: '#FAFAFA',
-    // borderColor: '#FAFAFA',
+    borderColor: 'transperent',
     borderRadius: 8,
     height: 60,
+
   },
   dropdownText: {
     fontFamily: 'Outfit-Regular',
