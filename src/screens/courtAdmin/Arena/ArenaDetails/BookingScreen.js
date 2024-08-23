@@ -25,6 +25,8 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import { useRoute } from '@react-navigation/native';
 import { getEventdetailsByArenas, getgroundDataForOwner } from '../../../../firebase/firebaseFunction/groundDetails';
 import _ from 'lodash';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 
 
 const BookingScreen = () => {
@@ -418,15 +420,7 @@ const BookingScreen = () => {
               }}>
               {`${_.startCase(ground_name)}`}
             </Text>
-            <View style={styles.line}></View>
-            <Text
-              style={{
-                color: '#097E52',
-                fontFamily: 'Outfit-Medium',
-                fontSize: 16,
-              }}>
-              {`${_.startCase(court_name)}`}
-            </Text>
+           
           </View>
           <Text
             style={{
@@ -438,6 +432,15 @@ const BookingScreen = () => {
             {'₹' + total}
           </Text>
         </View>
+        <Text
+              style={{
+                color: '#097E52',
+                fontFamily: 'Outfit-Medium',
+                fontSize: 16,
+                paddingBottom: 10,
+              }}>
+              {`${_.startCase(court_name)}`}
+            </Text>
         {Object.keys(groupedTimings).map((date, index) => (
           <View key={index}>
             <Text
@@ -579,7 +582,13 @@ const BookingScreen = () => {
                 setstatusopen(false);
                 setCanBePaid(false);
               }}>
-              <Text style={styles.closeButtonCancelView}>x</Text>
+                 <Ionicons
+                    name="close-circle-outline"
+                    size={24}
+                    color={COLORS.PrimaryColor}
+                    style={styles.closeButtonCancelView}
+                  />
+              {/* <Text style={styles.closeButtonCancelView}>x</Text> */}
             </TouchableOpacity>
             <Text style={styles.titleCancelView}>
               Select slots to Approve or reject
@@ -749,9 +758,8 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   closeButtonCancelView: {
-    color: 'red',
-    fontSize: 18,
     textAlign: 'right',
+    left:8,
   },
 
   footerButtons: {
@@ -788,3 +796,4 @@ const styles = StyleSheet.create({
 });
 
 export default BookingScreen;
+

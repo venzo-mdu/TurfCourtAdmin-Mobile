@@ -18,7 +18,7 @@ const CommonTextInput = ({label, value, onChangeText, keyboardType}) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginBottom: 5,
     width: '100%',
   },
   label: {
@@ -26,12 +26,12 @@ const styles = StyleSheet.create({
     color: '#1B1B1B',
     fontFamily: 'Outfit-Regular',
     lineHeight: 20.16,
-    marginBottom: 8,
+    margin: 8,
   },
   input: {
     height: 60,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA',
     paddingHorizontal: 10,
     fontFamily: 'Outfit-Regular',
     fontSize: 16,
