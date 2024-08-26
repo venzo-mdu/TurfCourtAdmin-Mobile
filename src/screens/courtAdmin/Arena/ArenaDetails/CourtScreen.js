@@ -1974,7 +1974,7 @@ const CourtScreen = () => {
                         <Text style={styles.legendTextAvailable}>Selected</Text>
                       </View>
                       <View style={styles.legendItemAvailable}>
-                        <Image source={IMAGES.AvailableRec} style={styles.iconAvailable} />
+                        <Image source={IMAGES.CurrentSlotIcons} style={styles.iconAvailable} />
                         <Text
                           style={styles.legendTextAvailable}>
                           Current slot
