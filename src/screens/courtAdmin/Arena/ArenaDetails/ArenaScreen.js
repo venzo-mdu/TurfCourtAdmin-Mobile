@@ -313,7 +313,7 @@ const ArenaScreen = () => {
 
   /* Gallery Image Upload Function Start */
   const handleGalleryClick = async () => {
-    setLoading(true);
+    //setLoading(true);
     const options = {
       mediaType: 'photo',
       includeBase64: false,
@@ -366,7 +366,7 @@ const ArenaScreen = () => {
 
   /* Handle Cover IMAGE Sections Views */
   const handleClick = async () => {
-    setLoading(true);
+   // setLoading(true);
     const options = {
       mediaType: 'photo',
       includeBase64: false,
