@@ -58,6 +58,7 @@ export const IMAGES = {
     BlockedRec: require(ImagePath + "blocked_rec_red.png"),
     DeleteIcons: require(ImagePath + "delete_icons.png"),
     EditIcons: require(ImagePath + "edit_icons.png"),
+    CurrentSlotIcons: require(ImagePath + "CurrenSlot_Icon.png"),
 
 
 

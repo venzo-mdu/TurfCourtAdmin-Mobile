@@ -207,7 +207,7 @@ const ArenaScreen = () => {
 
   //       // settempstate(groundres);
   //       // setTextAreas(groundres?.rules);
-  //       // setLoading(false);
+  //       // setLoader(false);
 
   //       // setGroundData(createtempgroundData);
 
@@ -226,7 +226,7 @@ const ArenaScreen = () => {
 
       settempstate(groundres);
       setTextAreas(groundres?.rules);
-      setLoading(false);
+      setLoader(false);
     } else {
       let user = await userData(uid);
 
@@ -313,7 +313,7 @@ const ArenaScreen = () => {
 
   /* Gallery Image Upload Function Start */
   const handleGalleryClick = async () => {
-    //setLoading(true);
+    //setLoader(true);
     const options = {
       mediaType: 'photo',
       includeBase64: false,
@@ -353,7 +353,7 @@ const ArenaScreen = () => {
         }));
       }
     });
-    setLoading(false);
+    setLoader(false);
   };
 
   const handleImageGalleryDelete = index => {
@@ -366,7 +366,7 @@ const ArenaScreen = () => {
 
   /* Handle Cover IMAGE Sections Views */
   const handleClick = async () => {
-   // setLoading(true);
+   // setLoader(true);
     const options = {
       mediaType: 'photo',
       includeBase64: false,
@@ -406,7 +406,7 @@ const ArenaScreen = () => {
         }));
       }
     });
-    setLoading(false);
+    setLoader(false);
   };
 
   const handleImageDelete = index => {
@@ -454,7 +454,7 @@ const ArenaScreen = () => {
       end_time: false,
       // active: false,
     };
-    setLoading(true);
+  
     if (groundData?.groundname != '') {
       tempval.groundname = true;
     }
@@ -506,11 +506,12 @@ const ArenaScreen = () => {
     // if (groundData?.active != "") {
     //   tempval.active = true;
     // }
-
+  //  setLoader(true);
     setvalData(Object.values(tempval).every(Boolean));
     if (Object.values(tempval).every(Boolean)) {
       // console.log("detailOwner", details.owner)
       if (details.owner) {
+        setLoader(true);
         groundData.owner = uid;
         groundData.latitude = '9.92872166589861';
         groundData.longitude = '78.16099437904265';
@@ -520,7 +521,7 @@ const ArenaScreen = () => {
         create = await createGroundData(groundData);
         createcity = await createCity({cityName: groundData?.city});
 
-        setLoading(false);
+        setLoader(false);
         console.log(create, 'create', 'check ', createcity);
         setGroundData(create);
         // navigate("/courtadmin/dashboard");
