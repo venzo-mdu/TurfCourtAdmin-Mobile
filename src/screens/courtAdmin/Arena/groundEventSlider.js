@@ -74,7 +74,7 @@ const GroungEventSlider = ({filteredGrounds, userId, onGroundsUpdated}) => {
 
   const navigation = useNavigation();
 
-  const camelCaseLetter = string => {
+  const camelCaseLetter = (string = '') => {
     return string.replace(/\b\w/g, char => char.toUpperCase());
   };
 
@@ -89,11 +89,13 @@ const GroungEventSlider = ({filteredGrounds, userId, onGroundsUpdated}) => {
   const renderItem = ({item, index}) => (
     <TouchableOpacity>
       <View key={index} style={styles.card}>
+      {item?.coverImage && item.coverImage.length > 0 && (
         <Image
-          source={{uri: item.coverImage[0]}}
+          source={{ uri: item?.coverImage[0] }}
           style={styles.image}
           resizeMode="cover"
         />
+      )}
         <View style={styles.overlay}>
           <View style={styles.ratingContainer}>
             <Icon name="star" size={20} color="#108257" />

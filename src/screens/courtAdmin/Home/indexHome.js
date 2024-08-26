@@ -69,11 +69,13 @@ const IndexHome = () => {
 
   const getgroundDetails = async () => {
     try {
-      if (!loading && _.isEmpty(groundData) && !noData && userId != null) {
+      if (!loading && _.isEmpty(groundData) && !noData && userId) {
         setLoading(true);
 
         let response = await getgroundDataForOwner(userId);
         console.log('Response: ', response);
+        console.log('userId: ', userId);
+
         setNoData(response?.length === 0);
         setLoading(false);
         const groundIds = response?.map(r => r.ground_id);
@@ -481,7 +483,7 @@ const IndexHome = () => {
                   userId={userId}
                 />
               </>
-            ) : null}
+            ) : <Text style={{alignItems:'center',justifyContent:'center',textAlign:'center'}}>No Ground Data</Text>}
             <TouchableOpacity
               onPress={handleCreateground}
               style={styles.addArenaButton}>

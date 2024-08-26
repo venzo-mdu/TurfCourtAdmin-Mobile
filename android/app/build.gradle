@@ -79,13 +79,13 @@ android {
         enableHermes: false  // Disable Hermes
     ]
 
-    namespace "com.venzo.turfmamaadmin"
+    namespace "com.venzo.turfmamaadminrn"
     defaultConfig {
-        applicationId "com.venzo.turfmamaadmin"
+        applicationId "com.venzo.turfmamaadminrn"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.1"
     }
     signingConfigs {
         release {

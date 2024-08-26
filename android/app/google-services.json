@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:88276218064:android:761ea0412b78be56e42ed5",
+        "mobilesdk_app_id": "1:88276218064:android:b8afeb8d1ec39985e42ed5",
         "android_client_info": {
-          "package_name": "com.venzo.turfmamaadmin"
+          "package_name": "com.venzo.turfmamaadminrn"
         }
       },
       "oauth_client": [],

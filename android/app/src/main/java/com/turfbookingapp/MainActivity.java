@@ -1,4 +1,4 @@
-package com.venzo.turfmamaadmin;
+package com.venzo.turfmamaadminrn;
 
 // import com.rajivshah.safetynet.RNGoogleSafetyNetPackage;
 import android.os.Bundle;

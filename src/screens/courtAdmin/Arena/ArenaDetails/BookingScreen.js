@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Modal,
   ActivityIndicator,
+  ToastAndroid,
   SafeAreaView,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
@@ -136,96 +137,116 @@ const BookingScreen = () => {
     eventData();
   }, [trigger]);
 
-  const eventData = async () => {
+  useEffect(() => {
+    eventData();
+  }, [uid]);
+
+  const eventData =  async () => {
     setLoading(false);
-    let response1 = await getgroundDataForOwner(uid);
-    let groundIds = response1?.map(r => r.ground_id);
-
-    if (uid == null) {
-      navigate("/login");
-    }
-    let startDate = moment().format("YYYY-MM-DDTHH:mm");
-    let endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
-    let statusValue = ["Accepted", "Awaiting"];
-
-    if (tab === "Cancelled") {
-      statusValue = ["Cancelled", "Canceled"];
-      startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
-    } else if (tab === "Completed") {
-      statusValue = [tab];
-      startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
-      endOfMonth = moment().format("YYYY-MM-DDTHH:mm");
-    } else if (tab !== "Bookings" && tab !== "Cancelled") {
-      statusValue = [tab];
-    }
-    if (value === "Last Month") {
-      startDate = moment()
-        .subtract(1, "months")
-        .startOf("month")
-        .format("YYYY-MM-DDTHH:mm");
-      endOfMonth = moment()
-        .subtract(1, "months")
-        .endOf("month")
-        .format("YYYY-MM-DDTHH:mm");
-    } else if (value === "Next Month") {
-      startDate = moment()
-        .add(1, "months")
-        .startOf("month")
-        .format("YYYY-MM-DDTHH:mm");
-      endOfMonth = moment()
-        .add(1, "months")
-        .endOf("month")
-        .format("YYYY-MM-DDTHH:mm");
-    }
-
-    const otherFilters = [
-      { key: "status", operator: "in", value: statusValue },
-      { key: "start", operator: ">=", value: startDate },
-      { key: "end", operator: "<=", value: endOfMonth },
-    ];
-    // console.log('otherFilters',otherFilters)
-    if (
-      otherFilters &&
-      otherFilters.length > 0
-    ) {
-      let events;
-      if (groundID) {
-        groundIds = [groundID];
+    console.log('uid',uid);
+    if(uid){
+      let response1 = await getgroundDataForOwner(uid);
+      console.log('response1',response1);
+      let groundIds = response1?.map(r => r.ground_id);
+  
+      console.log('groundIds',groundIds,groundIds.length);
+      
+  
+      if (uid == null) {
+        navigate("/login");
       }
-
-      if (groundIds.length > 0) {
-        if (groundIds.length > 15) {
-          const response1 = await getEventdetailsByArenas({
-            groundIds: groundIds.slice(0, 15),
-            otherFilters,
-            order: { key: 'start', dir: 'asc' },
-          });
-
-          const response2 = await getEventdetailsByArenas({
-            groundIds: groundIds.slice(15),
-            otherFilters,
-            order: { key: 'start', dir: 'asc' },
-          });
-
-          const data = _.uniqBy([...response1.data, ...response2.data], 'event_id');
-          events = data;
-        } else {
-          // console.log('otherFilters in else',otherFilters)
-          const response = await getEventdetailsByArenas({
-            groundIds: groundIds,
-            otherFilters,
-            order: { key: 'start', dir: 'asc' },
-          });
-          events = response.data;
-          // console.log('events',events);
+      let startDate = moment().format("YYYY-MM-DDTHH:mm");
+      let endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
+      let statusValue = ["Accepted", "Awaiting"];
+  
+      if (tab === "Cancelled") {
+        statusValue = ["Cancelled", "Canceled"];
+        startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
+      } else if (tab === "Completed") {
+        statusValue = [tab];
+        startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
+        endOfMonth = moment().format("YYYY-MM-DDTHH:mm");
+      } else if (tab !== "Bookings" && tab !== "Cancelled") {
+        statusValue = [tab];
+      }
+      if (value === "Last Month") {
+        startDate = moment()
+          .subtract(1, "months")
+          .startOf("month")
+          .format("YYYY-MM-DDTHH:mm");
+        endOfMonth = moment()
+          .subtract(1, "months")
+          .endOf("month")
+          .format("YYYY-MM-DDTHH:mm");
+      } else if (value === "Next Month") {
+        startDate = moment()
+          .add(1, "months")
+          .startOf("month")
+          .format("YYYY-MM-DDTHH:mm");
+        endOfMonth = moment()
+          .add(1, "months")
+          .endOf("month")
+          .format("YYYY-MM-DDTHH:mm");
+      }
+  
+      const otherFilters = [
+        { key: "status", operator: "in", value: statusValue },
+        { key: "start", operator: ">=", value: startDate },
+        { key: "end", operator: "<=", value: endOfMonth },
+      ];
+      // console.log('otherFilters',otherFilters)
+      if (
+        otherFilters &&
+        otherFilters.length > 0
+      ) {
+        let events;
+        if (groundID) {
+          groundIds = [groundID];
         }
+  
+        if (groundIds.length != 0) {
+          if (groundIds.length > 15) {
+            const response1 = await getEventdetailsByArenas({
+              groundIds: groundIds.slice(0, 15),
+              otherFilters,
+              order: { key: 'start', dir: 'asc' },
+            });
+  
+            const response2 = await getEventdetailsByArenas({
+              groundIds: groundIds.slice(15),
+              otherFilters,
+              order: { key: 'start', dir: 'asc' },
+            });
+  
+            const data = _.uniqBy([...response1.data, ...response2.data], 'event_id');
+            events = data;
+          } else {
+             console.log('otherFilters in else',groundIds)
+            const response = await getEventdetailsByArenas({
+              groundIds: groundIds,
+              otherFilters,
+              order: { key: 'start', dir: 'asc' },
+            });
+            events = response.data;
+            console.log('events',events);
+          }
+        }
+        else{
+          ToastAndroid.showWithGravity(
+            'No Ground Data',
+            ToastAndroid.LONG,
+            ToastAndroid.CENTER,
+          );
+         
+        }
+  
+        setdata(events);
+        const groupedData = Object.values(groupByBookId(events));
+        setFilterData(groupedData);
+        setLoading(true);
       }
-
-      setdata(events);
-      const groupedData = Object.values(groupByBookId(events));
-      setFilterData(groupedData);
-      setLoading(true);
     }
+   
   };
 
   function checkSamePropertyValue(array) {
@@ -543,6 +564,7 @@ const BookingScreen = () => {
         setValue={setValue}
         setItems={setDropdownItems}
         placeholder={'This Month'}
+
       />
       {!loading ? (
         <View style={styles.loaderContainer}>
