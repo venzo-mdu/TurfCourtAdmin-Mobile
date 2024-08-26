@@ -79,7 +79,7 @@ const CourtScreen = () => {
   const currentDate = new Date();
   const [availablecourt, setAvailablecourt] = useState({
     Courts: '',
-    date: new Date(),
+    date: null,
   });
   console.log('availablecourt', availablecourt);
   const [basicCourtDetailsOpen, setBasicCourtDetailsOpen] = useState(false);
@@ -124,7 +124,7 @@ const CourtScreen = () => {
   const [AccordionOpen, setAccordionOpen] = useState(false);
   const [createSlots, setCreateslots] = useState({
     price: '',
-    date: new Date(),
+    date: null,
     starttime: '',
     endtime: '',
     isActive: true,
@@ -229,6 +229,18 @@ const CourtScreen = () => {
     // console.log("gtrr334");
   }, [uid]);
 
+
+    //Update the CreatedAt Value in CreateSlots State values
+    useEffect(() => {
+      if (createSlots?.createdAt) {
+        const formattedCreatedAt = new Date(createSlots?.createdAt);
+        setCreateslots((prevSlots) => ({
+          ...prevSlots,
+          date: formattedCreatedAt,
+        }));
+      }
+    }, [createSlots?.createdAt]);
+
   /* Choose The Game Options */
   const handleGameclick = value => {
     let availablegame = createCourt?.gametype;
@@ -264,15 +276,22 @@ const CourtScreen = () => {
 
   const handleAddCourtSlot = async () => {
     if (
-      selectedValue.Courts == '' ||
-      createSlots.price == '' ||
-      createSlots.starttime == '' ||
-      createSlots.endtime == ''
+      !selectedValue?.Courts  ||
+      !createSlots?.price ||
+      !createSlots?.date  ||
+      !createSlots?.starttime  ||
+      !createSlots?.endtime
     ) {
       setAddCourtTimingError(true);
+      ToastAndroid.showWithGravity(
+        "Please fill in all the required fields.",
+        ToastAndroid.LONG,
+        ToastAndroid.CENTER
+      );
+      return;
     }
     else {
-      console.log('createSlots.date',createSlots.date);
+     // console.log('createSlots.date',createSlots.date);
       const startT = `${createSlots.date}T${createSlots.starttime}`;
       const endT = `${createSlots.date}T${createSlots.endtime}`;
       const newStartTime = new Date(startT);
@@ -283,12 +302,17 @@ const CourtScreen = () => {
         newStartTime < currentDateTime ||
         newEndTime < currentDateTime
       ) {
-        ToastAndroid.show('Past time is not allowed');
+        ToastAndroid.showWithGravity(
+          "Past time is not allowed",
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER
+        );
+        //ToastAndroid.show('Past time is not allowed');
         return;
       } else {
         //
         const courtDataBySlot = await getcourtevent(selectedValue?.Courts);
-        setLoadingView(false);
+       // setLoadingView(false);
 
         if (courtDataBySlot.length != 0) {
           const isExist = courtDataBySlot.filter(item => {
@@ -621,12 +645,13 @@ const CourtScreen = () => {
 
     setCreateslots({
       price: '',
-      date: new Date(),
+      date: null,
       starttime: '',
       endtime: '',
       isActive: true,
     });
     setValue(null);
+    setAddEdit("Add");
     setSelectedValue({ ...selectedValue, Courts: '', selectedEditslot: '' });
     grndData();
     console.log('End Game');
@@ -671,10 +696,19 @@ const CourtScreen = () => {
     } else {
       const formattedDate = formatDateValues(value);
       //console.log("formattedDate", formattedDate, availablecourt.Courts, value)
-      console.log(
-        'New Values',
-        !_.isEmpty(formattedDate) && !_.isEmpty(availablecourt.Courts),
-      );
+      if (_.isEmpty(availablecourt.Courts)) {
+        //alert("Please select a court before choosing a date.");
+        ToastAndroid.showWithGravity(
+          "Please select a available court before choosing a date.",
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER
+        );
+        return; // Stop further execution if no court is selected
+      }
+      // console.log(
+      //   'New Values',
+      //   !_.isEmpty(formattedDate) && !_.isEmpty(availablecourt.Courts),
+      // );
       if (!_.isEmpty(formattedDate) && !_.isEmpty(availablecourt.Courts)) {
         //console.log("HI123", availablecourt)
         setAccordionOpen(true);
@@ -1198,7 +1232,7 @@ const CourtScreen = () => {
   const handleReset = () => {
     setAvailablecourt({
       Courts: '',
-      date: currentDate,
+      date: null,
     });
     setValueAvailable(null);
     setAccordionOpen(false);
@@ -1552,7 +1586,7 @@ const CourtScreen = () => {
                     dropDownStyle={styles.dropdownSlot}
                     dropDownContainerStyle={{ borderColor: COLORS.fieldBorderColor, backgroundColor: '#fafafa', }}
                   />
-                  {AddCourtTimingError && selectedValue.Courts && (
+                  {AddCourtTimingError && !selectedValue.Courts && (
                     <Text style={styles.errorText}>
                       *Select appropriate values
                     </Text>
@@ -1566,9 +1600,9 @@ const CourtScreen = () => {
                     }
                   //widthStyle={true}
                   />
-                  {AddCourtTimingError && createSlots.price == '' && (
+                  {AddCourtTimingError && !createSlots.price && (
                     <Text style={styles.errorText}>
-                      *Enter appropriate values
+                      *Enter appropriate price values
                     </Text>
                   )}
                   <View>
@@ -1579,11 +1613,8 @@ const CourtScreen = () => {
                       <Text style={styles.buttonTextSlot}>
                         {' '}
                         {createSlots.date
-                          ? createSlots.date
-                            ? new Date(createSlots.date).toLocaleDateString('en-GB')
-                            : new Date(createSlots.createdAt).toLocaleDateString(
-                              'en-GB',
-                            )
+                          ? 
+                          new Date(createSlots.date).toLocaleDateString('en-GB') 
                           : 'Select Date'}
 
                       </Text>
@@ -1595,7 +1626,7 @@ const CourtScreen = () => {
                       date={
                         createSlots.date
                           ? new Date(createSlots.date)
-                          : new Date(createSlots.createdAt)
+                          : new Date()
                       }
                       minimumDate={new Date()}
                       onConfirm={date => {
@@ -1607,6 +1638,9 @@ const CourtScreen = () => {
                       }}
                     />
                   </View>
+                  {AddCourtTimingError && !createSlots.date && (
+                    <Text style={styles.errorText}>*Choose the date</Text>
+                  )} 
 
                   <View style={styles.inputContainer}>
                     <Text style={styles.labelSlot}>Start Time</Text>
@@ -1622,7 +1656,12 @@ const CourtScreen = () => {
                       open={openStartPicker}
                       date={new Date()}
                       mode="time"
-                      minimumDate={new Date()}
+                   //  minimumDate={new Date()}
+                       minimumDate={
+                        new Date(createSlots.date).toDateString() === new Date().toDateString()
+                          ? new Date() 
+                          : undefined 
+                      }
                       onConfirm={date => {
                         const now = new Date();
                         setOpenStartPicker(false);
@@ -1635,7 +1674,7 @@ const CourtScreen = () => {
                         setOpenStartPicker(false);
                       }}
                     />
-                    {AddCourtTimingError && createSlots.starttime == '' && (
+                    {AddCourtTimingError && !createSlots.starttime && (
                       <Text style={styles.errorText}>*Enter start time</Text>
                     )}
                   </View>
@@ -1656,7 +1695,12 @@ const CourtScreen = () => {
                       open={openEndPicker}
                       date={new Date()}
                       mode="time"
-                      minimumDate={new Date()}
+                      //minimumDate={new Date()}
+                      minimumDate={
+                        new Date(createSlots.date).toDateString() === new Date().toDateString()
+                          ? new Date() 
+                          : undefined 
+                      }
                       onConfirm={date => {
                         const nowEnd = new Date();
                         //               if (date < nowEnd) {
@@ -1675,7 +1719,7 @@ const CourtScreen = () => {
                         setOpenEndPicker(false);
                       }}
                     />
-                    {AddCourtTimingError && createSlots.endtime == '' && (
+                    {AddCourtTimingError && !createSlots.endtime && (
                       <Text style={styles.errorText}>*Enter end time</Text>
                     )}
                   </View>
@@ -1785,7 +1829,7 @@ const CourtScreen = () => {
                   </View>
                 </View>
               </Collapsible>
-            </View >
+            </View>
 
             <View style={{ paddingTop: 15 }}>
               <TouchableOpacity
@@ -1837,6 +1881,9 @@ const CourtScreen = () => {
                       }}
                       dropDownStyle={styles.dropdownSlot}
                     />
+                    {AddCourtTimingError && availablecourt.Courts === "" && (
+                      <Text style={styles.errorText}>*Select appropriate values</Text>
+                    )}
                     {/* {AddCourtTimingError && availablecourt.Courts === '' && (
                       <Text style={styles.errorText}>*Select appropriate values</Text>
                     )} */}
@@ -1862,7 +1909,8 @@ const CourtScreen = () => {
                       modal
                       mode="date"
                       open={openAvailableDatePicker}
-                      date={new Date(availablecourt.date)}
+                      //date={new Date(availablecourt.date)}
+                      date={availablecourt.date ? new Date(availablecourt.date) : new Date()}
                       minimumDate={new Date()}
                       onConfirm={date => {
                         setOpenAvailableDatePicker(false);
