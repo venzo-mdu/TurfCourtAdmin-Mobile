@@ -534,6 +534,7 @@ const CourtScreen = () => {
         label: court?.court_name,
         gameType: court?.gametype,
       }));
+      console.log('items',items);
       setCourtItems(items);
     }
   }, [groundData]);
@@ -1570,14 +1571,14 @@ const CourtScreen = () => {
                   <View style={styles.horizontalBar} />
                   <Text style={styles.labelSlot}>Courts</Text>
                   {console.log('value', value)}
-                  <DropDownPicker
+                 <DropDownPicker
                     open={open}
                     value={value}
                     items={courtItems}
                     setOpen={setOpen}
                     setValue={setValue}
                     setItems={setItems}
-                    placeholder={'Select Court'}
+                    placeholder={courtItems.length === 0 ? 'No court data' : 'Select Court'}
                     //maxHeight={500}
                     maxHeight={calculatedHeight}
                     zIndex={3000}
@@ -1605,7 +1606,7 @@ const CourtScreen = () => {
                       *Enter appropriate price values
                     </Text>
                   )}
-                  <View>
+                  <View style={{paddingTop:10}}>
                     <Text style={styles.labelSlot}>Date</Text>
                     <TouchableOpacity
                       style={styles.buttonSlot}
@@ -1869,7 +1870,7 @@ const CourtScreen = () => {
                       setOpen={setOpenAvailable}
                       setValue={setValueAvailable}
                       setItems={setItems}
-                      placeholder={'Select Court'}
+                      placeholder={courtItems.length === 0 ? 'No court data' : 'Select Court'}
                       maxHeight={calculatedHeight}
                       zIndex={1000}
                       zIndexInverse={3000}
