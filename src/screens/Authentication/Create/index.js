@@ -311,10 +311,10 @@ const UserCreateScreen = props => {
                         />
                       </View>
                       <View>
-                        <Text style={[UserLoginScreenStyles.signUpViewText]}>
+                        {/* <Text style={[UserLoginScreenStyles.signUpViewText]}>
                           Are You Court Owner
-                        </Text>
-                        <Dropdown
+                        </Text> */}
+                        {/* <Dropdown
                           style={UserLoginScreenStyles.dropdown}
                           data={data}
                           labelField="label"
@@ -339,7 +339,7 @@ const UserCreateScreen = props => {
                           onChange={item => {
                             setSelectedValue(item.value);
                           }}
-                        />
+                        /> */}
                         <View
                           style={[
                             UserLoginScreenStyles.CheckBoxViews,

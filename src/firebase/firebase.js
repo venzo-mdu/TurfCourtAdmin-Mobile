@@ -25,13 +25,6 @@ export const firebaseConfig = {
   storageBucket:REACT_APP_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId:REACT_APP_FIREBASE_APP_ID,
-  // apiKey: "AIzaSyCRx5XQyHmv5ZH_jqtMjLxv2jDAwRO5mrM",
-  // authDomain: "turfmama-5f88b.firebaseapp.com",
-  // projectId: "turfmama-5f88b",
-  // storageBucket: "turfmama-5f88b.appspot.com",
-  // messagingSenderId: "88276218064",
-  // appId: "1:88276218064:web:0047835f3e2ff371e42ed5",
-  // measurementId: "G-8T9PYVJPG3"
 };
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);

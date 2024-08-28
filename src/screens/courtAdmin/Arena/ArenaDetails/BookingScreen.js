@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   ToastAndroid,
   SafeAreaView,
+  Linking
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Feather from 'react-native-vector-icons/Feather';
@@ -27,69 +28,11 @@ import { useRoute } from '@react-navigation/native';
 import { getEventdetailsByArenas, getgroundDataForOwner } from '../../../../firebase/firebaseFunction/groundDetails';
 import _ from 'lodash';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { userData } from '../../../../firebase/firebaseFunction/userDetails';
 
 
 
 const BookingScreen = () => {
-  const sampleData = [
-    {
-      event_id: '8WLs8znlIUc3ffZqhg9D',
-      user_name: 'Jadeja',
-      court_id: '49fcUezuCwv9egxpScZ5',
-      end: '2024-07-29T20:00',
-      court_name: 'Tester court1',
-      status: 'Awaiting',
-      BookId: '1e31ab64-564f-4564-84e7-0ee6723f2e89-0',
-      createdAt: { seconds: 1722236051, nanoseconds: 24000000 },
-      amount: '683',
-      reason: '',
-      ground_id: 'ZkBMZmjdlvff84hU7srJ',
-      start: '2024-07-29T19:00',
-      mapIndexx: 632129078,
-      gametype: 'Cricket',
-      ground_name: 'abc sport',
-      user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
-      owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193',
-    },
-    {
-      event_id: '8WLs8znlIUc3ffZqhg9u',
-      user_name: 'Jadeja',
-      court_id: '49fcUezuCwv9egxpScZ5',
-      end: '2024-07-29T23:00',
-      court_name: 'Tester court2',
-      status: 'Completed',
-      BookId: '1e31ab64-564f-4564-84e6-0ee6723f2e09-0',
-      createdAt: { seconds: 1722236051, nanoseconds: 24000000 },
-      amount: '633',
-      reason: '',
-      ground_id: 'ZkBMZmjdlvff84hU7srv',
-      start: '2024-07-29T22:00',
-      mapIndexx: 632129078,
-      gametype: 'Cricket',
-      ground_name: 'abc sports',
-      user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
-      owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193',
-    },
-    {
-      event_id: '8WLs8znlIUc3ffZqhg9u',
-      user_name: 'Jadeja',
-      court_id: '49fcUezuCwv9egxpScZ5',
-      end: '2024-07-29T23:00',
-      court_name: 'Tester court2',
-      status: 'Cancelled',
-      BookId: '1e31ab64-564f-4564-84e6-0ee6723f2e89-0',
-      createdAt: { seconds: 1722236051, nanoseconds: 24000000 },
-      amount: '633',
-      reason: '',
-      ground_id: 'ZkBMZmjdlf84hU7srv',
-      start: '2024-07-29T22:00',
-      mapIndexx: 632129078,
-      gametype: 'Cricket',
-      ground_name: 'abc sports',
-      user_id: 'B6UoArQdHlVhihPYHFbgq4BFvNA2',
-      owner_id: '6Ip56SzHQycRTqwN6nOl7iMZd193',
-    },
-  ];
   const route = useRoute();
   const { groundID } = route?.params || {};
   const containerStyle = groundID ? styles.insideGroundContainer : styles.tabContainer;
@@ -104,8 +47,13 @@ const BookingScreen = () => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('This Month');
   const [cancelEventind, setCancelEventind] = useState([]);
+  const [phonenumber, setPhonenumber] = useState([]);
+
+
   const [selectedCancelEventData, setselectedCancelEventData] = useState([]);
   const [trigger, setTrigger] = useState([false]);
+  const [userPhoneMap, setUserPhoneMap] = useState({});
+
 
 
   const [dropdownItems, setDropdownItems] = useState([
@@ -141,24 +89,18 @@ const BookingScreen = () => {
     eventData();
   }, [uid]);
 
-  const eventData =  async () => {
+  const eventData = async () => {
     setLoading(false);
-    console.log('uid',uid);
-    if(uid){
+    if (uid) {
       let response1 = await getgroundDataForOwner(uid);
-      console.log('response1',response1);
       let groundIds = response1?.map(r => r.ground_id);
-  
-      console.log('groundIds',groundIds,groundIds.length);
-      
-  
       if (uid == null) {
         navigate("/login");
       }
       let startDate = moment().format("YYYY-MM-DDTHH:mm");
       let endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
       let statusValue = ["Accepted", "Awaiting"];
-  
+
       if (tab === "Cancelled") {
         statusValue = ["Cancelled", "Canceled"];
         startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
@@ -188,7 +130,7 @@ const BookingScreen = () => {
           .endOf("month")
           .format("YYYY-MM-DDTHH:mm");
       }
-  
+
       const otherFilters = [
         { key: "status", operator: "in", value: statusValue },
         { key: "start", operator: ">=", value: startDate },
@@ -203,7 +145,7 @@ const BookingScreen = () => {
         if (groundID) {
           groundIds = [groundID];
         }
-  
+
         if (groundIds.length != 0) {
           if (groundIds.length > 15) {
             const response1 = await getEventdetailsByArenas({
@@ -211,42 +153,74 @@ const BookingScreen = () => {
               otherFilters,
               order: { key: 'start', dir: 'asc' },
             });
-  
+
             const response2 = await getEventdetailsByArenas({
               groundIds: groundIds.slice(15),
               otherFilters,
               order: { key: 'start', dir: 'asc' },
             });
-  
             const data = _.uniqBy([...response1.data, ...response2.data], 'event_id');
             events = data;
+            const userIds = events.map(event => event.user_id).filter(id => id);
+
+            const userDataList = await Promise.all(userIds.map(async (user_id) => {
+              try {
+                const user = await userData(user_id);
+                return { user_id, user };
+              } catch (error) {
+                console.error(`Error fetching user data for user_id: ${user_id}`, error);
+                return null;
+              }
+            }));
+            const userPhoneMap = userDataList.reduce((acc, userObj) => {
+              if (userObj && userObj.user) {
+                acc[userObj.user_id] = userObj.user.phonenumber;
+              }
+              return acc;
+            }, {});
+
+            setUserPhoneMap(userPhoneMap);
           } else {
-             console.log('otherFilters in else',groundIds)
             const response = await getEventdetailsByArenas({
               groundIds: groundIds,
               otherFilters,
               order: { key: 'start', dir: 'asc' },
             });
             events = response.data;
-            console.log('events',events);
+            const userIds = events.map(event => event.user_id).filter(id => id);
+
+            const userDataList = await Promise.all(userIds.map(async (user_id) => {
+              try {
+                const user = await userData(user_id);
+                return { user_id, user };
+              } catch (error) {
+                console.error(`Error fetching user data for user_id: ${user_id}`, error);
+                return null;
+              }
+            }));
+            const userPhoneMap = userDataList.reduce((acc, userObj) => {
+              if (userObj && userObj.user) {
+                acc[userObj.user_id] = userObj.user.phonenumber;
+              }
+              return acc;
+            }, {});
+
+            setUserPhoneMap(userPhoneMap);
           }
         }
-        else{
+        else {
           ToastAndroid.showWithGravity(
             'No Ground Data',
             ToastAndroid.LONG,
             ToastAndroid.CENTER,
           );
-         
         }
-  
         setdata(events);
         const groupedData = Object.values(groupByBookId(events));
         setFilterData(groupedData);
         setLoading(true);
       }
     }
-   
   };
 
   function checkSamePropertyValue(array) {
@@ -372,7 +346,7 @@ const BookingScreen = () => {
     }, {});
   };
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item, index }) => {
     const getStatusColor = status => {
       switch (status) {
         case 'Awaiting':
@@ -402,7 +376,7 @@ const BookingScreen = () => {
       }
     };
 
-    const { BookId, user_name, ground_name, court_name, amount } = item[0];
+    const { BookId, user_name, ground_name, court_name, amount, user_id } = item[0];
     const timings = item.map(i => formatDateTime(i));
     const groupedTimings = groupTimingsByDate(timings);
     const total = item.reduce(
@@ -410,20 +384,37 @@ const BookingScreen = () => {
       0,
     );
     const hasAwaitingStatus = item.some(i => i.status === 'Awaiting');
+    const userPhoneNumber = userPhoneMap[user_id] || '';
 
     return (
-      <View style={styles.slide}>
+      <View style={styles.slide} key={index}>
         <View style={styles.header}>
-          <Text
-            style={{
-              color: '#097E52',
-              fontFamily: 'Outfit-Medium',
-              fontSize: 16,
-              paddingBottom: 10,
-            }}>
-            {`${_.startCase(user_name)}`}
-          </Text>
-
+          <View style={styles.userDetailContainer}>
+            <Text
+              style={{
+                color: '#097E52',
+                fontFamily: 'Outfit-Medium',
+                fontSize: 16,
+              }}>
+              {`${user_name.length > 10
+                ? user_name.includes(' ')
+                  ? _.startCase(user_name.split(' ')[0]) + '...'
+                  : _.startCase(user_name.substring(0, 10)) + '...'
+                : _.startCase(user_name)
+                }`}
+            </Text>
+            <View style={styles.line}></View>
+            <TouchableOpacity onPress={() => Linking.openURL(`tel:${userPhoneNumber}`)}>
+              <Text
+                style={{
+                  color: '#097E52',
+                  fontFamily: 'Outfit-Medium',
+                  fontSize: 16,
+                }}>
+                {userPhoneNumber}
+              </Text>
+            </TouchableOpacity>
+          </View>
           {tab === 'Bookings' && hasAwaitingStatus && (
             <TouchableOpacity onPress={() => handlestatusEdit(item)}>
               <Entypo name="dots-three-vertical" size={20} color="#A8A8A8" />
@@ -441,27 +432,28 @@ const BookingScreen = () => {
               }}>
               {`${_.startCase(ground_name)}`}
             </Text>
-           
+
           </View>
           <Text
             style={{
               color: '#212529',
               fontFamily: 'Outfit-Medium',
               fontSize: 16,
-              paddingBottom: 25,
+              paddingBottom: 10,
             }}>
             {'₹' + total}
           </Text>
         </View>
         <Text
-              style={{
-                color: '#097E52',
-                fontFamily: 'Outfit-Medium',
-                fontSize: 16,
-                paddingBottom: 10,
-              }}>
-              {`${_.startCase(court_name)}`}
-            </Text>
+          style={{
+            color: '#097E52',
+            fontFamily: 'Outfit-Medium',
+            fontSize: 16,
+            paddingBottom: 10,
+          }}>
+          {`${_.startCase(court_name)}`}
+        </Text>
+
         {Object.keys(groupedTimings).map((date, index) => (
           <View key={index}>
             <Text
@@ -549,23 +541,29 @@ const BookingScreen = () => {
               style={[
                 styles.tabText,
                 tab === tabName && styles.activeTabText,
-                { fontFamily: 'Outfit-Regular', fontSize: 14 },
               ]}>
               {tabName}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
-      <DropDownPicker
-        open={open}
-        value={value}
-        items={dropdownItems}
-        setOpen={setOpen}
-        setValue={setValue}
-        setItems={setDropdownItems}
-        placeholder={'This Month'}
-
-      />
+      <View style={{ marginTop: 8 }}>
+        <DropDownPicker
+          open={open}
+          value={value}
+          items={dropdownItems}
+          setOpen={setOpen}
+          setValue={setValue}
+          setItems={setDropdownItems}
+          placeholder={'This Month'}
+          style={{
+            backgroundColor: '#FAFAFA', marginHorizontal: 10, width: '95%',
+            borderColor: COLORS.fieldBorderColor, height: 60
+          }}
+          dropDownContainerStyle={{ borderColor: COLORS.fieldBorderColor, backgroundColor: '#FAFAFA', marginHorizontal: 10, width: '95%', }}
+          textStyle={{ fontFamily: 'Outfit-Regular', fontSize: 16 }}
+        />
+      </View>
       {!loading ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator
@@ -579,7 +577,7 @@ const BookingScreen = () => {
         <FlatList
           data={filterData}
           renderItem={renderItem}
-          keyExtractor={item => item[0]?.BookId.toString()}
+          keyExtractor={(item, index) => index.toString()}
         />
       ) : (
         <View
@@ -604,12 +602,12 @@ const BookingScreen = () => {
                 setstatusopen(false);
                 setCanBePaid(false);
               }}>
-                 <Ionicons
-                    name="close-circle-outline"
-                    size={24}
-                    color={COLORS.PrimaryColor}
-                    style={styles.closeButtonCancelView}
-                  />
+              <Ionicons
+                name="close-circle-outline"
+                size={24}
+                color={COLORS.PrimaryColor}
+                style={styles.closeButtonCancelView}
+              />
               {/* <Text style={styles.closeButtonCancelView}>x</Text> */}
             </TouchableOpacity>
             <Text style={styles.titleCancelView}>
@@ -700,8 +698,10 @@ const styles = StyleSheet.create({
   tabButton: {
     paddingVertical: 10,
     paddingHorizontal: 10,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#fff',
     borderRadius: 8,
+    borderColor: COLORS.fieldBorderColor,
+    borderWidth: 1,
   },
   activeTabButton: {
     backgroundColor: COLORS.BLACK,
@@ -709,9 +709,12 @@ const styles = StyleSheet.create({
   tabText: {
     color: COLORS.BLACK,
     fontSize: 14,
+    fontFamily: 'Outfit-Regular'
   },
   activeTabText: {
     color: COLORS.WHITE,
+    fontSize: 14,
+    fontFamily: 'Outfit-Regular'
   },
 
   slide: {
@@ -726,6 +729,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingBottom: 10,
   },
+  userDetailContainer: {
+    flexDirection: 'row',
+  },
+
   groundDetailContainer: {
     flexDirection: 'row',
   },
@@ -735,9 +742,9 @@ const styles = StyleSheet.create({
   },
   line: {
     width: 1,
-    height: '60%',
+    height: '90%',
     backgroundColor: COLORS.verticalBar,
-    marginHorizontal: 8,
+    marginHorizontal: 10,
   },
   loaderContainer: {
     height: '100%',
@@ -781,7 +788,7 @@ const styles = StyleSheet.create({
   },
   closeButtonCancelView: {
     textAlign: 'right',
-    left:8,
+    left: 8,
   },
 
   footerButtons: {
