@@ -28,7 +28,7 @@ import CheckBox from '@react-native-community/checkbox';
 import {userData} from '../../../../firebase/firebaseFunction/userDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation, useRoute} from '@react-navigation/native';
-import {ADDARENA, ADMINARENA} from '../../..';
+import {ADDARENA, ADMINARENA, ADMINHOME} from '../../..';
 import Collapsible from 'react-native-collapsible';
 import {COLORS} from '../../../../assets/constants/global_colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -525,7 +525,7 @@ const ArenaScreen = () => {
         console.log(create, 'create', 'check ', createcity);
         setGroundData(create);
         // navigate("/courtadmin/dashboard");
-        navigation.navigate(ADMINARENA, {refreshViews: true});
+        navigation.navigate(ADMINHOME, {refreshViews: true});
         ToastAndroid.show('Ground Added Successfully', ToastAndroid.SHORT);
         // grndData();
       } else {
@@ -633,6 +633,7 @@ const ArenaScreen = () => {
           //   position: "top-right",
           //   autoClose: 2000,
           // });
+          navigation.navigate(ADMINHOME, {refreshViews: true});
           ToastAndroid.show('Ground Updated Successfully', ToastAndroid.SHORT);
         } else {
           // toast.error("Update Failed", {
@@ -1399,6 +1400,7 @@ const ArenaScreen = () => {
               style={[styles.buttonArena, {backgroundColor: '#097E52'}]}
               onPress={() => {
                 setGroundData(createtempgroundData);
+                setTextAreas([]);
               }}>
               <Text style={styles.buttonTextArena}>Reset</Text>
             </TouchableOpacity>
@@ -1414,6 +1416,7 @@ const ArenaScreen = () => {
               style={[styles.buttonArena, {backgroundColor: '#097E52'}]}
               onPress={() => {
                 setGroundData(createtempgroundData);
+                setTextAreas([]);
               }}>
               <Text style={styles.buttonTextArena}>Reset</Text>
             </TouchableOpacity>
