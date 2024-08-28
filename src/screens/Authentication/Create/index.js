@@ -383,7 +383,7 @@ const UserCreateScreen = props => {
                   </>
                 ) : (
                   <View style={UserLoginScreenStyles.otpBottom}>
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                       activeOpacity={0.75}
                       onPress={CloseEnterOTPFn}
                       style={UserLoginScreenStyles.otpCloseBtn}>
@@ -392,7 +392,7 @@ const UserCreateScreen = props => {
                         style={{width: hS(10), height: hS(10)}}
                         resizeMode="contain"
                       />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
 
                     {/* <Text style={UserLoginScreenStyles.otpHeadingTxt}>Verify signup OTP</Text> */}
 
