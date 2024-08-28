@@ -12,9 +12,9 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-import { IMAGES } from '../../../../assets/constants/global_images';
+import React, {useState, useEffect} from 'react';
+import {StyleSheet} from 'react-native';
+import {IMAGES} from '../../../../assets/constants/global_images';
 import {
   createCourtSlot,
   createNewCourt,
@@ -26,9 +26,10 @@ import {
   updatecourt,
   updateslotdata,
 } from '../../../../firebase/firebaseFunction/groundDetails';
-import { useNavigation, useRoute, useTheme } from '@react-navigation/native';
+import {useNavigation, useRoute, useTheme} from '@react-navigation/native';
 import CommonTextInput from '../../../../components/molecules/CommonTextInput';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Feather from 'react-native-vector-icons/Feather';
 import DatePicker from 'react-native-date-picker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import {
@@ -37,20 +38,20 @@ import {
   getcourtevent,
 } from '../../../../firebase/firebaseFunction/eventDetails';
 import _ from 'lodash';
-import { getTimeFormatted } from '../../../../utils/getHours';
+import {getTimeFormatted} from '../../../../utils/getHours';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { USER, USERLOGIN } from '../../..';
+import {USER, USERLOGIN} from '../../..';
 //import Collapsible from 'react-native-collapsible';
 import moment from 'moment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Collapsible from 'react-native-collapsible';
-import { COLORS } from '../../../../assets/constants/global_colors';
+import {COLORS} from '../../../../assets/constants/global_colors';
 
 const CourtScreen = () => {
   const [tab, setTab] = useState('Add Court');
   const [uid, setUid] = useState([]);
   const route = useRoute();
-  const { groundID } = route.params || null;
+  const {groundID} = route.params || null;
   const navigation = useNavigation();
   //console.log("groundID Views", groundID)
   const [groundData, setGroundData] = useState();
@@ -84,7 +85,8 @@ const CourtScreen = () => {
   console.log('availablecourt', availablecourt);
   const [basicCourtDetailsOpen, setBasicCourtDetailsOpen] = useState(false);
   const [basicSlotDetailsOpen, setBasicSlotDetailsOpen] = useState(false);
-  const [basicAvailableDetailsOpen, setBasicAvailableDetailsOpen] = useState(false);
+  const [basicAvailableDetailsOpen, setBasicAvailableDetailsOpen] =
+    useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [AddCourtError, setAddCourtError] = useState(false);
   const [AddCourtTimingError, setAddCourtTimingError] = useState(false);
@@ -144,10 +146,10 @@ const CourtScreen = () => {
   const [blockmodalopen, setblockModalOpen] = useState(false);
   const [valueAvailable, setValueAvailable] = useState(null);
   const [items, setItems] = useState([
-    { label: 'Apple', value: 'apple' },
-    { label: 'Banana', value: 'banana' },
-    { label: 'Pear', value: 'pear' },
-    { label: 'Cricket', value: 'w8SLqfDdGeXXnfA74Ckf' },
+    {label: 'Apple', value: 'apple'},
+    {label: 'Banana', value: 'banana'},
+    {label: 'Pear', value: 'pear'},
+    {label: 'Cricket', value: 'w8SLqfDdGeXXnfA74Ckf'},
   ]);
   //console.log("valuessssss", value)
   const ITEM_HEIGHT = 40;
@@ -207,7 +209,7 @@ const CourtScreen = () => {
       //setLoading(true);
       let court_details = await getCourtsForGround(groundID);
       //     console.log("court_details", court_details)
-      let ground_details = { ...groundData, court_details };
+      let ground_details = {...groundData, court_details};
       // console.log("ground_details", ground_details)
       // setGroundData(ground_details);
       // setgametype(ground_details?.game_type);
@@ -229,24 +231,23 @@ const CourtScreen = () => {
     // console.log("gtrr334");
   }, [uid]);
 
-
-    //Update the CreatedAt Value in CreateSlots State values
-    useEffect(() => {
-      if (createSlots?.createdAt) {
-        const formattedCreatedAt = new Date(createSlots?.createdAt);
-        setCreateslots((prevSlots) => ({
-          ...prevSlots,
-          date: formattedCreatedAt,
-        }));
-      }
-    }, [createSlots?.createdAt]);
+  //Update the CreatedAt Value in CreateSlots State values
+  useEffect(() => {
+    if (createSlots?.createdAt) {
+      const formattedCreatedAt = new Date(createSlots?.createdAt);
+      setCreateslots(prevSlots => ({
+        ...prevSlots,
+        date: formattedCreatedAt,
+      }));
+    }
+  }, [createSlots?.createdAt]);
 
   /* Choose The Game Options */
   const handleGameclick = value => {
     let availablegame = createCourt?.gametype;
     if (availablegame?.includes(value)) {
       let subarr = availablegame.filter(item => item != value);
-      setCreateCourt({ ...createCourt, gametype: subarr });
+      setCreateCourt({...createCourt, gametype: subarr});
       // console.log(subarr, "availablegame");
     } else {
       setCreateCourt(prevData => ({
@@ -260,7 +261,7 @@ const CourtScreen = () => {
   /* Handle Add Cart Game Sections */
   const handleAddCourt = async () => {
     // setLoadingView(true);
-    console.log("Hi One")
+    console.log('Hi One');
     if (
       createCourt.court_name == '' ||
       createCourt.default_amount == '' ||
@@ -276,22 +277,21 @@ const CourtScreen = () => {
 
   const handleAddCourtSlot = async () => {
     if (
-      !selectedValue?.Courts  ||
+      !selectedValue?.Courts ||
       !createSlots?.price ||
-      !createSlots?.date  ||
-      !createSlots?.starttime  ||
+      !createSlots?.date ||
+      !createSlots?.starttime ||
       !createSlots?.endtime
     ) {
       setAddCourtTimingError(true);
       ToastAndroid.showWithGravity(
-        "Please fill in all the required fields.",
+        'Please fill in all the required fields.',
         ToastAndroid.LONG,
-        ToastAndroid.CENTER
+        ToastAndroid.CENTER,
       );
       return;
-    }
-    else {
-     // console.log('createSlots.date',createSlots.date);
+    } else {
+      // console.log('createSlots.date',createSlots.date);
       const startT = `${createSlots.date}T${createSlots.starttime}`;
       const endT = `${createSlots.date}T${createSlots.endtime}`;
       const newStartTime = new Date(startT);
@@ -303,16 +303,16 @@ const CourtScreen = () => {
         newEndTime < currentDateTime
       ) {
         ToastAndroid.showWithGravity(
-          "Past time is not allowed",
+          'Past time is not allowed',
           ToastAndroid.LONG,
-          ToastAndroid.CENTER
+          ToastAndroid.CENTER,
         );
         //ToastAndroid.show('Past time is not allowed');
         return;
       } else {
         //
         const courtDataBySlot = await getcourtevent(selectedValue?.Courts);
-       // setLoadingView(false);
+        // setLoadingView(false);
 
         if (courtDataBySlot.length != 0) {
           const isExist = courtDataBySlot.filter(item => {
@@ -441,10 +441,10 @@ const CourtScreen = () => {
   };
 
   const IOSSwitch = props => {
-    const { colors } = useTheme();
+    const {colors} = useTheme();
     return (
       <Switch
-        trackColor={{ false: '#000', true: 'green' }}
+        trackColor={{false: '#000', true: 'green'}}
         thumbColor={props.value ? '#f4f3f4' : '#f4f3f4'}
         ios_backgroundColor="#3e3e3e"
         {...props}
@@ -534,7 +534,7 @@ const CourtScreen = () => {
         label: court?.court_name,
         gameType: court?.gametype,
       }));
-      console.log('items',items);
+      console.log('items', items);
       setCourtItems(items);
     }
   }, [groundData]);
@@ -582,7 +582,6 @@ const CourtScreen = () => {
   //console.log("availableCourts", availablecourt, valueAvailable)
 
   /* Add Funciton of SLot */
-
 
   const handleCourtslot = async () => {
     createSlots.start = `${createSlots?.date}T${createSlots?.starttime}`;
@@ -652,8 +651,8 @@ const CourtScreen = () => {
       isActive: true,
     });
     setValue(null);
-    setAddEdit("Add");
-    setSelectedValue({ ...selectedValue, Courts: '', selectedEditslot: '' });
+    setAddEdit('Add');
+    setSelectedValue({...selectedValue, Courts: '', selectedEditslot: ''});
     grndData();
     console.log('End Game');
     setSlotModalOpen(false);
@@ -700,9 +699,9 @@ const CourtScreen = () => {
       if (_.isEmpty(availablecourt.Courts)) {
         //alert("Please select a court before choosing a date.");
         ToastAndroid.showWithGravity(
-          "Please select a available court before choosing a date.",
+          'Please select a available court before choosing a date.',
           ToastAndroid.LONG,
-          ToastAndroid.CENTER
+          ToastAndroid.CENTER,
         );
         return; // Stop further execution if no court is selected
       }
@@ -835,12 +834,14 @@ const CourtScreen = () => {
     if (typeof date === 'object') {
       start = `${date.getFullYear()}-${(date.getMonth() + 1)
         .toString()
-        .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${groundData?.start_time
-        }`;
+        .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${
+        groundData?.start_time
+      }`;
       end = `${date.getFullYear()}-${(date.getMonth() + 1)
         .toString()
-        .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${groundData?.end_time
-        }`;
+        .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${
+        groundData?.end_time
+      }`;
     } else {
       start = `${date}T${groundData?.start_time}`;
       end = `${date}T${groundData?.end_time}`;
@@ -1014,7 +1015,7 @@ const CourtScreen = () => {
           })}`,
           end: `${availablecourt?.date}T${new Date(slot.end).toLocaleTimeString(
             'en-US',
-            { hour: '2-digit', minute: '2-digit', hour12: false },
+            {hour: '2-digit', minute: '2-digit', hour12: false},
           )}`,
         };
         let currentslot = courtslot?.slotData?.find(item => {
@@ -1042,7 +1043,7 @@ const CourtScreen = () => {
       bookedDataList = results.flat();
       //console.log("results", results)
       const response = await createNewBlockEvent(Addcartdatas);
-      console.log("response handle Booking", response)
+      console.log('response handle Booking', response);
       setLoadingView(false);
       if (response?.status == 'Success') {
         setblockModalOpen(false);
@@ -1165,7 +1166,7 @@ const CourtScreen = () => {
           })}`,
           end: `${availablecourt?.date}T${new Date(slot.end).toLocaleTimeString(
             'en-US',
-            { hour: '2-digit', minute: '2-digit', hour12: false },
+            {hour: '2-digit', minute: '2-digit', hour12: false},
           )}`,
         };
         let currentslot = courtslot?.slotData?.find(item => {
@@ -1201,7 +1202,7 @@ const CourtScreen = () => {
       if (mapcosnt?.length) {
         setunblockModalOpen(false);
         handleReset();
-        setLoadingView(false)
+        setLoadingView(false);
         // toast.success("Unblocking Success", {
         //   position: "top-right",
         //   autoClose: 2000,
@@ -1380,26 +1381,27 @@ const CourtScreen = () => {
     }));
   };
 
-  const CourtCard = ({ item, handlemodal, handleEditCourt }) => {
-    const { colors } = useTheme();
+  const CourtCard = ({item, handlemodal, handleEditCourt}) => {
+    const {colors} = useTheme();
 
     return (
-      <View style={[styles.cardCourtCard, { backgroundColor: colors.card }]}>
+      <View style={[styles.cardCourtCard, {backgroundColor: colors.card}]}>
         <View style={styles.rowCourtCard}>
           <View>
             <Text style={styles.courtNameCourtCard}>{item.court_name}</Text>
             <View style={styles.gameTypeContainer}>
               <Text style={styles.gameTypeCourtCard}>
                 {item.gametype.join(' | ')}
-              </Text></View>
+              </Text>
+            </View>
           </View>
           <View>
             <TouchableOpacity onPress={() => handleEditCourt(item)}>
-              <Icon name="ellipsis-v" size={20} color={colors.text} />
+              <Feather name="edit" size={16} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
-        <View style={[styles.rowCourtCard, { paddingTop: 40 }]}>
+        <View style={[styles.rowCourtCard, {paddingTop: 40}]}>
           <Text style={styles.priceCourtCard}>INR {item.default_amount}</Text>
           <View style={styles.rowCourtCard}>
             <Text style={styles.blockCourtTextCourtCard}>Block Court</Text>
@@ -1413,7 +1415,7 @@ const CourtScreen = () => {
     );
   };
 
-  const renderItemGame = ({ item }) => (
+  const renderItemGame = ({item}) => (
     <View style={styles.itemContainerGame}>
       <TouchableOpacity onPress={() => handleGameclick(item)}>
         <Image style={styles.imageGame} source={iconsss[item]} />
@@ -1461,10 +1463,13 @@ const CourtScreen = () => {
             </TouchableOpacity>
 
             <Collapsible collapsed={basicCourtDetailsOpen}>
-              <View style={{
-                backgroundColor: '#fff', paddingHorizontal: 15, borderBottomRightRadius: 12,
-                borderBottomLeftRadius: 12,
-              }}>
+              <View
+                style={{
+                  backgroundColor: '#fff',
+                  paddingHorizontal: 15,
+                  borderBottomRightRadius: 12,
+                  borderBottomLeftRadius: 12,
+                }}>
                 <View style={styles.horizontalBar} />
                 <View
                   style={{
@@ -1476,7 +1481,6 @@ const CourtScreen = () => {
                     borderBottomLeftRadius: 12,
                   }}>
                   <View>
-
                     <FlatList
                       data={gametype}
                       renderItem={renderItemGame}
@@ -1484,7 +1488,6 @@ const CourtScreen = () => {
                       numColumns={3}
                       columnWrapperStyle={styles.rowGame}
                     />
-
                   </View>
                 </View>
                 {AddCourtError && createCourt.gametype.length === 0 && (
@@ -1493,14 +1496,14 @@ const CourtScreen = () => {
                   </Text>
                 )}
                 <View>
-                  <View style={{ paddingTop: 10 }}>
+                  <View style={{paddingTop: 10}}>
                     <CommonTextInput
                       label="Court Name"
                       value={createCourt?.court_name}
                       onChangeText={text =>
-                        setCreateCourt({ ...createCourt, court_name: text })
+                        setCreateCourt({...createCourt, court_name: text})
                       }
-                    //widthStyle={true}
+                      //widthStyle={true}
                     />
                     {AddCourtError && createCourt.court_name === '' && (
                       <Text style={styles.errorText}>
@@ -1508,14 +1511,14 @@ const CourtScreen = () => {
                       </Text>
                     )}
                   </View>
-                  <View style={{ paddingTop: 10 }}>
+                  <View style={{paddingTop: 10}}>
                     <CommonTextInput
                       label="Default price"
                       value={createCourt?.default_amount}
                       onChangeText={text =>
-                        setCreateCourt({ ...createCourt, default_amount: text })
+                        setCreateCourt({...createCourt, default_amount: text})
                       }
-                    // widthStyle={true}
+                      // widthStyle={true}
                     />
                     {AddCourtError && createCourt.default_amount === '' && (
                       <Text style={styles.errorText}>
@@ -1543,7 +1546,7 @@ const CourtScreen = () => {
                 </View>
               </View>
             </Collapsible>
-            <View style={{ paddingTop: 15 }}>
+            <View style={{paddingTop: 15}}>
               <TouchableOpacity
                 style={[
                   styles.accordionHeader,
@@ -1564,28 +1567,36 @@ const CourtScreen = () => {
                 {/* <View>
     <Text style={styles.labelSlot}>Add Slot Timing</Text>
     </View> */}
-                <View style={{
-                  backgroundColor: '#fff', paddingHorizontal: 15, borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,
-                }}>
+                <View
+                  style={{
+                    backgroundColor: '#fff',
+                    paddingHorizontal: 15,
+                    borderBottomRightRadius: 12,
+                    borderBottomLeftRadius: 12,
+                  }}>
                   <View style={styles.horizontalBar} />
                   <Text style={styles.labelSlot}>Courts</Text>
                   {console.log('value', value)}
-                 <DropDownPicker
+                  <DropDownPicker
                     open={open}
                     value={value}
                     items={courtItems}
                     setOpen={setOpen}
                     setValue={setValue}
                     setItems={setItems}
-                    placeholder={courtItems.length === 0 ? 'No court data' : 'Select Court'}
+                    placeholder={
+                      courtItems.length === 0 ? 'No court data' : 'Select Court'
+                    }
                     //maxHeight={500}
                     maxHeight={calculatedHeight}
                     zIndex={3000}
                     zIndexInverse={3000}
                     style={styles.dropdownSlot}
                     dropDownStyle={styles.dropdownSlot}
-                    dropDownContainerStyle={{ borderColor: COLORS.fieldBorderColor, backgroundColor: '#fafafa', }}
+                    dropDownContainerStyle={{
+                      borderColor: COLORS.fieldBorderColor,
+                      backgroundColor: '#fafafa',
+                    }}
                   />
                   {AddCourtTimingError && !selectedValue.Courts && (
                     <Text style={styles.errorText}>
@@ -1597,16 +1608,16 @@ const CourtScreen = () => {
                     label="Price"
                     value={createSlots?.price}
                     onChangeText={text =>
-                      setCreateslots({ ...createSlots, price: text })
+                      setCreateslots({...createSlots, price: text})
                     }
-                  //widthStyle={true}
+                    //widthStyle={true}
                   />
                   {AddCourtTimingError && !createSlots.price && (
                     <Text style={styles.errorText}>
                       *Enter appropriate price values
                     </Text>
                   )}
-                  <View style={{paddingTop:10}}>
+                  <View style={{paddingTop: 10}}>
                     <Text style={styles.labelSlot}>Date</Text>
                     <TouchableOpacity
                       style={styles.buttonSlot}
@@ -1614,10 +1625,10 @@ const CourtScreen = () => {
                       <Text style={styles.buttonTextSlot}>
                         {' '}
                         {createSlots.date
-                          ? 
-                          new Date(createSlots.date).toLocaleDateString('en-GB') 
+                          ? new Date(createSlots.date).toLocaleDateString(
+                              'en-GB',
+                            )
                           : 'Select Date'}
-
                       </Text>
                     </TouchableOpacity>
                     <DatePicker
@@ -1641,7 +1652,7 @@ const CourtScreen = () => {
                   </View>
                   {AddCourtTimingError && !createSlots.date && (
                     <Text style={styles.errorText}>*Choose the date</Text>
-                  )} 
+                  )}
 
                   <View style={styles.inputContainer}>
                     <Text style={styles.labelSlot}>Start Time</Text>
@@ -1657,11 +1668,12 @@ const CourtScreen = () => {
                       open={openStartPicker}
                       date={new Date()}
                       mode="time"
-                   //  minimumDate={new Date()}
-                       minimumDate={
-                        new Date(createSlots.date).toDateString() === new Date().toDateString()
-                          ? new Date() 
-                          : undefined 
+                      //  minimumDate={new Date()}
+                      minimumDate={
+                        new Date(createSlots.date).toDateString() ===
+                        new Date().toDateString()
+                          ? new Date()
+                          : undefined
                       }
                       onConfirm={date => {
                         const now = new Date();
@@ -1691,16 +1703,17 @@ const CourtScreen = () => {
                       </Text>
                     </TouchableOpacity>
                     <DatePicker
-                      style={{ fontFamily: 'Outfit-Regular' }}
+                      style={{fontFamily: 'Outfit-Regular'}}
                       modal
                       open={openEndPicker}
                       date={new Date()}
                       mode="time"
                       //minimumDate={new Date()}
                       minimumDate={
-                        new Date(createSlots.date).toDateString() === new Date().toDateString()
-                          ? new Date() 
-                          : undefined 
+                        new Date(createSlots.date).toDateString() ===
+                        new Date().toDateString()
+                          ? new Date()
+                          : undefined
                       }
                       onConfirm={date => {
                         const nowEnd = new Date();
@@ -1734,7 +1747,7 @@ const CourtScreen = () => {
                     </TouchableOpacity>
                   </View>
                   {/* New View of Add Slots */}
-                  <View style={{ paddingTop: 15 }}>
+                  <View style={{paddingTop: 15}}>
                     {groundData?.court_details?.length !== 0 && (
                       <>
                         {courtslot &&
@@ -1768,9 +1781,19 @@ const CourtScreen = () => {
                                 <Collapsible collapsed={!activeSections[index]}>
                                   {activeSlotData?.length ? (
                                     <View style={styles.dividerSlot} />
-                                  ) : <Text style={{ alignItems: 'center' }}>No Data</Text>}
+                                  ) : (
+                                    <Text style={{alignItems: 'center'}}>
+                                      No Data
+                                    </Text>
+                                  )}
                                   {activeSlotData?.map((slot, slotIndex) => {
-                                    { console.log('start', slot.start, slot.end) }
+                                    {
+                                      console.log(
+                                        'start',
+                                        slot.start,
+                                        slot.end,
+                                      );
+                                    }
 
                                     const startTimeFormatted = getTimeFormatted(
                                       slot.start,
@@ -1778,9 +1801,14 @@ const CourtScreen = () => {
                                     const endTimeFormatted = getTimeFormatted(
                                       slot.end,
                                     );
-                                    { console.log('startTimeFormatted', startTimeFormatted, endTimeFormatted) }
+                                    {
+                                      console.log(
+                                        'startTimeFormatted',
+                                        startTimeFormatted,
+                                        endTimeFormatted,
+                                      );
+                                    }
                                     return (
-
                                       <View
                                         key={slotIndex}
                                         style={styles.slotDetailsSlot}>
@@ -1809,7 +1837,9 @@ const CourtScreen = () => {
                                             />
                                           </TouchableOpacity>
                                           <TouchableOpacity
-                                            onPress={() => handleSlotedit(slot)}>
+                                            onPress={() =>
+                                              handleSlotedit(slot)
+                                            }>
                                             <Image
                                               source={IMAGES.EditIcons}
                                               style={styles.actionIconSlot}
@@ -1818,7 +1848,6 @@ const CourtScreen = () => {
                                           </TouchableOpacity>
                                         </View>
                                       </View>
-
                                     );
                                   })}
                                 </Collapsible>
@@ -1832,7 +1861,7 @@ const CourtScreen = () => {
               </Collapsible>
             </View>
 
-            <View style={{ paddingTop: 15 }}>
+            <View style={{paddingTop: 15}}>
               <TouchableOpacity
                 style={[
                   styles.accordionHeader,
@@ -1856,10 +1885,13 @@ const CourtScreen = () => {
                 {/* <View>
     <Text style={styles.labelSlot}>Available Timing</Text>
     </View> */}
-                <View style={{
-                  backgroundColor: '#fff', paddingHorizontal: 15, borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,
-                }}>
+                <View
+                  style={{
+                    backgroundColor: '#fff',
+                    paddingHorizontal: 15,
+                    borderBottomRightRadius: 12,
+                    borderBottomLeftRadius: 12,
+                  }}>
                   <View style={styles.horizontalBar} />
                   <View>
                     <Text style={styles.labelSlot}>Courts</Text>
@@ -1870,7 +1902,11 @@ const CourtScreen = () => {
                       setOpen={setOpenAvailable}
                       setValue={setValueAvailable}
                       setItems={setItems}
-                      placeholder={courtItems.length === 0 ? 'No court data' : 'Select Court'}
+                      placeholder={
+                        courtItems.length === 0
+                          ? 'No court data'
+                          : 'Select Court'
+                      }
                       maxHeight={calculatedHeight}
                       zIndex={1000}
                       zIndexInverse={3000}
@@ -1882,8 +1918,10 @@ const CourtScreen = () => {
                       }}
                       dropDownStyle={styles.dropdownSlot}
                     />
-                    {AddCourtTimingError && availablecourt.Courts === "" && (
-                      <Text style={styles.errorText}>*Select appropriate values</Text>
+                    {AddCourtTimingError && availablecourt.Courts === '' && (
+                      <Text style={styles.errorText}>
+                        *Select appropriate values
+                      </Text>
                     )}
                     {/* {AddCourtTimingError && availablecourt.Courts === '' && (
                       <Text style={styles.errorText}>*Select appropriate values</Text>
@@ -1902,7 +1940,9 @@ const CourtScreen = () => {
                       <Text style={styles.buttonTextSlot}>
                         {' '}
                         {availablecourt.date
-                          ? new Date(availablecourt.date).toLocaleDateString('en-GB')
+                          ? new Date(availablecourt.date).toLocaleDateString(
+                              'en-GB',
+                            )
                           : 'Select Date'}
                       </Text>
                     </TouchableOpacity>
@@ -1911,7 +1951,11 @@ const CourtScreen = () => {
                       mode="date"
                       open={openAvailableDatePicker}
                       //date={new Date(availablecourt.date)}
-                      date={availablecourt.date ? new Date(availablecourt.date) : new Date()}
+                      date={
+                        availablecourt.date
+                          ? new Date(availablecourt.date)
+                          : new Date()
+                      }
                       minimumDate={new Date()}
                       onConfirm={date => {
                         setOpenAvailableDatePicker(false);
@@ -1939,7 +1983,7 @@ const CourtScreen = () => {
                               ]}
                               disabled={item.isbooked}
                               onPress={() => handlebooking(item, index)}>
-                              <Text style={{ color: item?.textColor }}>
+                              <Text style={{color: item?.textColor}}>
                                 {gttime.Time}
                               </Text>
                             </TouchableOpacity>
@@ -1965,7 +2009,9 @@ const CourtScreen = () => {
                           source={IMAGES.AvailableRec}
                           style={styles.iconAvailable}
                         />
-                        <Text style={styles.legendTextAvailable}>Available</Text>
+                        <Text style={styles.legendTextAvailable}>
+                          Available
+                        </Text>
                       </View>
                       <View style={styles.legendItemAvailable}>
                         <Image
@@ -1975,9 +2021,11 @@ const CourtScreen = () => {
                         <Text style={styles.legendTextAvailable}>Selected</Text>
                       </View>
                       <View style={styles.legendItemAvailable}>
-                        <Image source={IMAGES.CurrentSlotIcons} style={styles.iconAvailable} />
-                        <Text
-                          style={styles.legendTextAvailable}>
+                        <Image
+                          source={IMAGES.CurrentSlotIcons}
+                          style={styles.iconAvailable}
+                        />
+                        <Text style={styles.legendTextAvailable}>
                           Current slot
                         </Text>
                       </View>
@@ -2000,12 +2048,16 @@ const CourtScreen = () => {
                       <TouchableOpacity
                         style={styles.resetButtonCartData}
                         onPress={handleunblockmodal}>
-                        <Text style={styles.buttonTextCartData}>UnBlock Court</Text>
+                        <Text style={styles.buttonTextCartData}>
+                          UnBlock Court
+                        </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={styles.paymentButtonCartData}
                         onPress={handleblockmodal}>
-                        <Text style={styles.buttonTextCartData}>Block Court</Text>
+                        <Text style={styles.buttonTextCartData}>
+                          Block Court
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -2026,8 +2078,7 @@ const CourtScreen = () => {
                       top: 5,
                       right: 5,
                     }}>
-                    <TouchableOpacity
-                      onPress={() => setModalOpen(false)}>
+                    <TouchableOpacity onPress={() => setModalOpen(false)}>
                       <Ionicons
                         name="close-circle-outline"
                         size={24}
@@ -2036,13 +2087,11 @@ const CourtScreen = () => {
                     </TouchableOpacity>
                   </View>
 
-
                   <Text style={styles.modalCreateCourtText}>
                     {addEdit == 'Add'
                       ? 'Are you sure you want to Create a Slot?'
                       : 'Are you sure you want to Update a Slot?'}
                   </Text>
-
 
                   <View style={styles.buttonCreateCourtContainer}>
                     <TouchableOpacity
@@ -2093,7 +2142,6 @@ const CourtScreen = () => {
                     Are you sure you want to Change Court Status?
                   </Text>
 
-
                   <View style={styles.buttonCreateCourtContainer}>
                     <TouchableOpacity
                       style={[
@@ -2130,8 +2178,7 @@ const CourtScreen = () => {
                       top: 5,
                       right: 5,
                     }}>
-                    <TouchableOpacity
-                      onPress={() => setSlotModalOpen(false)}>
+                    <TouchableOpacity onPress={() => setSlotModalOpen(false)}>
                       <Ionicons
                         name="close-circle-outline"
                         size={24}
@@ -2168,7 +2215,6 @@ const CourtScreen = () => {
               </View>
             </Modal>
 
-
             <Modal
               visible={CreateSlotWarning}
               transparent={true}
@@ -2184,7 +2230,7 @@ const CourtScreen = () => {
                     }}>
                     <TouchableOpacity
                       onPress={() => {
-                        setCreateSlotWarning(false)
+                        setCreateSlotWarning(false);
                       }}>
                       <Ionicons
                         name="close-circle-outline"
@@ -2216,7 +2262,6 @@ const CourtScreen = () => {
               </View>
             </Modal>
 
-
             <Modal
               visible={CreateEditSlotWarning}
               transparent={true}
@@ -2232,7 +2277,7 @@ const CourtScreen = () => {
                     }}>
                     <TouchableOpacity
                       onPress={() => {
-                        setCreateEditSlotWarning(false)
+                        setCreateEditSlotWarning(false);
                       }}>
                       <Ionicons
                         name="close-circle-outline"
@@ -2242,8 +2287,8 @@ const CourtScreen = () => {
                     </TouchableOpacity>
                   </View>
                   <Text style={styles.modalCreateCourtText}>
-                    Cannot create slot as an event already exists in the
-                    chosen time range.
+                    Cannot create slot as an event already exists in the chosen
+                    time range.
                   </Text>
                   {/* <View style={styles.buttonCreateCourtContainer}>
             <TouchableOpacity
@@ -2263,7 +2308,6 @@ const CourtScreen = () => {
               </View>
             </Modal>
 
-
             <Modal
               visible={blockmodalopen}
               transparent={true}
@@ -2279,7 +2323,7 @@ const CourtScreen = () => {
                     }}>
                     <TouchableOpacity
                       onPress={() => {
-                        setblockModalOpen(false)
+                        setblockModalOpen(false);
                       }}>
                       <Ionicons
                         name="close-circle-outline"
@@ -2291,7 +2335,6 @@ const CourtScreen = () => {
                   <Text style={styles.modalCreateCourtText}>
                     Are you sure you want to block the selected slots?
                   </Text>
-
 
                   <View style={styles.buttonCreateCourtContainer}>
                     <TouchableOpacity
@@ -2331,7 +2374,7 @@ const CourtScreen = () => {
                     }}>
                     <TouchableOpacity
                       onPress={() => {
-                        setblockerrorModalOpen(false)
+                        setblockerrorModalOpen(false);
                       }}>
                       <Ionicons
                         name="close-circle-outline"
@@ -2378,7 +2421,7 @@ const CourtScreen = () => {
                     }}>
                     <TouchableOpacity
                       onPress={() => {
-                        setunblockModalOpen(false)
+                        setunblockModalOpen(false);
                       }}>
                       <Ionicons
                         name="close-circle-outline"
@@ -2428,7 +2471,7 @@ const CourtScreen = () => {
                     }}>
                     <TouchableOpacity
                       onPress={() => {
-                        setunblockerrorModalOpen(false)
+                        setunblockerrorModalOpen(false);
                       }}>
                       <Ionicons
                         name="close-circle-outline"
@@ -2459,7 +2502,6 @@ const CourtScreen = () => {
                 </View>
               </View>
             </Modal>
-
           </View>
         </ScrollView>
       )}
@@ -2597,7 +2639,6 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   modalCreateCourtText: {
-
     fontSize: 14,
     textAlign: 'center',
     paddingTop: 10,
@@ -2648,7 +2689,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     marginBottom: 15,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
