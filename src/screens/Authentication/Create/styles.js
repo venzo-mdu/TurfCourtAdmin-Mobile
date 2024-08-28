@@ -157,23 +157,6 @@ export const UserLoginScreenStyles = StyleSheet.create({
     marginBottom: hS(10),
     paddingBottom: 100,
   },
-  //   loginBox: {
-  //     backgroundColor: COLORS.PRIMARY,
-  //     width: mS(150),
-  //     height: mS(50),
-  //     alignSelf: "center",
-  //     alignItems: "center",
-  //     justifyContent: "center",
-  //     marginBottom: hS(20),
-  //     borderRadius: mS(8),
-  //   },
-  //   loginTxt: {
-  //     fontSize: mS(18),
-  //     color: COLORS.WHITE,
-  //     fontFamily: PoppinsMedium,
-  //   },
-
-  /*New */
   loginBox: {
     backgroundColor: COLORS.buttonColor,
     width: '100%',
