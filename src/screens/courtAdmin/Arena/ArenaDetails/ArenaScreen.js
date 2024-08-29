@@ -169,11 +169,14 @@ const ArenaScreen = () => {
   };
 
   const handleInputChange = (key, value) => {
-    setGroundData(prevState => ({
-      ...prevState,
-      [key]: value,
-    }));
+    if (value.length <= 10) {
+      setGroundData(prevState => ({
+        ...prevState,
+        [key]: value,
+      }));
+    } 
   };
+
 
   /* UID */
   const getUserData = async () => {
