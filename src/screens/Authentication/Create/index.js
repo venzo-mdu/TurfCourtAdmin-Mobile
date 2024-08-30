@@ -94,7 +94,7 @@ const UserCreateScreen = props => {
           isuseractive: true,
           phonenumber: userPhone,
           username: userName,
-          owner: selectedValue,
+          owner: true,
         };
         // console.log('data', data);
         // console.log('recaptchaVerifier', recaptchaVerifier);
