@@ -94,7 +94,7 @@ const UserCreateScreen = props => {
           isuseractive: true,
           phonenumber: userPhone,
           username: userName,
-          owner: selectedValue,
+          owner: true,
         };
         // console.log('data', data);
         // console.log('recaptchaVerifier', recaptchaVerifier);
@@ -192,7 +192,7 @@ const UserCreateScreen = props => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView>
-        <ScrollView contentContainerStyle={{flexGrow: 1}}>
+        {/* <ScrollView contentContainerStyle={{flexGrow: 1}}> */}
           <ImageBackground
             style={{width: '100%', height: '100%'}}
             source={IMAGES.LoginBgImage}
@@ -208,8 +208,9 @@ const UserCreateScreen = props => {
               <View style={UserLoginScreenStyles.logoContainer}>
                 <Image source={IMAGES.logoImage} resizeMode="contain" />
               </View>
-
+             
               <View style={UserLoginScreenStyles.loginContainer}>
+              <ScrollView>
                 {!enterOTP ? (
                   <>
                     <Text
@@ -222,7 +223,7 @@ const UserCreateScreen = props => {
                     <Text style={UserLoginScreenStyles.loginSubText}>
                       Sign-Up to your account
                     </Text>
-                    <View style={{paddingTop: '15%'}}>
+                    <View style={{paddingTop: 10}}>
                       <Text style={UserLoginScreenStyles.signUpViewText}>
                         User Name
                       </Text>
@@ -399,7 +400,7 @@ const UserCreateScreen = props => {
                     <View>
                       <View style={UserLoginScreenStyles.welcomeContainer}>
                         <Text style={UserLoginScreenStyles.loginSubText}>
-                          Please enter the code we’ve sent to \n{' '}
+                          Please enter the code we’ve sent to{' '}
                           <Text style={UserLoginScreenStyles.phoneCodeText}>
                             {userPhone}
                           </Text>
@@ -467,10 +468,12 @@ const UserCreateScreen = props => {
                     Login
                   </Text>
                 </Text>
+                </ScrollView>
               </View>
+             
             </SafeAreaView>
           </ImageBackground>
-        </ScrollView>
+        {/* </ScrollView> */}
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );

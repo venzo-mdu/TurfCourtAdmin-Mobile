@@ -268,7 +268,7 @@ const UserLoginScreen = () => {
                   <View style={{paddingBottom: '15%'}}>
                     <Text
                       style={{
-                        paddingTop: '20%',
+                        paddingTop: 20,
                         paddingBottom: 10,
                         fontFamily: 'Outfit-Regular',
                         fontSize: hS(16),
