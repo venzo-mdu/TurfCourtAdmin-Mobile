@@ -10,11 +10,11 @@ import {
   ToastAndroid,
   ActivityIndicator,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import CommonTextInput from '../../../../components/molecules/CommonTextInput';
 import DatePicker from 'react-native-date-picker';
 import DropDownPicker from 'react-native-dropdown-picker';
-import {IMAGES} from '../../../../assets/constants/global_images';
+import { IMAGES } from '../../../../assets/constants/global_images';
 import {
   createCity,
   createGroundData,
@@ -22,22 +22,23 @@ import {
   UpdateGroundData,
   uploadFile,
 } from '../../../../firebase/firebaseFunction/groundDetails';
-import {launchImageLibrary} from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import CommonTextArea from '../../../../components/molecules/CommonTextArea';
 import CheckBox from '@react-native-community/checkbox';
-import {userData} from '../../../../firebase/firebaseFunction/userDetails';
+import { userData } from '../../../../firebase/firebaseFunction/userDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useNavigation, useRoute} from '@react-navigation/native';
-import {ADDARENA, ADMINARENA, ADMINHOME} from '../../..';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { ADDARENA, ADMINARENA, ADMINHOME } from '../../..';
 import Collapsible from 'react-native-collapsible';
-import {COLORS} from '../../../../assets/constants/global_colors';
+import { COLORS } from '../../../../assets/constants/global_colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
 
 const ArenaScreen = () => {
   const [tab, setTab] = useState('Basic Details');
   const route = useRoute();
-  const {groundID} = route.params || null;
+  const { groundID } = route.params || null;
   //const [review, setGroundData] = useState({});
   //console.log("groundID", groundID);
   const [groundData, setGroundData] = useState({
@@ -86,8 +87,8 @@ const ArenaScreen = () => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
   const [items, setItems] = useState([
-    {label: 'Active', value: true},
-    {label: 'Inactive', value: false},
+    { label: 'Active', value: true },
+    { label: 'Inactive', value: false },
   ]);
   const [textAreas, setTextAreas] = useState(
     groundData ? groundData?.rules : [''],
@@ -102,6 +103,8 @@ const ArenaScreen = () => {
   const [locationOpen, setLocationOpen] = useState(true);
   const [overviewOpen, setOverviewOpen] = useState(true);
   const [loader, setLoader] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
+
 
   //console.log("details", details);
   //console.log("value12345",groundData?.active)
@@ -169,10 +172,28 @@ const ArenaScreen = () => {
   };
 
   const handleInputChange = (key, value) => {
-      setGroundData(prevState => ({
-        ...prevState,
-        [key]: value,
-      }));
+    setGroundData(prevState => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
+  const handleCheckbox = () => {
+    console.log('jiii');
+    setIsChecked(prevState => {
+      if (!prevState) {
+        setGroundData({
+          start_time: '00:00',
+          end_time: '23:59',
+        });
+      } else {
+        setGroundData({
+          ...groundData,
+          start_time: '',
+          end_time: '',
+        });
+      }
+      return !prevState;
+    });
   };
 
 
@@ -253,7 +274,7 @@ const ArenaScreen = () => {
     const availablegame = groundData?.game_type;
     if (availablegame?.includes(value)) {
       const subarr = availablegame.filter(item => item !== value);
-      setGroundData({...groundData, game_type: subarr});
+      setGroundData({ ...groundData, game_type: subarr });
     } else {
       setGroundData(prevData => ({
         ...prevData,
@@ -267,7 +288,7 @@ const ArenaScreen = () => {
     let availableinclude = groundData?.includes;
     if (availableinclude?.includes(value)) {
       let subarr = availableinclude.filter(item => item != value);
-      setGroundData({...groundData, includes: subarr});
+      setGroundData({ ...groundData, includes: subarr });
     } else {
       setGroundData(prevData => ({
         ...prevData,
@@ -282,20 +303,20 @@ const ArenaScreen = () => {
     // setTextAreas([...textAreas, ""]);
     const updatedTextAreas = [...textAreas, ''];
     setTextAreas(updatedTextAreas);
-    setGroundData({...groundData, rules: updatedTextAreas});
+    setGroundData({ ...groundData, rules: updatedTextAreas });
   };
 
   const handleDeleteTextArea = index => {
     const updatedTextAreas = textAreas.filter((_, i) => i !== index);
     setTextAreas(updatedTextAreas);
-    setGroundData({...groundData, rules: updatedTextAreas});
+    setGroundData({ ...groundData, rules: updatedTextAreas });
   };
 
   const handleTextAreaChange = (index, value) => {
     const updatedTextAreas = [...textAreas];
     updatedTextAreas[index] = value;
     setTextAreas(updatedTextAreas);
-    setGroundData({...groundData, rules: updatedTextAreas});
+    setGroundData({ ...groundData, rules: updatedTextAreas });
   };
 
   /* Handle Amenities Sections */
@@ -303,7 +324,7 @@ const ArenaScreen = () => {
     let availableAmenities = groundData?.amenities;
     if (availableAmenities?.includes(value)) {
       let subarr = availableAmenities.filter(item => item !== value);
-      setGroundData({...groundData, amenities: subarr});
+      setGroundData({ ...groundData, amenities: subarr });
     } else {
       setGroundData(prevData => ({
         ...prevData,
@@ -360,14 +381,14 @@ const ArenaScreen = () => {
   const handleImageGalleryDelete = index => {
     setGroundData(prevReview => {
       const updatedImages = prevReview.gallery.filter((_, i) => i !== index);
-      return {...prevReview, gallery: updatedImages};
+      return { ...prevReview, gallery: updatedImages };
     });
   };
   /* Cover Image Upload Function End */
 
   /* Handle Cover IMAGE Sections Views */
   const handleClick = async () => {
-   // setLoader(true);
+    // setLoader(true);
     const options = {
       mediaType: 'photo',
       includeBase64: false,
@@ -413,7 +434,7 @@ const ArenaScreen = () => {
   const handleImageDelete = index => {
     setGroundData(prevReview => {
       const updatedImages = prevReview.coverImage.filter((_, i) => i !== index);
-      return {...prevReview, coverImage: updatedImages};
+      return { ...prevReview, coverImage: updatedImages };
     });
   };
 
@@ -455,7 +476,7 @@ const ArenaScreen = () => {
       end_time: false,
       // active: false,
     };
-  
+console.log('fff',groundData);
     if (groundData?.groundname != '') {
       tempval.groundname = true;
     }
@@ -507,7 +528,7 @@ const ArenaScreen = () => {
     // if (groundData?.active != "") {
     //   tempval.active = true;
     // }
-  //  setLoader(true);
+    //  setLoader(true);
     setvalData(Object.values(tempval).every(Boolean));
     if (Object.values(tempval).every(Boolean)) {
       // console.log("detailOwner", details.owner)
@@ -518,15 +539,15 @@ const ArenaScreen = () => {
         groundData.longitude = '78.16099437904265';
         groundData.city = groundData?.city.toLowerCase();
         //  console.log(groundData, "setGroundData");
-       
+
         create = await createGroundData(groundData);
-        createcity = await createCity({cityName: groundData?.city});
+        createcity = await createCity({ cityName: groundData?.city });
 
         setLoader(false);
         console.log(create, 'create', 'check ', createcity);
         setGroundData(create);
         // navigate("/courtadmin/dashboard");
-        navigation.navigate(ADMINHOME, {refreshViews: true});
+        navigation.navigate(ADMINHOME, { refreshViews: true });
         ToastAndroid.show('Ground Added Successfully', ToastAndroid.SHORT);
         // grndData();
       } else {
@@ -626,15 +647,15 @@ const ArenaScreen = () => {
         groundData.city = groundData?.city.toLowerCase();
         // console.log("Update Values", groundID)
         update = await UpdateGroundData(groundData, groundID);
-        createcity = await createCity({cityName: groundData?.city});
-        console.log('update',update);
+        createcity = await createCity({ cityName: groundData?.city });
+        console.log('update', update);
         setLoader(false);
         if (update.status === 'success') {
           // toast.success("Update Success", {
           //   position: "top-right",
           //   autoClose: 2000,
           // });
-          navigation.navigate(ADMINHOME, {refreshViews: true});
+          navigation.navigate(ADMINHOME, { refreshViews: true });
           ToastAndroid.show('Ground Updated Successfully', ToastAndroid.SHORT);
         } else {
           // toast.error("Update Failed", {
@@ -662,29 +683,29 @@ const ArenaScreen = () => {
     return `${hours}:${minutes}`;
   };
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <View style={styles.itemContainerIncludes}>
       <CheckBox
         value={groundData?.includes?.includes(item)}
         onValueChange={() => handleincludeclick(item)}
-        tintColors={{true: '#097E52', false: '#878787'}}
+        tintColors={{ true: '#097E52', false: '#878787' }}
       />
       <Text style={styles.labelIncludes}>{item}</Text>
     </View>
   );
 
-  const renderAmenities = ({item}) => (
+  const renderAmenities = ({ item }) => (
     <View style={styles.itemContainerIncludes}>
       <CheckBox
         value={groundData?.amenities?.includes(item)}
         onValueChange={() => handleAmenitiesClick(item)}
-        tintColors={{true: '#097E52', false: '#878787'}}
+        tintColors={{ true: '#097E52', false: '#878787' }}
       />
       <Text style={styles.labelIncludes}>{item}</Text>
     </View>
   );
 
-  const renderItemRules = ({item, index}) => (
+  const renderItemRules = ({ item, index }) => (
     <View key={index} style={styles.itemContainerRule}>
       <View>
         <CommonTextArea
@@ -717,170 +738,40 @@ const ArenaScreen = () => {
 
   return (
     <ScrollView style={styles.scrollContainer}>
-      {loader ?( <View style={styles.loaderContainer}>
-            <ActivityIndicator
-              size={50}
-              color={COLORS.PrimaryColor}
-              animating={loader}
-            />
-            <Text>Loading...</Text>
-          </View>): 
-     ( <View style={styles.container}>
-        {/* Basic Info         */}
-        <View style={{zIndex: 5000, paddingBottom: 24}}>
-          <TouchableOpacity
-            style={[
-              styles.accordionHeader,
-              !basicDetailsOpen ? styles.openHeader : styles.closedHeader,
-            ]}
-            onPress={() => setBasicDetailsOpen(!basicDetailsOpen)}
-            activeOpacity={1}>
-            <Text style={styles.accordionHeaderText}>Basic Info</Text>
-            <Ionicons
-              name={!basicDetailsOpen ? 'chevron-up' : 'chevron-down'}
-              size={24}
-            />
-          </TouchableOpacity>
-          <Collapsible collapsed={basicDetailsOpen}>
-            <View
-              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
-              <View
-                style={{
-                  borderBottomColor: '#F3F4F6',
-                  borderBottomWidth: 1,
-                }}
-              />
-            </View>
-            <View
+      {loader ? (<View style={styles.loaderContainer}>
+        <ActivityIndicator
+          size={50}
+          color={COLORS.PrimaryColor}
+          animating={loader}
+        />
+        <Text>Loading...</Text>
+      </View>) :
+        (<View style={styles.container}>
+          {/* Basic Info         */}
+          <View style={{ zIndex: 5000, paddingBottom: 24 }}>
+            <TouchableOpacity
               style={[
-                {
-                  paddingTop: 20,
-                  zIndex: 2000,
-                  paddingHorizontal: 10,
-                  backgroundColor: '#fff',
-                  borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,
-                },
-              ]}>
-              <CommonTextInput
-                label="Arena Name"
-                value={groundData?.groundname}
-                onChangeText={text => handleInputChange('groundname', text)}
-                keyboardType="default"
+                styles.accordionHeader,
+                !basicDetailsOpen ? styles.openHeader : styles.closedHeader,
+              ]}
+              onPress={() => setBasicDetailsOpen(!basicDetailsOpen)}
+              activeOpacity={1}>
+              <Text style={styles.accordionHeaderText}>Basic Info</Text>
+              <Ionicons
+                name={!basicDetailsOpen ? 'chevron-up' : 'chevron-down'}
+                size={24}
               />
-              <CommonTextInput
-                label="Mobile Number"
-                value={groundData?.phonenumber}
-                onChangeText={text => handleInputChange('phonenumber', text)}
-                keyboardType="phone-pad"
-              />
-              <CommonTextInput
-                label="Email"
-                value={groundData?.email}
-                onChangeText={text => handleInputChange('email', text)}
-                keyboardType="email-address"
-              />
-              <CommonTextInput
-                label="Court Type"
-                value={groundData?.groundtype}
-                onChangeText={text => handleInputChange('groundtype', text)}
-                keyboardType="default"
-              />
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Opens At</Text>
-                <TouchableOpacity
-                  style={styles.inputDateView}
-                  onPress={() => setOpenStartPicker(true)}>
-                  <Text style={styles.inputText}>
-                    {groundData?.start_time || 'Select Time'}
-                  </Text>
-                </TouchableOpacity>
-                <DatePicker
-                  modal
-                  open={openStartPicker}
-                  date={new Date()}
-                  mode="time"
-                  onConfirm={date => {
-                    setOpenStartPicker(false);
-                    //handleInputChange('start_time', date);
-                    setGroundData(prevState => ({
-                      ...prevState,
-                      ['start_time']: formatTime(date),
-                    }));
-                  }}
-                  onCancel={() => {
-                    setOpenStartPicker(false);
-                  }}
-                />
-                {!groundData?.start_time && !valData && (
-                  <Text style={styles.errorText}>*Enter start time</Text>
-                )}
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Closes At</Text>
-                <TouchableOpacity
-                  style={styles.inputDateView}
-                  onPress={() => setOpenEndPicker(true)}>
-                  <Text style={styles.inputText}>
-                    {groundData?.end_time || 'Select Time'}
-                  </Text>
-                </TouchableOpacity>
-                <DatePicker
-                  style={{fontFamily: 'Outfit-Regular'}}
-                  modal
-                  open={openEndPicker}
-                  date={new Date()}
-                  mode="time"
-                  onConfirm={date => {
-                    setOpenEndPicker(false);
-                    //handleInputChange('end_time', date);
-                    setGroundData(prevState => ({
-                      ...prevState,
-                      ['end_time']: formatTime(date),
-                    }));
-                  }}
-                  onCancel={() => {
-                    setOpenEndPicker(false);
-                  }}
-                />
-                {!groundData?.end_time && !valData && (
-                  <Text style={styles.errorText}>*Enter end time</Text>
-                )}
-              </View>
-            </View>
-          </Collapsible>
-        </View>
-
-        {/* CoverImage */}
-        <View style={{zIndex: 5000, paddingBottom: 24}}>
-          <TouchableOpacity
-            style={[
-              styles.accordionHeader,
-              !coverImageOpen ? styles.openHeader : styles.closedHeader,
-            ]}
-            onPress={() => setCoverImageOpen(!coverImageOpen)}
-            activeOpacity={1}>
-            <Text style={styles.accordionHeaderText}>Cover Image</Text>
-            <Ionicons
-              name={!coverImageOpen ? 'chevron-up' : 'chevron-down'}
-              size={24}
-            />
-          </TouchableOpacity>
-          <Collapsible collapsed={coverImageOpen}>
-            <View
-              style={{
-                paddingHorizontal: 20,
-                backgroundColor: COLORS.WHITE,
-                borderBottomLeftRadius: 12,
-                borderBottomRightRadius: 12,
-              }}>
+            </TouchableOpacity>
+            <Collapsible collapsed={basicDetailsOpen}>
               <View
-                style={{
-                  borderBottomColor: '#F3F4F6',
-                  borderBottomWidth: 1,
-                }}
-              />
+                style={{ paddingHorizontal: 20, backgroundColor: COLORS.WHITE }}>
+                <View
+                  style={{
+                    borderBottomColor: '#F3F4F6',
+                    borderBottomWidth: 1,
+                  }}
+                />
+              </View>
               <View
                 style={[
                   {
@@ -888,548 +779,689 @@ const ArenaScreen = () => {
                     zIndex: 2000,
                     paddingHorizontal: 10,
                     backgroundColor: '#fff',
+                    borderBottomRightRadius: 12,
+                    borderBottomLeftRadius: 12,
                   },
                 ]}>
-                <TouchableOpacity
-                  style={styles.uploadButton}
-                  onPress={handleClick}>
-                  <Image source={IMAGES.UploadImages} />
-                  <Text style={styles.uploadText}>Upload Image</Text>
-                </TouchableOpacity>
-
-                <View style={styles.imageContainerUpload}>
-                  {groundData?.coverImage?.map((image, index) => (
-                    <View key={index} style={styles.imageWrapperUpload}>
-                      <Image source={{uri: image}} style={styles.imageUpload} />
-                      <TouchableOpacity
-                        onPress={() => handleImageDelete(index)}
-                        style={styles.deleteButton}>
-                        <MaterialCommunityIcons
-                          name="delete-outline"
-                          size={13}
-                          color="#fff"
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                  {groundData?.coverImage?.length === 0 && (
-                    <Text style={styles.errorText}>* Select cover image</Text>
+                <CommonTextInput
+                  label="Arena Name"
+                  value={groundData?.groundname}
+                  onChangeText={text => handleInputChange('groundname', text)}
+                  keyboardType="default"
+                />
+                <CommonTextInput
+                  label="Mobile Number"
+                  value={groundData?.phonenumber}
+                  onChangeText={text => handleInputChange('phonenumber', text)}
+                  keyboardType="phone-pad"
+                />
+                <CommonTextInput
+                  label="Email"
+                  value={groundData?.email}
+                  onChangeText={text => handleInputChange('email', text)}
+                  keyboardType="email-address"
+                />
+                <CommonTextInput
+                  label="Court Type"
+                  value={groundData?.groundtype}
+                  onChangeText={text => handleInputChange('groundtype', text)}
+                  keyboardType="default"
+                />
+                <View style={styles.inputContainer}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10 }}>
+                    <Text style={styles.label}>Opens At</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' ,}}
+                    >
+                      <CheckBox
+                        value={isChecked}
+                        onValueChange={handleCheckbox}
+                        tintColors={{ true: '#097E52', false: '#878787' }}
+                        style={{marginBottom:5}}
+                      />
+                      <Text style={styles.checkboxLabel}>Set 24hour Option</Text></View>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.inputDateView}
+                    onPress={() => setOpenStartPicker(true)}>
+                    <Text style={styles.inputText}>
+                      {groundData?.start_time || 'Select Time'}
+                    </Text>
+                  </TouchableOpacity>
+                  <DatePicker
+                    modal
+                    open={openStartPicker}
+                    date={new Date()}
+                    mode="time"
+                    onConfirm={date => {
+                      setOpenStartPicker(false);
+                      //handleInputChange('start_time', date);
+                      setGroundData(prevState => ({
+                        ...prevState,
+                        ['start_time']: formatTime(date),
+                      }));
+                    }}
+                    onCancel={() => {
+                      setOpenStartPicker(false);
+                    }}
+                  />
+                  {!groundData?.start_time && !valData && (
+                    <Text style={styles.errorText}>*Enter start time</Text>
                   )}
+                </View>
 
-                  <Text style={styles.infoContainer}>
-                    The supported image file formats are JPG, PNG, JPEG, and
-                    WEBP
-                  </Text>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Closes At</Text>
+                  <TouchableOpacity
+                    style={styles.inputDateView}
+                    onPress={() => setOpenEndPicker(true)}>
+                    <Text style={styles.inputText}>
+                      {groundData?.end_time || 'Select Time'}
+                    </Text>
+                  </TouchableOpacity>
+                  <DatePicker
+                    style={{ fontFamily: 'Outfit-Regular' }}
+                    modal
+                    open={openEndPicker}
+                    date={new Date()}
+                    mode="time"
+                    onConfirm={date => {
+                      setOpenEndPicker(false);
+                      //handleInputChange('end_time', date);
+                      setGroundData(prevState => ({
+                        ...prevState,
+                        ['end_time']: formatTime(date),
+                      }));
+                    }}
+                    onCancel={() => {
+                      setOpenEndPicker(false);
+                    }}
+                  />
+                  {!groundData?.end_time && !valData && (
+                    <Text style={styles.errorText}>*Enter end time</Text>
+                  )}
                 </View>
               </View>
-            </View>
-          </Collapsible>
-        </View>
+            </Collapsible>
+          </View>
 
-        {/* Sports Available */}
-        <View style={{zIndex: 5000, paddingBottom: 24}}>
-          <TouchableOpacity
-            style={[
-              styles.accordionHeader,
-              !sportsAvailableOpen ? styles.openHeader : styles.closedHeader,
-            ]}
-            onPress={() => setSportsAvailableOpen(!sportsAvailableOpen)}
-            activeOpacity={1}>
-            <Text style={styles.accordionHeaderText}>Sports Available</Text>
-            <Ionicons
-              name={!sportsAvailableOpen ? 'chevron-up' : 'chevron-down'}
-              size={24}
-            />
-          </TouchableOpacity>
-          <Collapsible collapsed={sportsAvailableOpen}>
-            <View
-              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
+          {/* CoverImage */}
+          <View style={{ zIndex: 5000, paddingBottom: 24 }}>
+            <TouchableOpacity
+              style={[
+                styles.accordionHeader,
+                !coverImageOpen ? styles.openHeader : styles.closedHeader,
+              ]}
+              onPress={() => setCoverImageOpen(!coverImageOpen)}
+              activeOpacity={1}>
+              <Text style={styles.accordionHeaderText}>Cover Image</Text>
+              <Ionicons
+                name={!coverImageOpen ? 'chevron-up' : 'chevron-down'}
+                size={24}
+              />
+            </TouchableOpacity>
+            <Collapsible collapsed={coverImageOpen}>
               <View
                 style={{
-                  borderBottomColor: '#F3F4F6',
-                  borderBottomWidth: 1,
-                }}
-              />
-            </View>
-            <View
-              style={[
-                {
-                  paddingVertical: 20,
-                  zIndex: 2000,
-                  paddingHorizontal: 10,
-                  backgroundColor: '#fff',
-                  borderBottomRightRadius: 12,
+                  paddingHorizontal: 20,
+                  backgroundColor: COLORS.WHITE,
                   borderBottomLeftRadius: 12,
-                },
-              ]}>
-              <View>
-                <FlatList
-                  data={game_type}
-                  renderItem={({item}) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.itemContainerSports,
-                        {
-                          borderColor: groundData?.game_type?.includes(item)
-                            ? '#000'
-                            : '#F9F9F6',
-                        },
-                      ]}
-                      onPress={() => handleGameclick(item)}>
-                      <Image
-                        source={iconsss[item]}
-                        style={styles.iconSports}
-                        resizeMode="contain"
-                      />
-                      <Text style={styles.itemTextSports}>
-                        {item.replace('_', ' ')}
-                      </Text>
-                      {groundData?.game_type?.includes(item) && (
-                        <Ionicons
-                          style={styles.tickIconSports}
-                          name="checkmark-circle"
-                          size={15}
-                          color="#4CA181"
-                        />
-                      )}
-                    </TouchableOpacity>
-                  )}
-                  keyExtractor={item => item}
-                  numColumns={3}
-                  columnWrapperStyle={styles.rowSports}
+                  borderBottomRightRadius: 12,
+                }}>
+                <View
+                  style={{
+                    borderBottomColor: '#F3F4F6',
+                    borderBottomWidth: 1,
+                  }}
                 />
-              </View>
-            </View>
-          </Collapsible>
-        </View>
-
-        {/* Includes */}
-        <View style={{zIndex: 5000, paddingBottom: 24}}>
-          <TouchableOpacity
-            style={[
-              styles.accordionHeader,
-              !inclueOpen ? styles.openHeader : styles.closedHeader,
-            ]}
-            onPress={() => setInclueOpen(!inclueOpen)}
-            activeOpacity={1}>
-            <Text style={styles.accordionHeaderText}>Includes</Text>
-            <Ionicons
-              name={!inclueOpen ? 'chevron-up' : 'chevron-down'}
-              size={24}
-            />
-          </TouchableOpacity>
-          <Collapsible collapsed={inclueOpen}>
-            <View
-              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
-              <View
-                style={{
-                  borderBottomColor: '#F3F4F6',
-                  borderBottomWidth: 1,
-                }}
-              />
-            </View>
-            <View
-              style={[
-                {
-                  paddingVertical: 20,
-                  zIndex: 2000,
-                  paddingHorizontal: 10,
-                  backgroundColor: '#fff',
-                  borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,
-                },
-              ]}>
-              <View>
-                <FlatList
-                  data={includes}
-                  renderItem={renderItem}
-                  keyExtractor={item => item}
-                  extraData={groundData?.includes}
-                />
-              </View>
-            </View>
-          </Collapsible>
-        </View>
-
-        {/* Rules */}
-        <View style={{zIndex: 5000, paddingBottom: 24}}>
-          <TouchableOpacity
-            style={[
-              styles.accordionHeader,
-              !ruleOpen ? styles.openHeader : styles.closedHeader,
-            ]}
-            onPress={() => setRuleOpen(!ruleOpen)}
-            activeOpacity={1}>
-            <Text style={styles.accordionHeaderText}>Rules</Text>
-            <Ionicons
-              name={!ruleOpen ? 'chevron-up' : 'chevron-down'}
-              size={24}
-            />
-          </TouchableOpacity>
-          <Collapsible collapsed={ruleOpen}>
-            <View
-              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
-              <View
-                style={{
-                  borderBottomColor: '#F3F4F6',
-                  borderBottomWidth: 1,
-                }}
-              />
-            </View>
-            <View
-              style={[
-                {
-                  paddingVertical: 20,
-                  zIndex: 2000,
-                  paddingHorizontal: 10,
-                  backgroundColor: '#fff',
-                  borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,
-                },
-              ]}>
-              <View>
-                <FlatList
-                  data={textAreas}
-                  renderItem={renderItemRules}
-                  keyExtractor={(item, index) => index.toString()}
-                  contentContainerStyle={styles.listContainerRule}
-                />
-                <TouchableOpacity
-                  style={styles.addButtonRule}
-                  onPress={handleAddTextArea}>
-                  <Text style={styles.addButtonTextRule}>Add Rule</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Collapsible>
-        </View>
-
-        {/* Amenities */}
-        <View style={{zIndex: 5000, paddingBottom: 24}}>
-          <TouchableOpacity
-            style={[
-              styles.accordionHeader,
-              !amenitiesOpen ? styles.openHeader : styles.closedHeader,
-            ]}
-            onPress={() => setAmenitiesOpen(!amenitiesOpen)}
-            activeOpacity={1}>
-            <Text style={styles.accordionHeaderText}>Amenities</Text>
-            <Ionicons
-              name={!amenitiesOpen ? 'chevron-up' : 'chevron-down'}
-              size={24}
-            />
-          </TouchableOpacity>
-          <Collapsible collapsed={amenitiesOpen}>
-            <View
-              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
-              <View
-                style={{
-                  borderBottomColor: '#F3F4F6',
-                  borderBottomWidth: 1,
-                }}
-              />
-            </View>
-            <View
-              style={[
-                {
-                  paddingVertical: 20,
-                  zIndex: 2000,
-                  paddingHorizontal: 10,
-                  backgroundColor: '#fff',
-                  borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,
-                },
-              ]}>
-              <FlatList
-                data={amenities}
-                renderItem={renderAmenities}
-                keyExtractor={item => item}
-                extraData={groundData?.includes} // Ensures FlatList updates when state changes
-              />
-            </View>
-          </Collapsible>
-        </View>
-
-        {/* Gallery */}
-        <View style={{zIndex: 5000, paddingBottom: 24}}>
-          <TouchableOpacity
-            style={[
-              styles.accordionHeader,
-              !galleryOpen ? styles.openHeader : styles.closedHeader,
-            ]}
-            onPress={() => setGalleryOpen(!galleryOpen)}
-            activeOpacity={1}>
-            <Text style={styles.accordionHeaderText}>Gallery</Text>
-            <Ionicons
-              name={!galleryOpen ? 'chevron-up' : 'chevron-down'}
-              size={24}
-            />
-          </TouchableOpacity>
-          <Collapsible collapsed={galleryOpen}>
-            <View
-              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
-              <View
-                style={{
-                  borderBottomColor: '#F3F4F6',
-                  borderBottomWidth: 1,
-                }}
-              />
-            </View>
-            <View
-              style={[
-                {
-                  paddingVertical: 20,
-                  zIndex: 2000,
-                  paddingHorizontal: 10,
-                  backgroundColor: '#fff',
-                  borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,
-                },
-              ]}>
-              <View>
-                <View style={styles.uploadContainer}>
+                <View
+                  style={[
+                    {
+                      paddingTop: 20,
+                      zIndex: 2000,
+                      paddingHorizontal: 10,
+                      backgroundColor: '#fff',
+                    },
+                  ]}>
                   <TouchableOpacity
                     style={styles.uploadButton}
-                    onPress={handleGalleryClick}>
-                    <Image
-                      source={IMAGES.UploadImages}
-                      style={styles.uploadIcon}
-                    />
+                    onPress={handleClick}>
+                    <Image source={IMAGES.UploadImages} />
                     <Text style={styles.uploadText}>Upload Image</Text>
                   </TouchableOpacity>
-                </View>
 
-                <View style={styles.imageContainerUpload}>
-                  {groundData?.gallery?.map((image, index) => (
-                    <View key={index} style={styles.imageWrapperUpload}>
-                      <Image source={{uri: image}} style={styles.imageUpload} />
+                  <View style={styles.imageContainerUpload}>
+                    {groundData?.coverImage?.map((image, index) => (
+                      <View key={index} style={styles.imageWrapperUpload}>
+                        <Image source={{ uri: image }} style={styles.imageUpload} />
+                        <TouchableOpacity
+                          onPress={() => handleImageDelete(index)}
+                          style={styles.deleteButton}>
+                          <MaterialCommunityIcons
+                            name="delete-outline"
+                            size={13}
+                            color="#fff"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                    {groundData?.coverImage?.length === 0 && (
+                      <Text style={styles.errorText}>* Select cover image</Text>
+                    )}
+
+                    <Text style={styles.infoContainer}>
+                      The supported image file formats are JPG, PNG, JPEG, and
+                      WEBP
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </Collapsible>
+          </View>
+
+          {/* Sports Available */}
+          <View style={{ zIndex: 5000, paddingBottom: 24 }}>
+            <TouchableOpacity
+              style={[
+                styles.accordionHeader,
+                !sportsAvailableOpen ? styles.openHeader : styles.closedHeader,
+              ]}
+              onPress={() => setSportsAvailableOpen(!sportsAvailableOpen)}
+              activeOpacity={1}>
+              <Text style={styles.accordionHeaderText}>Sports Available</Text>
+              <Ionicons
+                name={!sportsAvailableOpen ? 'chevron-up' : 'chevron-down'}
+                size={24}
+              />
+            </TouchableOpacity>
+            <Collapsible collapsed={sportsAvailableOpen}>
+              <View
+                style={{ paddingHorizontal: 20, backgroundColor: COLORS.WHITE }}>
+                <View
+                  style={{
+                    borderBottomColor: '#F3F4F6',
+                    borderBottomWidth: 1,
+                  }}
+                />
+              </View>
+              <View
+                style={[
+                  {
+                    paddingVertical: 20,
+                    zIndex: 2000,
+                    paddingHorizontal: 10,
+                    backgroundColor: '#fff',
+                    borderBottomRightRadius: 12,
+                    borderBottomLeftRadius: 12,
+                  },
+                ]}>
+                <View>
+                  <FlatList
+                    data={game_type}
+                    renderItem={({ item }) => (
                       <TouchableOpacity
-                        onPress={() => handleImageGalleryDelete(index)}
-                        style={styles.deleteButton}>
-                        <MaterialCommunityIcons
-                          name="delete-outline"
-                          size={13}
-                          color="#fff"
+                        style={[
+                          styles.itemContainerSports,
+                          {
+                            borderColor: groundData?.game_type?.includes(item)
+                              ? '#000'
+                              : '#F9F9F6',
+                          },
+                        ]}
+                        onPress={() => handleGameclick(item)}>
+                        <Image
+                          source={iconsss[item]}
+                          style={styles.iconSports}
+                          resizeMode="contain"
                         />
+                        <Text style={styles.itemTextSports}>
+                          {item.replace('_', ' ')}
+                        </Text>
+                        {groundData?.game_type?.includes(item) && (
+                          <Ionicons
+                            style={styles.tickIconSports}
+                            name="checkmark-circle"
+                            size={15}
+                            color="#4CA181"
+                          />
+                        )}
                       </TouchableOpacity>
-                    </View>
-                  ))}
+                    )}
+                    keyExtractor={item => item}
+                    numColumns={3}
+                    columnWrapperStyle={styles.rowSports}
+                  />
                 </View>
-
-                {groundData?.gallery?.length === 0 && (
-                  <Text style={styles.errorText}>*Select Gallery Image</Text>
-                )}
               </View>
-            </View>
-          </Collapsible>
-        </View>
+            </Collapsible>
+          </View>
 
-        {/* Location */}
-        <View style={{zIndex: 5000, paddingBottom: 24}}>
-          <TouchableOpacity
-            style={[
-              styles.accordionHeader,
-              !locationOpen ? styles.openHeader : styles.closedHeader,
-            ]}
-            onPress={() => setLocationOpen(!locationOpen)}
-            activeOpacity={1}>
-            <Text style={styles.accordionHeaderText}>Location</Text>
-            <Ionicons
-              name={!locationOpen ? 'chevron-up' : 'chevron-down'}
-              size={24}
-            />
-          </TouchableOpacity>
-          <Collapsible collapsed={locationOpen}>
-            <View
-              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
-              <View
-                style={{
-                  borderBottomColor: '#F3F4F6',
-                  borderBottomWidth: 1,
-                }}
-              />
-            </View>
-            <View
+          {/* Includes */}
+          <View style={{ zIndex: 5000, paddingBottom: 24 }}>
+            <TouchableOpacity
               style={[
-                {
-                  paddingVertical: 20,
-                  zIndex: 2000,
-                  paddingHorizontal: 10,
-                  backgroundColor: '#fff',
-                  borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,
-                },
-              ]}>
-              <View>
-                {/* <Text style={styles.label}>Locations</Text> */}
-                <View style={styles.stack}>
-                  <CommonTextInput
-                    label="State"
-                    value={startCase(groundData?.state)}
-                    onChangeText={value => handleInputChange('state', value)}
-                    //widthStyle={true}
+                styles.accordionHeader,
+                !inclueOpen ? styles.openHeader : styles.closedHeader,
+              ]}
+              onPress={() => setInclueOpen(!inclueOpen)}
+              activeOpacity={1}>
+              <Text style={styles.accordionHeaderText}>Includes</Text>
+              <Ionicons
+                name={!inclueOpen ? 'chevron-up' : 'chevron-down'}
+                size={24}
+              />
+            </TouchableOpacity>
+            <Collapsible collapsed={inclueOpen}>
+              <View
+                style={{ paddingHorizontal: 20, backgroundColor: COLORS.WHITE }}>
+                <View
+                  style={{
+                    borderBottomColor: '#F3F4F6',
+                    borderBottomWidth: 1,
+                  }}
+                />
+              </View>
+              <View
+                style={[
+                  {
+                    paddingVertical: 20,
+                    zIndex: 2000,
+                    paddingHorizontal: 10,
+                    backgroundColor: '#fff',
+                    borderBottomRightRadius: 12,
+                    borderBottomLeftRadius: 12,
+                  },
+                ]}>
+                <View>
+                  <FlatList
+                    data={includes}
+                    renderItem={renderItem}
+                    keyExtractor={item => item}
+                    extraData={groundData?.includes}
                   />
-                  {!groundData?.state && !valData && (
-                    <Text style={styles.errorText}>*Enter state</Text>
+                </View>
+              </View>
+            </Collapsible>
+          </View>
+
+          {/* Rules */}
+          <View style={{ zIndex: 5000, paddingBottom: 24 }}>
+            <TouchableOpacity
+              style={[
+                styles.accordionHeader,
+                !ruleOpen ? styles.openHeader : styles.closedHeader,
+              ]}
+              onPress={() => setRuleOpen(!ruleOpen)}
+              activeOpacity={1}>
+              <Text style={styles.accordionHeaderText}>Rules</Text>
+              <Ionicons
+                name={!ruleOpen ? 'chevron-up' : 'chevron-down'}
+                size={24}
+              />
+            </TouchableOpacity>
+            <Collapsible collapsed={ruleOpen}>
+              <View
+                style={{ paddingHorizontal: 20, backgroundColor: COLORS.WHITE }}>
+                <View
+                  style={{
+                    borderBottomColor: '#F3F4F6',
+                    borderBottomWidth: 1,
+                  }}
+                />
+              </View>
+              <View
+                style={[
+                  {
+                    paddingVertical: 20,
+                    zIndex: 2000,
+                    paddingHorizontal: 10,
+                    backgroundColor: '#fff',
+                    borderBottomRightRadius: 12,
+                    borderBottomLeftRadius: 12,
+                  },
+                ]}>
+                <View>
+                  <FlatList
+                    data={textAreas}
+                    renderItem={renderItemRules}
+                    keyExtractor={(item, index) => index.toString()}
+                    contentContainerStyle={styles.listContainerRule}
+                  />
+                  <TouchableOpacity
+                    style={styles.addButtonRule}
+                    onPress={handleAddTextArea}>
+                    <Text style={styles.addButtonTextRule}>Add Rule</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Collapsible>
+          </View>
+
+          {/* Amenities */}
+          <View style={{ zIndex: 5000, paddingBottom: 24 }}>
+            <TouchableOpacity
+              style={[
+                styles.accordionHeader,
+                !amenitiesOpen ? styles.openHeader : styles.closedHeader,
+              ]}
+              onPress={() => setAmenitiesOpen(!amenitiesOpen)}
+              activeOpacity={1}>
+              <Text style={styles.accordionHeaderText}>Amenities</Text>
+              <Ionicons
+                name={!amenitiesOpen ? 'chevron-up' : 'chevron-down'}
+                size={24}
+              />
+            </TouchableOpacity>
+            <Collapsible collapsed={amenitiesOpen}>
+              <View
+                style={{ paddingHorizontal: 20, backgroundColor: COLORS.WHITE }}>
+                <View
+                  style={{
+                    borderBottomColor: '#F3F4F6',
+                    borderBottomWidth: 1,
+                  }}
+                />
+              </View>
+              <View
+                style={[
+                  {
+                    paddingVertical: 20,
+                    zIndex: 2000,
+                    paddingHorizontal: 10,
+                    backgroundColor: '#fff',
+                    borderBottomRightRadius: 12,
+                    borderBottomLeftRadius: 12,
+                  },
+                ]}>
+                <FlatList
+                  data={amenities}
+                  renderItem={renderAmenities}
+                  keyExtractor={item => item}
+                  extraData={groundData?.includes} // Ensures FlatList updates when state changes
+                />
+              </View>
+            </Collapsible>
+          </View>
+
+          {/* Gallery */}
+          <View style={{ zIndex: 5000, paddingBottom: 24 }}>
+            <TouchableOpacity
+              style={[
+                styles.accordionHeader,
+                !galleryOpen ? styles.openHeader : styles.closedHeader,
+              ]}
+              onPress={() => setGalleryOpen(!galleryOpen)}
+              activeOpacity={1}>
+              <Text style={styles.accordionHeaderText}>Gallery</Text>
+              <Ionicons
+                name={!galleryOpen ? 'chevron-up' : 'chevron-down'}
+                size={24}
+              />
+            </TouchableOpacity>
+            <Collapsible collapsed={galleryOpen}>
+              <View
+                style={{ paddingHorizontal: 20, backgroundColor: COLORS.WHITE }}>
+                <View
+                  style={{
+                    borderBottomColor: '#F3F4F6',
+                    borderBottomWidth: 1,
+                  }}
+                />
+              </View>
+              <View
+                style={[
+                  {
+                    paddingVertical: 20,
+                    zIndex: 2000,
+                    paddingHorizontal: 10,
+                    backgroundColor: '#fff',
+                    borderBottomRightRadius: 12,
+                    borderBottomLeftRadius: 12,
+                  },
+                ]}>
+                <View>
+                  <View style={styles.uploadContainer}>
+                    <TouchableOpacity
+                      style={styles.uploadButton}
+                      onPress={handleGalleryClick}>
+                      <Image
+                        source={IMAGES.UploadImages}
+                        style={styles.uploadIcon}
+                      />
+                      <Text style={styles.uploadText}>Upload Image</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.imageContainerUpload}>
+                    {groundData?.gallery?.map((image, index) => (
+                      <View key={index} style={styles.imageWrapperUpload}>
+                        <Image source={{ uri: image }} style={styles.imageUpload} />
+                        <TouchableOpacity
+                          onPress={() => handleImageGalleryDelete(index)}
+                          style={styles.deleteButton}>
+                          <MaterialCommunityIcons
+                            name="delete-outline"
+                            size={13}
+                            color="#fff"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+
+                  {groundData?.gallery?.length === 0 && (
+                    <Text style={styles.errorText}>*Select Gallery Image</Text>
                   )}
                 </View>
+              </View>
+            </Collapsible>
+          </View>
 
-                <View style={styles.stack}>
-                  <CommonTextInput
-                    label="City"
-                    value={capitalize(groundData?.city)}
-                    onChangeText={value => handleInputChange('city', value)}
+          {/* Location */}
+          <View style={{ zIndex: 5000, paddingBottom: 24 }}>
+            <TouchableOpacity
+              style={[
+                styles.accordionHeader,
+                !locationOpen ? styles.openHeader : styles.closedHeader,
+              ]}
+              onPress={() => setLocationOpen(!locationOpen)}
+              activeOpacity={1}>
+              <Text style={styles.accordionHeaderText}>Location</Text>
+              <Ionicons
+                name={!locationOpen ? 'chevron-up' : 'chevron-down'}
+                size={24}
+              />
+            </TouchableOpacity>
+            <Collapsible collapsed={locationOpen}>
+              <View
+                style={{ paddingHorizontal: 20, backgroundColor: COLORS.WHITE }}>
+                <View
+                  style={{
+                    borderBottomColor: '#F3F4F6',
+                    borderBottomWidth: 1,
+                  }}
+                />
+              </View>
+              <View
+                style={[
+                  {
+                    paddingVertical: 20,
+                    zIndex: 2000,
+                    paddingHorizontal: 10,
+                    backgroundColor: '#fff',
+                    borderBottomRightRadius: 12,
+                    borderBottomLeftRadius: 12,
+                  },
+                ]}>
+                <View>
+                  {/* <Text style={styles.label}>Locations</Text> */}
+                  <View style={styles.stack}>
+                    <CommonTextInput
+                      label="State"
+                      value={startCase(groundData?.state)}
+                      onChangeText={value => handleInputChange('state', value)}
                     //widthStyle={true}
-                  />
-                  {!groundData?.city && !valData && (
-                    <Text style={styles.errorText}>*Enter city</Text>
-                  )}
-                </View>
+                    />
+                    {!groundData?.state && !valData && (
+                      <Text style={styles.errorText}>*Enter state</Text>
+                    )}
+                  </View>
 
-                <View style={styles.stack}>
-                  <CommonTextInput
-                    label="Street Address"
-                    value={startCase(groundData?.street_address)}
-                    onChangeText={value =>
-                      handleInputChange('street_address', value)
-                    }
+                  <View style={styles.stack}>
+                    <CommonTextInput
+                      label="City"
+                      value={capitalize(groundData?.city)}
+                      onChangeText={value => handleInputChange('city', value)}
                     //widthStyle={true}
-                  />
-                  {!groundData?.street_address && !valData && (
-                    <Text style={styles.errorText}>*Enter street address</Text>
-                  )}
-                </View>
+                    />
+                    {!groundData?.city && !valData && (
+                      <Text style={styles.errorText}>*Enter city</Text>
+                    )}
+                  </View>
 
-                <View style={styles.stack}>
-                  <CommonTextInput
-                    label="Pincode"
-                    value={groundData?.pincode}
-                    onChangeText={value => handleInputChange('pincode', value)}
+                  <View style={styles.stack}>
+                    <CommonTextInput
+                      label="Street Address"
+                      value={startCase(groundData?.street_address)}
+                      onChangeText={value =>
+                        handleInputChange('street_address', value)
+                      }
+                    //widthStyle={true}
+                    />
+                    {!groundData?.street_address && !valData && (
+                      <Text style={styles.errorText}>*Enter street address</Text>
+                    )}
+                  </View>
+
+                  <View style={styles.stack}>
+                    <CommonTextInput
+                      label="Pincode"
+                      value={groundData?.pincode}
+                      onChangeText={value => handleInputChange('pincode', value)}
                     // widthStyle={true}
-                  />
-                  {!groundData?.pincode && !valData && (
-                    <Text style={styles.errorText}>*Enter pincode</Text>
-                  )}
+                    />
+                    {!groundData?.pincode && !valData && (
+                      <Text style={styles.errorText}>*Enter pincode</Text>
+                    )}
+                  </View>
                 </View>
               </View>
-            </View>
-          </Collapsible>
-        </View>
+            </Collapsible>
+          </View>
 
-        {/* Overview */}
-        <View style={{zIndex: 5000, paddingBottom: 24}}>
-          <TouchableOpacity
-            style={[
-              styles.accordionHeader,
-              !overviewOpen ? styles.openHeader : styles.closedHeader,
-            ]}
-            onPress={() => setOverviewOpen(!overviewOpen)}
-            activeOpacity={1}>
-            <Text style={styles.accordionHeaderText}>Overview</Text>
-            <Ionicons
-              name={!overviewOpen ? 'chevron-up' : 'chevron-down'}
-              size={24}
-            />
-          </TouchableOpacity>
-          <Collapsible collapsed={overviewOpen}>
-            <View
-              style={{paddingHorizontal: 20, backgroundColor: COLORS.WHITE}}>
-              <View
-                style={{
-                  borderBottomColor: '#F3F4F6',
-                  borderBottomWidth: 1,
-                }}
-              />
-            </View>
-            <View
+          {/* Overview */}
+          <View style={{ zIndex: 5000, paddingBottom: 24 }}>
+            <TouchableOpacity
               style={[
-                {
-                  paddingVertical: 20,
-                  zIndex: 2000,
-                  paddingHorizontal: 10,
-                  backgroundColor: '#fff',
-                  borderBottomRightRadius: 12,
-                  borderBottomLeftRadius: 12,
-                },
-              ]}>
-              <View>
-                <CommonTextArea
-                  value={groundData?.overview}
-                  onChangeText={text => handleInputChange('overview', text)}
+                styles.accordionHeader,
+                !overviewOpen ? styles.openHeader : styles.closedHeader,
+              ]}
+              onPress={() => setOverviewOpen(!overviewOpen)}
+              activeOpacity={1}>
+              <Text style={styles.accordionHeaderText}>Overview</Text>
+              <Ionicons
+                name={!overviewOpen ? 'chevron-up' : 'chevron-down'}
+                size={24}
+              />
+            </TouchableOpacity>
+            <Collapsible collapsed={overviewOpen}>
+              <View
+                style={{ paddingHorizontal: 20, backgroundColor: COLORS.WHITE }}>
+                <View
+                  style={{
+                    borderBottomColor: '#F3F4F6',
+                    borderBottomWidth: 1,
+                  }}
+                />
+              </View>
+              <View
+                style={[
+                  {
+                    paddingVertical: 20,
+                    zIndex: 2000,
+                    paddingHorizontal: 10,
+                    backgroundColor: '#fff',
+                    borderBottomRightRadius: 12,
+                    borderBottomLeftRadius: 12,
+                  },
+                ]}>
+                <View>
+                  <CommonTextArea
+                    value={groundData?.overview}
+                    onChangeText={text => handleInputChange('overview', text)}
                   // placeholderTextColor="#666"
                   // numberOfLines={4}
-                />
-                {!groundData?.overview && !valData && (
-                  <Text style={styles.errorText}>*Enter overview</Text>
-                )}
+                  />
+                  {!groundData?.overview && !valData && (
+                    <Text style={styles.errorText}>*Enter overview</Text>
+                  )}
+                </View>
               </View>
+            </Collapsible>
+          </View>
+
+          {/* Active/Inactive */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Arena - Active/Inactive</Text>
+            <DropDownPicker
+              open={open}
+              value={groundID != null ? groundData?.active : value}
+              items={items}
+              setOpen={setOpen}
+              setValue={callback => {
+                const newValue = callback(value);
+                setValue(newValue);
+                setGroundData({
+                  ...groundData,
+                  active: newValue,
+                });
+              }}
+              setItems={setItems}
+              style={[styles.dropdown]}
+              textStyle={styles.dropdownText}
+              placeholder="Select Active/Inactive"
+            />
+            {!groundData?.active && !valData && (
+              <Text style={styles.errorText}>
+                *Select whether ground active or not
+              </Text>
+            )}
+          </View>
+
+          {groundID != null ? (
+            <View style={styles.buttonContainerArena}>
+              <TouchableOpacity
+                style={[styles.buttonArena, { backgroundColor: '#097E52' }]}
+                onPress={() => {
+                  setGroundData(createtempgroundData);
+                  setTextAreas([]);
+                }}>
+                <Text style={styles.buttonTextArena}>Reset</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.buttonArena, { backgroundColor: '#192335' }]}
+                onPress={() => updateground(groundData)}>
+                <Text style={styles.buttonTextArena}>Update</Text>
+              </TouchableOpacity>
             </View>
-          </Collapsible>
-        </View>
-
-        {/* Active/Inactive */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Arena - Active/Inactive</Text>
-          <DropDownPicker
-            open={open}
-            value={groundID != null ? groundData?.active : value}
-            items={items}
-            setOpen={setOpen}
-            setValue={callback => {
-              const newValue = callback(value);
-              setValue(newValue);
-              setGroundData({
-                ...groundData,
-                active: newValue,
-              });
-            }}
-            setItems={setItems}
-            style={[styles.dropdown]}
-            textStyle={styles.dropdownText}
-            placeholder="Select Active/Inactive"
-          />
-          {!groundData?.active && !valData && (
-            <Text style={styles.errorText}>
-              *Select whether ground active or not
-            </Text>
+          ) : (
+            <View style={styles.buttonContainerArena}>
+              <TouchableOpacity
+                style={[styles.buttonArena, { backgroundColor: '#097E52' }]}
+                onPress={() => {
+                  setGroundData(createtempgroundData);
+                  setTextAreas([]);
+                }}>
+                <Text style={styles.buttonTextArena}>Reset</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.buttonArena, { backgroundColor: '#192335' }]}
+                onPress={() => createground(groundData)}>
+                <Text style={styles.buttonTextArena}>Add</Text>
+              </TouchableOpacity>
+            </View>
           )}
-        </View>
-
-        {groundID != null ? (
-          <View style={styles.buttonContainerArena}>
-            <TouchableOpacity
-              style={[styles.buttonArena, {backgroundColor: '#097E52'}]}
-              onPress={() => {
-                setGroundData(createtempgroundData);
-                setTextAreas([]);
-              }}>
-              <Text style={styles.buttonTextArena}>Reset</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.buttonArena, {backgroundColor: '#192335'}]}
-              onPress={() => updateground(groundData)}>
-              <Text style={styles.buttonTextArena}>Update</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.buttonContainerArena}>
-            <TouchableOpacity
-              style={[styles.buttonArena, {backgroundColor: '#097E52'}]}
-              onPress={() => {
-                setGroundData(createtempgroundData);
-                setTextAreas([]);
-              }}>
-              <Text style={styles.buttonTextArena}>Reset</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.buttonArena, {backgroundColor: '#192335'}]}
-              onPress={() => createground(groundData)}>
-              <Text style={styles.buttonTextArena}>Add</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>)
-    }
+        </View>)
+      }
     </ScrollView>
   );
 };
@@ -1445,7 +1477,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   loaderContainer: {
-    marginVertical:50,
+    marginVertical: 50,
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
@@ -1460,6 +1492,13 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     marginBottom: 5,
     color: '#1B1B1B',
+  },
+  checkboxLabel: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#1B1B1B',
+    marginBottom: 5,
   },
   inputDateView: {
     height: 60,
