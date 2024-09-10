@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
+import messaging from '@react-native-firebase/messaging';
 import React, {useEffect, useRef, useState} from 'react';
 import {
   Image,
@@ -63,6 +64,22 @@ const UserCreateScreen = props => {
     setVerificationCode('');
   };
 
+  const getFCMToken = async () => {
+    try {
+      const fcmToken = await messaging().getToken();
+      if (fcmToken) {
+        console.log('FCM Token:', fcmToken);
+        return fcmToken;
+      } else {
+        console.log('Failed to get FCM token');
+        return null;
+      }
+    } catch (error) {
+      console.log('Error fetching FCM token:', error);
+      return null;
+    }
+  };
+
   const CreateFn = async () => {
     //console.log("userPhone?.length", userPhone?.length);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -88,6 +105,8 @@ const UserCreateScreen = props => {
       if (verificationId != '') {
         setEnterOTP(true);
       } else {
+        const token = await getFCMToken();
+
         const data = {
           avatar: null,
           email: userEmail,
@@ -95,6 +114,7 @@ const UserCreateScreen = props => {
           phonenumber: userPhone,
           username: userName,
           owner: true,
+          fcmToken: token,
         };
         // console.log('data', data);
         // console.log('recaptchaVerifier', recaptchaVerifier);
@@ -193,23 +213,23 @@ const UserCreateScreen = props => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView>
         {/* <ScrollView contentContainerStyle={{flexGrow: 1}}> */}
-          <ImageBackground
-            style={{width: '100%', height: '100%'}}
-            source={IMAGES.LoginBgImage}
-            resizeMode="cover">
-            <StatusBarCommon color={COLORS.PRIMARY} />
-            <SafeAreaView style={UserLoginScreenStyles.safe}>
-              {/* recaptchaVerifier */}
-              <FirebaseRecaptchaVerifierModal
-                ref={recaptchaVerifier}
-                firebaseConfig={firebaseConfig}
-                attemptInvisibleVerification={true}
-              />
-              <View style={UserLoginScreenStyles.logoContainer}>
-                <Image source={IMAGES.logoImage} resizeMode="contain" />
-              </View>
-             
-              <View style={UserLoginScreenStyles.loginContainer}>
+        <ImageBackground
+          style={{width: '100%', height: '100%'}}
+          source={IMAGES.LoginBgImage}
+          resizeMode="cover">
+          <StatusBarCommon color={COLORS.PRIMARY} />
+          <SafeAreaView style={UserLoginScreenStyles.safe}>
+            {/* recaptchaVerifier */}
+            <FirebaseRecaptchaVerifierModal
+              ref={recaptchaVerifier}
+              firebaseConfig={firebaseConfig}
+              attemptInvisibleVerification={true}
+            />
+            <View style={UserLoginScreenStyles.logoContainer}>
+              <Image source={IMAGES.logoImage} resizeMode="contain" />
+            </View>
+
+            <View style={UserLoginScreenStyles.loginContainer}>
               <ScrollView>
                 {!enterOTP ? (
                   <>
@@ -468,11 +488,10 @@ const UserCreateScreen = props => {
                     Login
                   </Text>
                 </Text>
-                </ScrollView>
-              </View>
-             
-            </SafeAreaView>
-          </ImageBackground>
+              </ScrollView>
+            </View>
+          </SafeAreaView>
+        </ImageBackground>
         {/* </ScrollView> */}
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
