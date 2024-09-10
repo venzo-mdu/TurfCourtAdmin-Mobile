@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -9,17 +9,17 @@ import {
   ScrollView,
   FlatList,
   ToastAndroid,
-  Linking
+  Linking,
 } from 'react-native';
 import _ from 'lodash';
-import { statusMap } from '../utils/statusMap';
+import {statusMap} from '../utils/statusMap';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { COLORS } from '../assets/constants/global_colors';
-import { changeEventStatus } from '../firebase/firebaseFunction/eventDetails';
+import {COLORS} from '../assets/constants/global_colors';
+import {changeEventStatus} from '../firebase/firebaseFunction/eventDetails';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CustomButton from './molecules/customButtom';
-import { userData } from '../firebase/firebaseFunction/userDetails';
-
+import {userData} from '../firebase/firebaseFunction/userDetails';
+import {sendNotification} from '../notification/sendNotification';
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const months = [
@@ -57,12 +57,12 @@ export const HomePageEventSlider = ({
   const [cancelEventInd, setCancelEventInd] = useState([]);
   const [canBePaid, setCanBePaid] = useState(false);
   const [phonenumber, setPhonenumber] = useState([]);
+  const [fcmToken, setFcmToken] = useState([]);
 
   useEffect(() => {
     getUserPhone(bookingItem[0].user_id);
   });
   const handleUpdateStatus = async props => {
-
     var sat;
     if (props === 'Accepted') {
       sat = 'Approved';
@@ -90,6 +90,9 @@ export const HomePageEventSlider = ({
   };
 
   const updateBooking = async (selectedEventDatum, props) => {
+    const title = 'Booking Update';
+    const body = 'Your Booking has been updated';
+    await sendNotification(fcmToken, title, body);
     await changeEventStatus(selectedEventDatum?.event_id, props);
   };
 
@@ -112,22 +115,22 @@ export const HomePageEventSlider = ({
   };
 
   async function getUserPhone(user_id) {
-
-    userData(user_id).then(user => {
-      if (user && user.phonenumber) {
-        //  let phonenumber = user.phonenumber.replace(/^\+91/, '');
-        setPhonenumber(user.phonenumber);
-      } else {
-        console.log('Phone number not found for this user.');
-        return null;
-      }
-    })
+    userData(user_id)
+      .then(user => {
+        if (user && user.phonenumber) {
+          //  let phonenumber = user.phonenumber.replace(/^\+91/, '');
+          setPhonenumber(user.phonenumber);
+          setFcmToken(user.fcmToken);
+        } else {
+          console.log('Phone number not found for this user.');
+          return null;
+        }
+      })
       .catch(error => {
         console.error('Error fetching user data:', error);
         return null;
       });
   }
-
 
   const firstSlot = new Date(bookingItem[0].start);
   const lastSlot = new Date(_.last(bookingItem).end);
@@ -161,19 +164,19 @@ export const HomePageEventSlider = ({
         hours2 = 12;
       }
       const statusObj = statusMap[status];
-      const { icon, bgColor, color } = statusObj || {};
+      const {icon, bgColor, color} = statusObj || {};
       return (
         <View style={styles.flexRow}>
           <Text style={styles.timeText}>
             {`${hours}:${minutes
               .toString()
               .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
-                .toString()
-                .padStart(2, '0')} ${ampm2}`}
+              .toString()
+              .padStart(2, '0')} ${ampm2}`}
           </Text>
           {statusObj && (
-            <View style={[styles.statusContainer, { backgroundColor: bgColor }]}>
-              <Text style={[styles.statusText, { color }]}>
+            <View style={[styles.statusContainer, {backgroundColor: bgColor}]}>
+              <Text style={[styles.statusText, {color}]}>
                 {icon} {status}
               </Text>
             </View>
@@ -182,7 +185,7 @@ export const HomePageEventSlider = ({
       );
     }
 
-    return bookingItem.map(({ start, end, status }, index) => {
+    return bookingItem.map(({start, end, status}, index) => {
       const startdateTime = new Date(start);
       const enddateTime = new Date(end);
       let hours = startdateTime.getHours();
@@ -206,19 +209,19 @@ export const HomePageEventSlider = ({
         hours2 = 12;
       }
       const statusObj = statusMap[status];
-      const { icon, bgColor, color } = statusObj || {};
+      const {icon, bgColor, color} = statusObj || {};
       return (
         <View key={index} style={styles.flexRow}>
           <Text style={styles.timeText}>
             {`${hours}:${minutes
               .toString()
               .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
-                .toString()
-                .padStart(2, '0')} ${ampm2}`}
+              .toString()
+              .padStart(2, '0')} ${ampm2}`}
           </Text>
           {statusObj && (
-            <View style={[styles.statusContainer, { backgroundColor: bgColor }]}>
-              <Text style={[styles.statusText, { color }]}>
+            <View style={[styles.statusContainer, {backgroundColor: bgColor}]}>
+              <Text style={[styles.statusText, {color}]}>
                 {icon} {status}
               </Text>
             </View>
@@ -233,32 +236,34 @@ export const HomePageEventSlider = ({
       style={[
         styles.card,
         type === 'Accepted'
-          ? { backgroundColor: COLORS.BLACK }
-          : { backgroundColor: COLORS.PrimaryColor },
+          ? {backgroundColor: COLORS.BLACK}
+          : {backgroundColor: COLORS.PrimaryColor},
       ]}>
       <View style={styles.header}>
         <View>
-
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-          ><Text style={styles.heading}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <Text style={styles.heading}>
               {_.startCase(bookingItem[0].ground_name)}
             </Text>
             <Text style={styles.text}>
-              {`${bookingItem[0].user_name.length > 10
+              {`${
+                bookingItem[0].user_name.length > 10
                   ? bookingItem[0].user_name.includes(' ')
-                    ? _.startCase(bookingItem[0].user_name.split(' ')[0]) + '...'
-                    : _.startCase(bookingItem[0].user_name.substring(0, 10)) + '...'
+                    ? _.startCase(bookingItem[0].user_name.split(' ')[0]) +
+                      '...'
+                    : _.startCase(bookingItem[0].user_name.substring(0, 10)) +
+                      '...'
                   : _.startCase(bookingItem[0].user_name)
-                }`}
-            </Text></View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              }`}
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <Text style={styles.text}>
               {_.startCase(bookingItem[0].court_name)}
             </Text>
-            <TouchableOpacity onPress={() => Linking.openURL(`tel:${phonenumber}`)}>
-            <Text style={styles.text}>
-              {phonenumber}
-            </Text>
+            <TouchableOpacity
+              onPress={() => Linking.openURL(`tel:${phonenumber}`)}>
+              <Text style={styles.text}>{phonenumber}</Text>
             </TouchableOpacity>
           </View>
           {/* <Text style={styles.text}>Amount : {sumOfProp2}</Text> */}
@@ -341,7 +346,7 @@ export const HomePageEventSlider = ({
               <FlatList
                 data={selectedEventData}
                 keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => {
+                renderItem={({item, index}) => {
                   const gttime = getTimeFormatted(item?.start);
                   return (
                     <TouchableOpacity
@@ -370,7 +375,7 @@ export const HomePageEventSlider = ({
                               color: COLORS.PrimaryColor,
                             },
                             cancelEventInd.includes(index) &&
-                            styles.textSelected,
+                              styles.textSelected,
                           ]}>
                           {gttime.Time}
                         </Text>
@@ -379,7 +384,7 @@ export const HomePageEventSlider = ({
                             style={[
                               styles.amount,
                               cancelEventInd.includes(index) &&
-                              styles.textSelected,
+                                styles.textSelected,
                             ]}>
                             ₹ {item.amount}
                           </Text>

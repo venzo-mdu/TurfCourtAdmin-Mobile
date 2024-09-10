@@ -79,8 +79,8 @@ const IndexHome = () => {
         setNoData(response?.length === 0);
         setLoading(false);
         const groundIds = response?.map(r => r.ground_id);
-        console.log('groundIds: ', groundIds);     
-         setGroundIds(groundIds);
+        console.log('groundIds: ', groundIds);
+        setGroundIds(groundIds);
         // usedispatch(groundIds)
         if (!_.isEmpty(groundIds)) {
           await eventData(groundIds);
@@ -136,6 +136,7 @@ const IndexHome = () => {
   useEffect(() => {
     getUserData();
     // getLocation();
+    requestMessagingPermission();
   }, []);
 
   useEffect(() => {
@@ -171,59 +172,28 @@ const IndexHome = () => {
     navigation.navigate(ADMINTOPTABNAVIGATION);
   };
 
-  // const getLocation = async () => {
-  //   const result = await requestLocationPermission();
-  //   if (result) {
-  //     setLoader(true);
-  //     Geolocation.getCurrentPosition(
-  //       async position => {
-  //         const {latitude, longitude} = position.coords;
-  //         //fetch(`https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}`)
-  //         fetch(
-  //           `https://geocode.maps.co/reverse?lat=${9.9287126}&lon=${78.1609953}`,
-  //         )
-  //           .then(response => response.json())
-  //           .then(data => {
-  //             const city = data.address.city;
-  //             setCurrentLocation(city);
-  //             setLoader(false);
-  //           })
-  //           .catch(error => {
-  //             console.error('Error fetching reverse geolocation:', error);
-  //             setLoader(false);
-  //           });
-  //       },
-  //       error => {
-  //         console.log('Geolocation error:', error.code, error.message);
-  //         setLoader(false);
-  //       },
-  //       {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-  //     );
-  //   }
-  // };
-
-  // const requestLocationPermission = async () => {
-  //   try {
-  //     if (Platform.OS === 'android') {
-  //       const granted = await PermissionsAndroid.request(
-  //         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-  //         {
-  //           title: 'Geolocation Permission',
-  //           message: 'Can we access your location?',
-  //           buttonNeutral: 'Ask Me Later',
-  //           buttonNegative: 'Cancel',
-  //           buttonPositive: 'OK',
-  //         },
-  //       );
-  //       return granted === PermissionsAndroid.RESULTS.GRANTED;
-  //     } else {
-  //       return true; // Assume iOS permission is handled separately
-  //     }
-  //   } catch (err) {
-  //     console.warn('Permission error:', err);
-  //     return false;
-  //   }
-  // };
+  const requestMessagingPermission = async () => {
+    try {
+      if (Platform.OS === 'android') {
+        const enabled = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+          {
+            title: 'Notification Permission',
+            message: 'Need Permission to update your Bookings',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        return enabled === PermissionsAndroid.RESULTS.GRANTED;
+      } else {
+        return true;
+      }
+    } catch (error) {
+      console.log('Error requesting messaging permission:', error);
+      return false;
+    }
+  };
 
   const eventData = async groundIds => {
     setLoading(true);
@@ -307,7 +277,7 @@ const IndexHome = () => {
         bookingItem={item}
         type={'Awaiting'}
         showShort={true}
-        // eventData={() => eventData(groundIds)} 
+        // eventData={() => eventData(groundIds)}
         groundIds={groundIds}
         eventData={eventData}
       />
@@ -329,71 +299,6 @@ const IndexHome = () => {
           </View>
         ) : (
           <>
-            {/*  <View style={{width: '100%'}}>
-              <View style={styles.searchWrapper}>
-                <FontAwesome6
-                  name="location-dot"
-                  size={30}
-                  color="#108257"
-                  // style={styles.locationIcon}
-                />
-                <SearchBar
-                  placeholder="Search Cities..."
-                  onChangeText={updateSearch}
-                  value={search}
-                  lightTheme
-                  round
-                  autoCorrect={false}
-                  containerStyle={styles.searchContainer}
-                  inputContainerStyle={styles.searchInputContainer}
-                  inputStyle={styles.searchInput}
-                  leftIconContainerStyle={styles.leftIconContainerStyle}
-                  rightIconContainerStyle={styles.rightIconContainerStyle}
-                  clearIcon={
-                    search
-                      ? {
-                          name: 'close',
-                          type: 'font-awesome',
-                          color: 'red',
-                          onPress: () => setSearch(''),
-                          style: styles.rightIconStyle,
-                        }
-                      : null
-                  }
-                  searchIcon={
-                    !search
-                      ? {
-                          name: 'search',
-                          type: 'font-awesome',
-                          color: 'black',
-                          style: styles.rightIconStyle,
-                        }
-                      : null
-                  }
-                />
-              </View>
-              {filteredCities.length > 0 && search && (
-                <FlatList
-                  data={filteredCities}
-                  keyExtractor={item => item}
-                  renderItem={({item}) => (
-                    <TouchableOpacity onPress={() => selectCity(item)}>
-                      <View style={styles.searchItem}>
-                        <FontAwesome6
-                          name="location-dot"
-                          size={30}
-                          color="#108257"
-                          // style={styles.locationIcon}
-                        />
-                        <Text style={styles.item}>{item}</Text>
-                      </View>
-                    </TouchableOpacity>
-                  )}
-                />
-              )}
-              {selectedCity ? <Text style={styles.selected}>Selected City: {selectedCity}</Text> : null} 
-            </View> */}
-
             {approvedBookings.length !== 0 ? (
               <View>
                 <View
@@ -483,7 +388,16 @@ const IndexHome = () => {
                   userId={userId}
                 />
               </>
-            ) : <Text style={{alignItems:'center',justifyContent:'center',textAlign:'center'}}>No Ground Data</Text>}
+            ) : (
+              <Text
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                }}>
+                No Ground Data
+              </Text>
+            )}
             <TouchableOpacity
               onPress={handleCreateground}
               style={styles.addArenaButton}>
