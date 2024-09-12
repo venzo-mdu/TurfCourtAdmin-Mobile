@@ -90,10 +90,40 @@ export const HomePageEventSlider = ({
   };
 
   const updateBooking = async (selectedEventDatum, props) => {
-    const title = 'Booking Update';
-    const body = 'Your Booking has been updated';
+    const start = formatDateTime(selectedEventDatum?.start);
+    const end = formatDateTime(selectedEventDatum?.end);
+    const courtName = selectedEventDatum?.court_name;
+    const gameType = selectedEventDatum?.gametype;
+    const status = props;
+    const userName = selectedEventDatum?.user_name;
+
+    console.log(
+      'StatusUpdate: ',
+      userName,
+      status,
+      gameType,
+      courtName,
+      start,
+      end,
+    );
+    const title = 'TurfMama Booking Update';
+    const body = `Hi ${userName}, your request to book ${courtName} for ${gameType} from ${start} to ${end} is ${status}.`;
     await sendNotification(fcmToken, title, body);
     await changeEventStatus(selectedEventDatum?.event_id, props);
+  };
+
+  const formatDateTime = dateTimeStr => {
+    const date = new Date(dateTimeStr);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const year = date.getFullYear();
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    return `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
   };
 
   const handleCancelBooking = item => {

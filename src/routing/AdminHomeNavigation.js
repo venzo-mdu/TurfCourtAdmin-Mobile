@@ -23,6 +23,8 @@ import IndexHome from '../screens/courtAdmin/Home/indexHome';
 import {COLORS} from '../assets/constants/global_colors';
 import BookingScreen from '../screens/courtAdmin/Arena/ArenaDetails/BookingScreen';
 import ProfileView from '../screens/courtAdmin/Profile/ProfileView';
+import notifee, {AndroidImportance, EventType} from '@notifee/react-native';
+
 enableScreens(true);
 const Tab = createBottomTabNavigator();
 
@@ -35,6 +37,37 @@ const AdminHomeNavigation = () => {
   useEffect(() => {
     getdataFn();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      const {title, body} = remoteMessage.notification;
+      displayNotification(title, body);
+    });
+    return unsubscribe;
+  }, []);
+
+  const displayNotification = async (title, body) => {
+    await notifee.requestPermission();
+    const channelId = await notifee.createChannel({
+      id: 'TurfMama',
+      name: 'TurfMama Notification Channel',
+      vibration: true,
+      importance: AndroidImportance.HIGH,
+      vibrationPattern: [300, 500],
+    });
+
+    await notifee.displayNotification({
+      title: title,
+      body: body,
+      android: {
+        channelId,
+        importance: AndroidImportance.HIGH,
+        pressAction: {
+          id: 'TurfMama',
+        },
+      },
+    });
+  };
 
   const getdataFn = async () => {
     try {
