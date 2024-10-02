@@ -195,6 +195,63 @@ const IndexHome = () => {
     }
   };
 
+  // const eventData = async groundIds => {
+  //   setLoading(true);
+
+  //   let startDate = moment().format('YYYY-MM-DDTHH:mm');
+  //   let endOfMonth = moment().endOf('month').format('YYYY-MM-DDTHH:mm');
+
+  //   let statusValue = ['Accepted', 'Awaiting'];
+  //   let slotValue = ['weekday', 'weekend', 'customDays', 'customDate'];
+
+  //   const otherFilters = [
+  //     {key: 'status', operator: 'in', value: statusValue},
+  //     // {key: 'slotType', operator: 'in', value: slotValue},
+  //     {key: 'start', operator: '>=', value: startDate},
+  //     {key: 'end', operator: '<=', value: endOfMonth},
+  //   ];
+  //   if (otherFilters && otherFilters.length > 0) {
+  //     let data;
+  //     if (groundIds.length > 15) {
+  //       const response1 = await getEventdetailsByArenas({
+  //         groundIds: groundIds?.slice(0, 15),
+  //         otherFilters,
+  //         order: {key: 'start', dir: 'asc'},
+  //       });
+
+  //       const response2 = await getEventdetailsByArenas({
+  //         groundIds: groundIds?.slice(15, groundIds?.length),
+  //         otherFilters,
+  //         order: {key: 'start', dir: 'asc'},
+  //       });
+  //       console.log('from here', response2);
+  //       data = _.uniqBy([...response1?.data, ...response2?.data], 'event_id');
+  //     } else {
+  //       const response1 = await getEventdetailsByArenas({
+  //         groundIds: groundIds?.slice(0, 15),
+  //         otherFilters,
+  //         order: {key: 'start', dir: 'asc'},
+  //       });
+  //       data = response1.data;
+  //     }
+
+  //     if (data) {
+  //       setApprovedBookings(
+  //         findElementsWithSameProp(
+  //           data.filter(item => item.status === 'Accepted'),
+  //         ),
+  //       );
+  //       setWaitingBookings(
+  //         findElementsWithSameProp(
+  //           data.filter(item => item.status === 'Awaiting'),
+  //         ),
+  //       );
+  //     }
+  //   }
+
+  //   setLoading(false);
+  // };
+
   const eventData = async groundIds => {
     setLoading(true);
 
@@ -202,49 +259,78 @@ const IndexHome = () => {
     let endOfMonth = moment().endOf('month').format('YYYY-MM-DDTHH:mm');
 
     let statusValue = ['Accepted', 'Awaiting'];
+    let slotValue = ['weekday', 'weekend', 'customDays', 'customDate'];
 
     const otherFilters = [
       {key: 'status', operator: 'in', value: statusValue},
-      {key: 'start', operator: '>=', value: startDate},
+      {key: 'start', operator: '<=', value: startDate},
       {key: 'end', operator: '<=', value: endOfMonth},
     ];
-    if (otherFilters && otherFilters.length > 0) {
-      let data;
+
+    let data = [];
+
+    // Loop through each slotType and handle empty slotType cases
+    for (const slotType of slotValue) {
+      const slotFilters = [
+        ...otherFilters,
+        // Only add slotType filter if it's not empty
+        ...(slotType
+          ? [{key: 'slotType', operator: '==', value: slotType}]
+          : []),
+      ];
+
+      let response1, response2;
+
       if (groundIds.length > 15) {
-        const response1 = await getEventdetailsByArenas({
-          groundIds: groundIds?.slice(0, 15),
-          otherFilters,
+        response1 = await getEventdetailsByArenas({
+          groundIds: groundIds.slice(0, 15),
+          otherFilters: slotFilters,
           order: {key: 'start', dir: 'asc'},
         });
 
-        const response2 = await getEventdetailsByArenas({
-          groundIds: groundIds?.slice(15, groundIds?.length),
-          otherFilters,
+        response2 = await getEventdetailsByArenas({
+          groundIds: groundIds.slice(15, groundIds.length),
+          otherFilters: slotFilters,
           order: {key: 'start', dir: 'asc'},
         });
-        console.log('from here', response2);
-        data = _.uniqBy([...response1?.data, ...response2?.data], 'event_id');
+
+        // Safely merge response1 and response2 data
+        if (response1?.data && response2?.data) {
+          data = _.uniqBy(
+            [...data, ...response1.data, ...response2.data],
+            'event_id',
+          );
+        } else if (response1?.data) {
+          data = _.uniqBy([...data, ...response1.data], 'event_id');
+        } else if (response2?.data) {
+          data = _.uniqBy([...data, ...response2.data], 'event_id');
+        }
       } else {
-        const response1 = await getEventdetailsByArenas({
-          groundIds: groundIds?.slice(0, 15),
-          otherFilters,
+        response1 = await getEventdetailsByArenas({
+          groundIds: groundIds.slice(0, 15),
+          otherFilters: slotFilters,
           order: {key: 'start', dir: 'asc'},
         });
-        data = response1.data;
-      }
 
-      if (data) {
-        setApprovedBookings(
-          findElementsWithSameProp(
-            data.filter(item => item.status === 'Accepted'),
-          ),
-        );
-        setWaitingBookings(
-          findElementsWithSameProp(
-            data.filter(item => item.status === 'Awaiting'),
-          ),
-        );
+        // Safely add response1 data to the existing data
+        if (response1?.data) {
+          data = _.uniqBy([...data, ...response1.data], 'event_id');
+        }
       }
+    }
+
+    // Process filtered data if available
+    if (data.length > 0) {
+      setApprovedBookings(
+        findElementsWithSameProp(
+          data.filter(item => item.status === 'Accepted'),
+        ),
+      );
+      setWaitingBookings(
+        findElementsWithSameProp(
+          data.filter(item => item.status === 'Awaiting'),
+        ),
+      );
     }
 
     setLoading(false);
@@ -259,29 +345,36 @@ const IndexHome = () => {
     setstatusopen(true);
   };
 
-  const renderItem = ({item, index}) => (
-    <View style={{backgroundColor: '#', borderRadius: 8}}>
-      <HomePageEventSlider
-        key={index}
-        bookingItem={item}
-        type={'Accepted'}
-        showShort={true}
-      />
-    </View>
+  // Render item for approved bookings
+  const renderItem = useCallback(
+    ({item}) => (
+      <View style={{backgroundColor: '#FFF', borderRadius: 8}}>
+        <HomePageEventSlider
+          key={item.id} // Use a unique identifier
+          bookingItem={item}
+          type={'Accepted'}
+          showShort={true}
+        />
+      </View>
+    ),
+    [],
   );
 
-  const renderItem1 = ({item, index}) => (
-    <View style={{backgroundColor: '#', borderRadius: 8}}>
-      <HomePageEventSlider
-        key={index}
-        bookingItem={item}
-        type={'Awaiting'}
-        showShort={true}
-        // eventData={() => eventData(groundIds)}
-        groundIds={groundIds}
-        eventData={eventData}
-      />
-    </View>
+  // Render item for awaiting bookings
+  const renderItem1 = useCallback(
+    ({item}) => (
+      <View style={{backgroundColor: '#FFF', borderRadius: 8}}>
+        <HomePageEventSlider
+          key={item.id} // Use a unique identifier
+          bookingItem={item}
+          type={'Awaiting'}
+          showShort={true}
+          groundIds={groundIds}
+          eventData={eventData}
+        />
+      </View>
+    ),
+    [groundIds, eventData],
   );
 
   return (

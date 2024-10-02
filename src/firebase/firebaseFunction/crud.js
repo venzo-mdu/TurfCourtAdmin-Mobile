@@ -52,7 +52,6 @@ const fetchBulkData = async (
       );
     }
 
-
     otherFilters = _.compact(otherFilters);
     if (otherFilters?.length > 0) {
       otherFilters?.forEach(filterData => {
@@ -63,9 +62,7 @@ const fetchBulkData = async (
             filterData.operator,
             filterData.value,
           ),
-          
         );
-
       });
     }
 

@@ -52,7 +52,7 @@ export const UserLoginScreenStyles = StyleSheet.create({
     fontFamily: 'Outfit-Regular',
     fontSize: hS(16),
     color: COLORS.SecondaryFontColor,
-    marginVertical:20
+    // marginVertical: 20,
   },
 
   signUpViewText: {
