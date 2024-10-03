@@ -69,6 +69,67 @@ const AdminHomeNavigation = () => {
     });
   };
 
+  // const getdataFn = async () => {
+  //   try {
+  //     const value = await AsyncStorage.getItem('res-data');
+  //     if (value) {
+  //       const parsedValue = JSON.parse(value);
+  //       const user = await userData(parsedValue?.user_id);
+  //       if (user) {
+  //         if (user?.owner === true) {
+  //           setUserData(user?.user_id);
+  //           await AsyncStorage.setItem('uid', JSON.stringify(user?.user_id));
+  //           const TokenData = user?.fcmToken;
+  //           if (!TokenData) {
+  //             const token = await getFCMToken();
+  //             await AsyncStorage.setItem('fcmToken', token);
+  //             const userDetails = await userData(user?.user_id);
+  //             if (userDetails) {
+  //               userDetails.fcmToken = token;
+  //               const updatedata = await UpdateUserData(
+  //                 userDetails,
+  //                 user?.user_id,
+  //               );
+  //               if (updatedata?.status === 'success') {
+  //                 console.log('update successfully');
+  //               } else {
+  //                 console.error('update data failed');
+  //                 ToastAndroid.showWithGravity(
+  //                   'Token update failed. Please Contact TurfMama Admin',
+  //                   ToastAndroid.SHORT,
+  //                   ToastAndroid.CENTER,
+  //                 );
+  //               }
+  //             }
+  //           } else {
+  //             await AsyncStorage.setItem(
+  //               'fcmToken',
+  //               JSON.stringify(user?.fcmToken),
+  //             );
+  //           }
+  //           setLoggedIn(true);
+  //           setInitialRoute(ADMINHOME);
+  //         } else {
+  //           ToastAndroid.show(
+  //             'Please Logged in the owner user',
+  //             ToastAndroid.SHORT,
+  //           );
+  //           setInitialRoute(USERLOGIN);
+  //         }
+  //       } else {
+  //         setInitialRoute(USERLOGIN);
+  //       }
+  //     } else {
+  //       setInitialRoute(USERLOGIN);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching user data', error);
+  //     setInitialRoute(USERLOGIN);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const getdataFn = async () => {
     try {
       const value = await AsyncStorage.getItem('res-data');
@@ -79,39 +140,49 @@ const AdminHomeNavigation = () => {
           if (user?.owner === true) {
             setUserData(user?.user_id);
             await AsyncStorage.setItem('uid', JSON.stringify(user?.user_id));
-            const TokenData = user?.fcmToken;
-            if (!TokenData) {
+
+            // Fetch the FCM tokens (assuming an array is stored in `fcmTokens`)
+            const TokenData = user?.fcmTokens || []; // Fallback to empty array if no tokens exist
+            const currentToken = await AsyncStorage.getItem('fcmToken');
+
+            // Check if current FCM token already exists in fcmTokens
+            if (!TokenData.includes(currentToken)) {
               const token = await getFCMToken();
               await AsyncStorage.setItem('fcmToken', token);
+
+              // Update the user's fcmTokens array
               const userDetails = await userData(user?.user_id);
               if (userDetails) {
-                userDetails.fcmToken = token;
+                userDetails.fcmTokens = [
+                  ...(userDetails?.fcmTokens || []),
+                  token,
+                ]; // Add new token to fcmTokens array
+
                 const updatedata = await UpdateUserData(
                   userDetails,
                   user?.user_id,
                 );
                 if (updatedata?.status === 'success') {
-                  console.log('update successfully');
+                  console.log('Token updated successfully');
                 } else {
-                  console.error('update data failed');
+                  console.error('Token update failed');
                   ToastAndroid.showWithGravity(
-                    'Token update failed. Please Contact TurfMama Admin',
+                    'Token update failed. Please contact TurfMama Admin',
                     ToastAndroid.SHORT,
                     ToastAndroid.CENTER,
                   );
                 }
               }
             } else {
-              await AsyncStorage.setItem(
-                'fcmToken',
-                JSON.stringify(user?.fcmToken),
-              );
+              // Token is already up-to-date, store it locally
+              await AsyncStorage.setItem('fcmToken', currentToken);
             }
+
             setLoggedIn(true);
             setInitialRoute(ADMINHOME);
           } else {
             ToastAndroid.show(
-              'Please Logged in the owner user',
+              'Please log in as the owner user',
               ToastAndroid.SHORT,
             );
             setInitialRoute(USERLOGIN);

@@ -114,7 +114,7 @@ const UserCreateScreen = props => {
           phonenumber: userPhone,
           username: userName,
           owner: true,
-          fcmToken: token,
+          fcmTokens: [token],
         };
         // console.log('data', data);
         // console.log('recaptchaVerifier', recaptchaVerifier);
@@ -225,9 +225,9 @@ const UserCreateScreen = props => {
               firebaseConfig={firebaseConfig}
               attemptInvisibleVerification={true}
             />
-            <View style={UserLoginScreenStyles.logoContainer}>
+            {/* <View style={UserLoginScreenStyles.logoContainer}>
               <Image source={IMAGES.logoImage} resizeMode="contain" />
-            </View>
+            </View> */}
 
             <View style={UserLoginScreenStyles.loginContainer}>
               <ScrollView>
@@ -250,7 +250,7 @@ const UserCreateScreen = props => {
                       <View
                         style={[
                           UserLoginScreenStyles.phoneBox,
-                          {marginBottom: hS(30)},
+                          {marginBottom: hS(10)},
                         ]}>
                         <TextInput
                           value={userName}
@@ -276,7 +276,7 @@ const UserCreateScreen = props => {
                       <View
                         style={[
                           UserLoginScreenStyles.phoneBox,
-                          {marginBottom: hS(30)},
+                          {marginBottom: hS(10)},
                         ]}>
                         <TextInput
                           value={userEmail}
@@ -301,7 +301,7 @@ const UserCreateScreen = props => {
                       <Text style={UserLoginScreenStyles.signUpViewText}>
                         Mobile Number
                       </Text>
-                      <View style={{marginBottom: hS(30)}}>
+                      <View style={{marginBottom: hS(10)}}>
                         <PhoneInput
                           placeholder="Mobile Number"
                           defaultValue={userPhone}
@@ -369,7 +369,7 @@ const UserCreateScreen = props => {
                               justifyContent: 'center',
                               alignItems: 'flex-end',
                               marginTop: hS(20),
-                              marginBottom: hS(50),
+                              marginBottom: hS(20),
                             },
                           ]}>
                           <CheckBox
@@ -479,7 +479,7 @@ const UserCreateScreen = props => {
                 <Text
                   style={[
                     UserLoginScreenStyles.bottomaskTxt1,
-                    {paddingBottom: 65},
+                    // {paddingBottom: 65},
                   ]}>
                   Don't have an account?{' '}
                   <Text

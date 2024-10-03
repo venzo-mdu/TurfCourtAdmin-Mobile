@@ -450,7 +450,7 @@ export const getEventdetailsByArenas = async ({
   }
   try {
     if (groundIds != null) {
-      console.log('gggg',groundIds,otherFilters);
+      // console.log('eee', groundIds, otherFilters);
       let data = await fetchBulkData(
         'events',
         'ground_id',
@@ -740,7 +740,7 @@ export const getCourtData = async court_id => {
 
 export const getGroundslotdata = async ground_details => {
   const courtIds = ground_details?.court_details?.map(item => item.court_id);
-
+  console.log('courtIds: ', courtIds);
   const courtSlots = await fetchBulkData(
     'masterslot',
     'court_id',
@@ -750,11 +750,11 @@ export const getGroundslotdata = async ground_details => {
     null,
     [
       {key: 'isActive', operator: '==', value: true},
-      {
-        key: 'start',
-        operator: '>=',
-        value: moment().format('YYYY-MM-DDTHH:mm'),
-      },
+      // {
+      //   key: 'start',
+      //   operator: '>=',
+      // value: moment().format('YYYY-MM-DDTHH:mm'),
+      // },
     ],
   );
 

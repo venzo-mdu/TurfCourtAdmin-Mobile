@@ -9,14 +9,14 @@ import {
   ActivityIndicator,
   ToastAndroid,
   SafeAreaView,
-  Linking
+  Linking,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import Feather from 'react-native-vector-icons/Feather';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
-import { getTimeFormatted } from '../../../../utils/getHours';
-import { COLORS } from '../../../../assets/constants/global_colors';
+import {getTimeFormatted} from '../../../../utils/getHours';
+import {COLORS} from '../../../../assets/constants/global_colors';
 import {
   getEventdetailsByType,
   changeEventStatus,
@@ -24,18 +24,21 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { useRoute } from '@react-navigation/native';
-import { getEventdetailsByArenas, getgroundDataForOwner } from '../../../../firebase/firebaseFunction/groundDetails';
+import {useRoute} from '@react-navigation/native';
+import {
+  getEventdetailsByArenas,
+  getgroundDataForOwner,
+} from '../../../../firebase/firebaseFunction/groundDetails';
 import _ from 'lodash';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { userData } from '../../../../firebase/firebaseFunction/userDetails';
-
-
+import {userData} from '../../../../firebase/firebaseFunction/userDetails';
 
 const BookingScreen = () => {
   const route = useRoute();
-  const { groundID } = route?.params || {};
-  const containerStyle = groundID ? styles.insideGroundContainer : styles.tabContainer;
+  const {groundID} = route?.params || {};
+  const containerStyle = groundID
+    ? styles.insideGroundContainer
+    : styles.tabContainer;
   const [tab, setTab] = useState('Bookings');
   const [statusopen, setstatusopen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,17 +52,14 @@ const BookingScreen = () => {
   const [cancelEventind, setCancelEventind] = useState([]);
   const [phonenumber, setPhonenumber] = useState([]);
 
-
   const [selectedCancelEventData, setselectedCancelEventData] = useState([]);
   const [trigger, setTrigger] = useState([false]);
   const [userPhoneMap, setUserPhoneMap] = useState({});
 
-
-
   const [dropdownItems, setDropdownItems] = useState([
-    { label: 'Last Month', value: 'Last Month' },
-    { label: 'This Month', value: 'This Month' },
-    { label: 'Next Month', value: 'Next Month' },
+    {label: 'Last Month', value: 'Last Month'},
+    {label: 'This Month', value: 'This Month'},
+    {label: 'Next Month', value: 'Next Month'},
   ]);
   const today = moment().startOf('day');
 
@@ -95,52 +95,49 @@ const BookingScreen = () => {
       let response1 = await getgroundDataForOwner(uid);
       let groundIds = response1?.map(r => r.ground_id);
       if (uid == null) {
-        navigate("/login");
+        navigate('/login');
       }
-      let startDate = moment().format("YYYY-MM-DDTHH:mm");
-      let endOfMonth = moment().endOf("month").format("YYYY-MM-DDTHH:mm");
-      let statusValue = ["Accepted", "Awaiting"];
+      let startDate = moment().format('YYYY-MM-DDTHH:mm');
+      let endOfMonth = moment().endOf('month').format('YYYY-MM-DDTHH:mm');
+      let statusValue = ['Accepted', 'Awaiting'];
 
-      if (tab === "Cancelled") {
-        statusValue = ["Cancelled", "Canceled"];
-        startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
-      } else if (tab === "Completed") {
+      if (tab === 'Cancelled') {
+        statusValue = ['Cancelled', 'Canceled'];
+        startDate = moment().startOf('month').format('YYYY-MM-DDTHH:mm');
+      } else if (tab === 'Completed') {
         statusValue = [tab];
-        startDate = moment().startOf("month").format("YYYY-MM-DDTHH:mm");
-        endOfMonth = moment().format("YYYY-MM-DDTHH:mm");
-      } else if (tab !== "Bookings" && tab !== "Cancelled") {
+        startDate = moment().startOf('month').format('YYYY-MM-DDTHH:mm');
+        endOfMonth = moment().format('YYYY-MM-DDTHH:mm');
+      } else if (tab !== 'Bookings' && tab !== 'Cancelled') {
         statusValue = [tab];
       }
-      if (value === "Last Month") {
+      if (value === 'Last Month') {
         startDate = moment()
-          .subtract(1, "months")
-          .startOf("month")
-          .format("YYYY-MM-DDTHH:mm");
+          .subtract(1, 'months')
+          .startOf('month')
+          .format('YYYY-MM-DDTHH:mm');
         endOfMonth = moment()
-          .subtract(1, "months")
-          .endOf("month")
-          .format("YYYY-MM-DDTHH:mm");
-      } else if (value === "Next Month") {
+          .subtract(1, 'months')
+          .endOf('month')
+          .format('YYYY-MM-DDTHH:mm');
+      } else if (value === 'Next Month') {
         startDate = moment()
-          .add(1, "months")
-          .startOf("month")
-          .format("YYYY-MM-DDTHH:mm");
+          .add(1, 'months')
+          .startOf('month')
+          .format('YYYY-MM-DDTHH:mm');
         endOfMonth = moment()
-          .add(1, "months")
-          .endOf("month")
-          .format("YYYY-MM-DDTHH:mm");
+          .add(1, 'months')
+          .endOf('month')
+          .format('YYYY-MM-DDTHH:mm');
       }
 
       const otherFilters = [
-        { key: "status", operator: "in", value: statusValue },
-        { key: "start", operator: ">=", value: startDate },
-        { key: "end", operator: "<=", value: endOfMonth },
+        {key: 'status', operator: 'in', value: statusValue},
+        {key: 'start', operator: '>=', value: startDate},
+        {key: 'end', operator: '<=', value: endOfMonth},
       ];
-      // console.log('otherFilters',otherFilters)
-      if (
-        otherFilters &&
-        otherFilters.length > 0
-      ) {
+      console.log('otherFilters', otherFilters);
+      if (otherFilters && otherFilters.length > 0) {
         let events;
         if (groundID) {
           groundIds = [groundID];
@@ -151,27 +148,35 @@ const BookingScreen = () => {
             const response1 = await getEventdetailsByArenas({
               groundIds: groundIds.slice(0, 15),
               otherFilters,
-              order: { key: 'start', dir: 'asc' },
+              order: {key: 'start', dir: 'asc'},
             });
 
             const response2 = await getEventdetailsByArenas({
               groundIds: groundIds.slice(15),
               otherFilters,
-              order: { key: 'start', dir: 'asc' },
+              order: {key: 'start', dir: 'asc'},
             });
-            const data = _.uniqBy([...response1.data, ...response2.data], 'event_id');
+            const data = _.uniqBy(
+              [...response1.data, ...response2.data],
+              'event_id',
+            );
             events = data;
             const userIds = events.map(event => event.user_id).filter(id => id);
 
-            const userDataList = await Promise.all(userIds.map(async (user_id) => {
-              try {
-                const user = await userData(user_id);
-                return { user_id, user };
-              } catch (error) {
-                console.error(`Error fetching user data for user_id: ${user_id}`, error);
-                return null;
-              }
-            }));
+            const userDataList = await Promise.all(
+              userIds.map(async user_id => {
+                try {
+                  const user = await userData(user_id);
+                  return {user_id, user};
+                } catch (error) {
+                  console.error(
+                    `Error fetching user data for user_id: ${user_id}`,
+                    error,
+                  );
+                  return null;
+                }
+              }),
+            );
             const userPhoneMap = userDataList.reduce((acc, userObj) => {
               if (userObj && userObj.user) {
                 acc[userObj.user_id] = userObj.user.phonenumber;
@@ -184,20 +189,25 @@ const BookingScreen = () => {
             const response = await getEventdetailsByArenas({
               groundIds: groundIds,
               otherFilters,
-              order: { key: 'start', dir: 'asc' },
+              order: {key: 'start', dir: 'asc'},
             });
             events = response.data;
             const userIds = events.map(event => event.user_id).filter(id => id);
 
-            const userDataList = await Promise.all(userIds.map(async (user_id) => {
-              try {
-                const user = await userData(user_id);
-                return { user_id, user };
-              } catch (error) {
-                console.error(`Error fetching user data for user_id: ${user_id}`, error);
-                return null;
-              }
-            }));
+            const userDataList = await Promise.all(
+              userIds.map(async user_id => {
+                try {
+                  const user = await userData(user_id);
+                  return {user_id, user};
+                } catch (error) {
+                  console.error(
+                    `Error fetching user data for user_id: ${user_id}`,
+                    error,
+                  );
+                  return null;
+                }
+              }),
+            );
             const userPhoneMap = userDataList.reduce((acc, userObj) => {
               if (userObj && userObj.user) {
                 acc[userObj.user_id] = userObj.user.phonenumber;
@@ -207,8 +217,7 @@ const BookingScreen = () => {
 
             setUserPhoneMap(userPhoneMap);
           }
-        }
-        else {
+        } else {
           ToastAndroid.showWithGravity(
             'No Ground Data',
             ToastAndroid.LONG,
@@ -317,10 +326,10 @@ const BookingScreen = () => {
     return `${dayOfWeek}, ${month} ${day
       .toString()
       .padStart(2, '0')} | ${hours}:${minutes
-        .toString()
-        .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
-          .toString()
-          .padStart(2, '0')} ${ampm2}`;
+      .toString()
+      .padStart(2, '0')} ${ampm} - ${hours2}:${minutes2
+      .toString()
+      .padStart(2, '0')} ${ampm2}`;
   };
 
   const groupTimingsByDate = timings => {
@@ -346,11 +355,11 @@ const BookingScreen = () => {
     }, {});
   };
 
-  const renderItem = ({ item, index }) => {
+  const renderItem = ({item, index}) => {
     const getStatusColor = status => {
       switch (status) {
         case 'Awaiting':
-          return { backgroundColor: '#E4DDF4', color: '#7756C9', icon: 'clock' };
+          return {backgroundColor: '#E4DDF4', color: '#7756C9', icon: 'clock'};
         case 'Cancelled':
           return {
             backgroundColor: '#F2DEDE',
@@ -358,7 +367,7 @@ const BookingScreen = () => {
             icon: 'closecircleo',
           };
         case 'On-going':
-          return { backgroundColor: '#D9EDF7', color: '#45AEF4', icon: 'clock' };
+          return {backgroundColor: '#D9EDF7', color: '#45AEF4', icon: 'clock'};
         case 'Completed':
           return {
             backgroundColor: '#D1F0D6',
@@ -372,11 +381,12 @@ const BookingScreen = () => {
             icon: 'checkcircleo',
           };
         default:
-          return { backgroundColor: '#FFFFFF', color: '#000000', icon: '' };
+          return {backgroundColor: '#FFFFFF', color: '#000000', icon: ''};
       }
     };
 
-    const { BookId, user_name, ground_name, court_name, amount, user_id } = item[0];
+    const {BookId, user_name, ground_name, court_name, amount, user_id} =
+      item[0];
     const timings = item.map(i => formatDateTime(i));
     const groupedTimings = groupTimingsByDate(timings);
     const total = item.reduce(
@@ -396,15 +406,17 @@ const BookingScreen = () => {
                 fontFamily: 'Outfit-Medium',
                 fontSize: 16,
               }}>
-              {`${user_name.length > 10
-                ? user_name.includes(' ')
-                  ? _.startCase(user_name.split(' ')[0]) + '...'
-                  : _.startCase(user_name.substring(0, 10)) + '...'
-                : _.startCase(user_name)
-                }`}
+              {`${
+                user_name.length > 10
+                  ? user_name.includes(' ')
+                    ? _.startCase(user_name.split(' ')[0]) + '...'
+                    : _.startCase(user_name.substring(0, 10)) + '...'
+                  : _.startCase(user_name)
+              }`}
             </Text>
             <View style={styles.line}></View>
-            <TouchableOpacity onPress={() => Linking.openURL(`tel:${userPhoneNumber}`)}>
+            <TouchableOpacity
+              onPress={() => Linking.openURL(`tel:${userPhoneNumber}`)}>
               <Text
                 style={{
                   color: '#097E52',
@@ -432,7 +444,6 @@ const BookingScreen = () => {
               }}>
               {`${_.startCase(ground_name)}`}
             </Text>
-
           </View>
           <Text
             style={{
@@ -466,7 +477,7 @@ const BookingScreen = () => {
             <View>
               {groupedTimings[date].map((time, idx) => {
                 const statusItem = item[idx];
-                const { backgroundColor, color, icon } = getStatusColor(
+                const {backgroundColor, color, icon} = getStatusColor(
                   statusItem.status,
                 );
 
@@ -498,13 +509,13 @@ const BookingScreen = () => {
                       }}>
                       {(statusItem.status === 'Awaiting' ||
                         statusItem.status === 'On-going') && (
-                          <Feather name={icon} size={15} color={color} />
-                        )}
+                        <Feather name={icon} size={15} color={color} />
+                      )}
                       {(statusItem.status === 'Cancelled' ||
                         statusItem.status === 'Completed' ||
                         statusItem.status === 'Accepted') && (
-                          <AntDesign name={icon} size={12} color={color} />
-                        )}
+                        <AntDesign name={icon} size={12} color={color} />
+                      )}
                       <Text
                         style={{
                           color,
@@ -526,8 +537,7 @@ const BookingScreen = () => {
   };
 
   return (
-    <SafeAreaView
-      style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={containerStyle}>
         {['Bookings', 'Completed', 'On-Going', 'Cancelled'].map(tabName => (
           <TouchableOpacity
@@ -538,16 +548,13 @@ const BookingScreen = () => {
             ]}
             onPress={() => handleChange(tabName)}>
             <Text
-              style={[
-                styles.tabText,
-                tab === tabName && styles.activeTabText,
-              ]}>
+              style={[styles.tabText, tab === tabName && styles.activeTabText]}>
               {tabName}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
-      <View style={{ marginTop: 8 }}>
+      <View style={{marginTop: 8}}>
         <DropDownPicker
           open={open}
           value={value}
@@ -557,11 +564,19 @@ const BookingScreen = () => {
           setItems={setDropdownItems}
           placeholder={'This Month'}
           style={{
-            backgroundColor: '#FAFAFA', marginHorizontal: 10, width: '95%',
-            borderColor: COLORS.fieldBorderColor, height: 60
+            backgroundColor: '#FAFAFA',
+            marginHorizontal: 10,
+            width: '95%',
+            borderColor: COLORS.fieldBorderColor,
+            height: 60,
           }}
-          dropDownContainerStyle={{ borderColor: COLORS.fieldBorderColor, backgroundColor: '#FAFAFA', marginHorizontal: 10, width: '95%', }}
-          textStyle={{ fontFamily: 'Outfit-Regular', fontSize: 16 }}
+          dropDownContainerStyle={{
+            borderColor: COLORS.fieldBorderColor,
+            backgroundColor: '#FAFAFA',
+            marginHorizontal: 10,
+            width: '95%',
+          }}
+          textStyle={{fontFamily: 'Outfit-Regular', fontSize: 16}}
         />
       </View>
       {!loading ? (
@@ -587,7 +602,7 @@ const BookingScreen = () => {
             width: '100%',
             height: '100%',
           }}>
-          <Text style={{ fontFamily: 'Outfit-Medium', color: COLORS.PRIMARY }}>
+          <Text style={{fontFamily: 'Outfit-Medium', color: COLORS.PRIMARY}}>
             No {tab} bookings found.
           </Text>
         </View>
@@ -709,12 +724,12 @@ const styles = StyleSheet.create({
   tabText: {
     color: COLORS.BLACK,
     fontSize: 14,
-    fontFamily: 'Outfit-Regular'
+    fontFamily: 'Outfit-Regular',
   },
   activeTabText: {
     color: COLORS.WHITE,
     fontSize: 14,
-    fontFamily: 'Outfit-Regular'
+    fontFamily: 'Outfit-Regular',
   },
 
   slide: {
@@ -825,4 +840,3 @@ const styles = StyleSheet.create({
 });
 
 export default BookingScreen;
-

@@ -39,6 +39,7 @@ import {
 } from '../../../../firebase/firebaseFunction/eventDetails';
 import _ from 'lodash';
 import {getTimeFormatted} from '../../../../utils/getHours';
+import {formatSlotTime} from '../../../../utils/getSlotTimeFormat.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {USER, USERLOGIN} from '../../..';
 //import Collapsible from 'react-native-collapsible';
@@ -46,6 +47,7 @@ import moment from 'moment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Collapsible from 'react-native-collapsible';
 import {COLORS} from '../../../../assets/constants/global_colors';
+import {Button, Checkbox, RadioButton} from 'react-native-paper';
 
 const CourtScreen = () => {
   const [tab, setTab] = useState('Add Court');
@@ -83,10 +85,10 @@ const CourtScreen = () => {
     date: null,
   });
   console.log('availablecourt', availablecourt);
-  const [basicCourtDetailsOpen, setBasicCourtDetailsOpen] = useState(false);
-  const [basicSlotDetailsOpen, setBasicSlotDetailsOpen] = useState(false);
+  const [basicCourtDetailsOpen, setBasicCourtDetailsOpen] = useState(true);
+  const [basicSlotDetailsOpen, setBasicSlotDetailsOpen] = useState(true);
   const [basicAvailableDetailsOpen, setBasicAvailableDetailsOpen] =
-    useState(false);
+    useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [AddCourtError, setAddCourtError] = useState(false);
   const [AddCourtTimingError, setAddCourtTimingError] = useState(false);
@@ -124,13 +126,16 @@ const CourtScreen = () => {
   const [SlotToEdit, setSlotToEdit] = useState();
   const [AnchorEl, setAnchorEl] = useState();
   const [AccordionOpen, setAccordionOpen] = useState(false);
-  const [createSlots, setCreateslots] = useState({
+  const [createSlots, setCreateSlots] = useState({
     price: '',
     date: null,
     starttime: '',
     endtime: '',
     isActive: true,
+    slotType: '',
+    days: [],
   });
+  const [selectedOption, setSelectedOption] = useState(createSlots.slotType);
   // console.log("createSlots", createSlots);
   /* Slot Timing States */
   const [openCourtDropdown, setOpenCourtDropdown] = useState(false);
@@ -145,12 +150,40 @@ const CourtScreen = () => {
   const [value, setValue] = useState('');
   const [blockmodalopen, setblockModalOpen] = useState(false);
   const [valueAvailable, setValueAvailable] = useState(null);
+  const [customDays, setCustomDays] = useState({
+    Mon: false,
+    Tue: false,
+    Wed: false,
+    Thu: false,
+    Fri: false,
+    Sat: false,
+    Sun: false,
+  });
+  const [selectedDays, setSelectedDays] = useState([]);
+
   const [items, setItems] = useState([
     {label: 'Apple', value: 'apple'},
     {label: 'Banana', value: 'banana'},
     {label: 'Pear', value: 'pear'},
     {label: 'Cricket', value: 'w8SLqfDdGeXXnfA74Ckf'},
   ]);
+
+  const toggleCustomCheckbox = day => {
+    setCustomDays(prevDays => {
+      const newDays = {...prevDays, [day]: !prevDays[day]};
+      return newDays;
+    });
+  };
+
+  useEffect(() => {
+    setSelectedOption(createSlots.slotType);
+  }, [createSlots.slotType]);
+
+  useEffect(() => {
+    const days = Object.keys(customDays).filter(day => customDays[day]);
+    setSelectedDays(days);
+  }, [customDays]);
+
   //console.log("valuessssss", value)
   const ITEM_HEIGHT = 40;
   const calculatedHeight = Math.min(
@@ -181,44 +214,17 @@ const CourtScreen = () => {
 
   /* GRN DATA FETCH */
   const grndData = async () => {
-    // console.log("Hi")
     if (groundID != null) {
-      // console.log("Hi123", groundID)
-      // //setLoading(true);
-      // let groundres = await getgroundDataById(groundID);
-      // //setLoading(false);
-      // console.log("gtrr33 groundres" , groundres, "gtrr33");
-      // setGroundData(groundres);
-      // setgametype(groundres?.game_type);
-      // //setLoading(true);
-      // const slotDatas = await getGroundslotdata(groundID);
-      // //setLoading(false);
-      // console.log("slotDatas",slotDatas, groundres, "slotDatas");
-
-      // setCourtslot(slotDatas);
-      // getCourttime(groundres, currentDate);
-      //setLoading(true);
       setLoadingView(true);
       console.log('groundId', groundID);
       let groundres = await getgroundDataById(groundID, 'admin', uid);
-      //setLoading(false);
       setLoadingView(false);
-      //  console.log("gtrr33 groundres" , groundres, "gtrr33");
       setGroundData(groundres);
       setgametype(groundres?.game_type);
-      //setLoading(true);
       let court_details = await getCourtsForGround(groundID);
-      //     console.log("court_details", court_details)
       let ground_details = {...groundData, court_details};
-      // console.log("ground_details", ground_details)
-      // setGroundData(ground_details);
-      // setgametype(ground_details?.game_type);
-
       const slotDatas = await getGroundslotdata(ground_details);
-
-      //  console.log("My SLotsData",slotDatas);
-      //setLoading(false);
-
+      console.log('grndData2:', slotDatas);
       setCourtslot(slotDatas);
       getCourttime(ground_details, currentDate);
     } else {
@@ -228,14 +234,13 @@ const CourtScreen = () => {
 
   useEffect(() => {
     grndData();
-    // console.log("gtrr334");
   }, [uid]);
 
   //Update the CreatedAt Value in CreateSlots State values
   useEffect(() => {
     if (createSlots?.createdAt) {
       const formattedCreatedAt = new Date(createSlots?.createdAt);
-      setCreateslots(prevSlots => ({
+      setCreateSlots(prevSlots => ({
         ...prevSlots,
         date: formattedCreatedAt,
       }));
@@ -279,9 +284,10 @@ const CourtScreen = () => {
     if (
       !selectedValue?.Courts ||
       !createSlots?.price ||
-      !createSlots?.date ||
-      !createSlots?.starttime ||
-      !createSlots?.endtime
+      !createSlots?.slotType
+      // !createSlots?.date ||
+      // !createSlots?.starttime ||
+      // !createSlots?.endtime
     ) {
       setAddCourtTimingError(true);
       ToastAndroid.showWithGravity(
@@ -291,47 +297,117 @@ const CourtScreen = () => {
       );
       return;
     } else {
-      // console.log('createSlots.date',createSlots.date);
-      const startT = `${createSlots.date}T${createSlots.starttime}`;
-      const endT = `${createSlots.date}T${createSlots.endtime}`;
-      const newStartTime = new Date(startT);
-      const newEndTime = new Date(endT);
-      const currentDateTime = new Date();
-      if (
-        newStartTime > newEndTime ||
-        newStartTime < currentDateTime ||
-        newEndTime < currentDateTime
-      ) {
+      if (createSlots?.slotType === 'customDate' && !createSlots?.date) {
+        setAddCourtTimingError(true);
         ToastAndroid.showWithGravity(
-          'Past time is not allowed',
+          'Please update the Custom Date Fields',
           ToastAndroid.LONG,
           ToastAndroid.CENTER,
         );
-        //ToastAndroid.show('Past time is not allowed');
+        return;
+      } else if (
+        createSlots?.slotType === 'customDays' &&
+        selectedDays.length === 0
+      ) {
+        setAddCourtTimingError(true);
+        ToastAndroid.showWithGravity(
+          'Please update the Custom Days',
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER,
+        );
         return;
       } else {
-        //
-        const courtDataBySlot = await getcourtevent(selectedValue?.Courts);
-        // setLoadingView(false);
-
-        if (courtDataBySlot.length != 0) {
-          const isExist = courtDataBySlot.filter(item => {
-            return (
-              (new Date(item.start) < newStartTime &&
-                new Date(item.end) < newStartTime) == false &&
-              (new Date(item.start) > newEndTime &&
-                new Date(item.end) > newEndTime) == false
+        if (
+          createSlots?.slotType === 'customDays'
+          // createSlots?.slotType === 'weekday' ||
+          // createSlots?.slotType === 'weekend'
+        ) {
+          const result = Object.values(courtslot).map(item => {
+            let sortslotdata = item?.slotData?.sort(compareByDate);
+            let activeSlotData = sortslotdata?.filter(item => item?.isActive);
+            // console.log('Iten12: ', activeSlotData);
+            // console.log(
+            //   'ItenData12: ',
+            //   activeSlotData.some(
+            //     slot =>
+            //       slot.slotType === 'weekday' || slot.slotType === 'weekend',
+            //   ),
+            // );
+            // Check if createSlots.slotType matches any activeSlotData.slotType
+            return activeSlotData.some(
+              slot =>
+                slot.slotType === 'weekday' || slot.slotType === 'weekend',
             );
           });
-          if (!isExist.length) {
+          const checkSlotType = result.includes(true);
+          if (checkSlotType) {
+            setCreateSlotWarning(true);
+          } else {
             setSlotModalOpen(true);
             setAddCourtTimingError(false);
-          } else {
-            setCreateEditSlotWarning(true);
           }
         } else {
-          setSlotModalOpen(true);
-          setAddCourtTimingError(false);
+          const selectedDateStr = createSlots.date;
+          const currentDate = new Date();
+          const currentDateStr = currentDate.toISOString().split('T')[0];
+
+          if (selectedDateStr === currentDateStr) {
+            ToastAndroid.showWithGravity(
+              'Please select a future date.',
+              ToastAndroid.LONG,
+              ToastAndroid.CENTER,
+            );
+            return;
+            // }
+            // const startT = `${createSlots.date}T${createSlots.starttime}`;
+            // const endT = `${createSlots.date}T${createSlots.endtime}`;
+
+            // const newStartTime = new Date(startT);
+            // const newEndTime = new Date(endT);
+            // const currentDateTime = new Date();
+            // if (
+            //   newStartTime > newEndTime ||
+            //   newStartTime < currentDateTime ||
+            //   newEndTime < currentDateTime
+            // ) {
+            //   ToastAndroid.showWithGravity(
+            //     'Past time is not allowed',
+            //     ToastAndroid.LONG,
+            //     ToastAndroid.CENTER,
+            //   );
+            //   return;
+          } else {
+            const courtDataBySlot = await getcourtevent(selectedValue?.Courts);
+            if (courtDataBySlot.length != 0) {
+              // const isExist = courtDataBySlot.filter(item => {
+              //   console.log('Elam', item);
+              //   return (
+              //     (new Date(item.start) < newStartTime &&
+              //       new Date(item.end) < newStartTime) == false &&
+              //     (new Date(item.start) > newEndTime &&
+              //       new Date(item.end) > newEndTime) == false
+              //   );
+              // });
+              const isExist = courtDataBySlot.filter(item => {
+                const itemStartDateStr = item.start.split('T')[0];
+                const itemEndDateStr = item.end.split('T')[0];
+
+                return (
+                  itemStartDateStr === selectedDateStr ||
+                  itemEndDateStr === selectedDateStr
+                );
+              });
+              if (!isExist.length) {
+                setSlotModalOpen(true);
+                setAddCourtTimingError(false);
+              } else {
+                setCreateEditSlotWarning(true);
+              }
+            } else {
+              setSlotModalOpen(true);
+              setAddCourtTimingError(false);
+            }
+          }
         }
       }
     }
@@ -488,26 +564,26 @@ const CourtScreen = () => {
     } else {
       // setCreateslots({ ...createSlots, date: value });
       const formattedDate = formatDateValues(value);
-      setCreateslots(prevSlots => ({
+      setCreateSlots(prevSlots => ({
         ...prevSlots,
         date: formattedDate,
       }));
     }
   };
 
-  const handleTimeChange = (type, date) => {
-    if (
-      createSlots.date.toDateString() === new Date().toDateString() &&
-      date.getHours() < new Date().getHours()
-    ) {
-      Alert.alert('Past time is not allowed');
-    } else {
-      setCreateslots({
-        ...createSlots,
-        [type]: date,
-      });
-    }
-  };
+  // const handleTimeChange = (type, date) => {
+  //   if (
+  //     createSlots.date.toDateString() === new Date().toDateString() &&
+  //     date.getHours() < new Date().getHours()
+  //   ) {
+  //     Alert.alert('Past time is not allowed');
+  //   } else {
+  //     setCreateSlots({
+  //       ...createSlots,
+  //       [type]: date,
+  //     });
+  //   }
+  // };
 
   // const formatTimeSlot = (date) => {
   //   return date.toLocaleTimeString('en-GB', {
@@ -534,7 +610,6 @@ const CourtScreen = () => {
         label: court?.court_name,
         gameType: court?.gametype,
       }));
-      console.log('items', items);
       setCourtItems(items);
     }
   }, [groundData]);
@@ -584,8 +659,20 @@ const CourtScreen = () => {
   /* Add Funciton of SLot */
 
   const handleCourtslot = async () => {
-    createSlots.start = `${createSlots?.date}T${createSlots?.starttime}`;
-    createSlots.end = `${createSlots?.date}T${createSlots?.endtime}`;
+    createSlots.slotType = createSlots.slotType;
+    if (createSlots.slotType != 'customDate') {
+      createSlots.start = groundData.start_time;
+      createSlots.end = groundData.end_time;
+    } else {
+      createSlots.start = `${createSlots?.date}T${groundData.start_time}`;
+      createSlots.end = `${createSlots?.date}T${groundData.end_time}`;
+    }
+
+    if (createSlots.slotType == 'customDays') {
+      createSlots.days = selectedDays;
+    } else {
+      createSlots.days = [];
+    }
 
     createSlots.court_id = selectedValue?.Courts;
 
@@ -594,9 +681,11 @@ const CourtScreen = () => {
       selectedValue?.selectedEditslot == undefined
     ) {
       //setLoading(true);
+      console.log('SlotFB', selectedValue?.Courts, createSlots);
+
       setLoadingView(true);
       const data = await createCourtSlot(selectedValue?.Courts, createSlots);
-      console.log('data---1213', data);
+      console.log('data---13', data);
       //setLoading(false);
       setLoadingView(false);
       if (
@@ -643,11 +732,12 @@ const CourtScreen = () => {
       }
     }
 
-    setCreateslots({
+    setCreateSlots({
       price: '',
       date: null,
       starttime: '',
       endtime: '',
+      slotType: '',
       isActive: true,
     });
     setValue(null);
@@ -1244,76 +1334,172 @@ const CourtScreen = () => {
   /* Update The Slots */
   const handleSlotedit = async value => {
     console.log('value one', value);
-    //setLoading(true);
+
+    // Check for required fields
+    if (!value.court_id || !value.price || !value.slotType) {
+      ToastAndroid.showWithGravity(
+        'Please fill in all the required fields.',
+        ToastAndroid.LONG,
+        ToastAndroid.CENTER,
+      );
+      return;
+    }
+
+    // Format start and end times
+    const startTime = new Date(`1970-01-01T${value.start}:00`);
+    const endTime = new Date(`1970-01-01T${value.end}:00`);
+
+    // Check slot type and handle accordingly
+    if (value.slotType === 'customDays') {
+      if (!value.days || value.days.length === 0) {
+        ToastAndroid.showWithGravity(
+          'Please select the custom days.',
+          ToastAndroid.LONG,
+          ToastAndroid.CENTER,
+        );
+        return;
+      }
+    }
+
+    // Fetch existing slots for the court
     const courtDataBySlot = await getcourtevent(value.court_id);
-    //setLoading(false);
-    if (courtDataBySlot.length != 0) {
-      const newStartTime = new Date(value.start);
-      const newEndTime = new Date(value.end);
+
+    if (courtDataBySlot.length !== 0) {
       const isExist = courtDataBySlot.filter(item => {
+        const itemStartTime = new Date(item.start);
+        const itemEndTime = new Date(item.end);
         return (
-          (new Date(item.start) < newStartTime &&
-            new Date(item.end) < newStartTime) == false &&
-          (new Date(item.start) > newEndTime &&
-            new Date(item.end) > newEndTime) == false
+          (itemStartTime < startTime && itemEndTime < startTime) === false &&
+          (itemStartTime > endTime && itemEndTime > endTime) === false
         );
       });
 
+      // If no overlaps exist
       if (!isExist.length) {
         setAddEdit('Update');
-        value.start = formatDateToISO(value.start);
-        value.end = formatDateToISO(value.end);
 
         let court_value = courtItems?.filter(
-          item => item.value == value?.court_id,
+          item => item.value === value.court_id,
         );
-        console.log('court_value123', court_value);
+
         setSelectedValue({
           ...selectedValue,
-          selectedEditslot: value?.slot_id,
+          selectedEditslot: value.slot_id,
           Courts: court_value[0].value,
         });
-        setValue(court_value[0].value);
-        setCreateslots({
-          date: value?.start.slice(0, 10),
-          starttime: value?.start?.slice(11, 16),
-          endtime: value?.end?.slice(11, 16),
-          price: value?.price,
-          isActive: value?.isActive,
-        });
-        setAnchorEl(null);
 
-        //handleChange("Slots");
+        setCreateSlots({
+          date: value.date || '', // Make sure to set date if applicable
+          starttime: value.start,
+          endtime: value.end,
+          price: value.price,
+          isActive: value.isActive,
+          days: value.days, // Include the days array
+        });
+
+        setAnchorEl(null);
       } else {
         setSloteditWarning(true);
       }
     } else {
+      // If no existing slots, proceed with the update
       setAddEdit('Update');
-      value.start = formatDateToISO(value.start);
-      value.end = formatDateToISO(value.end);
 
       let court_value = courtItems?.filter(
-        item => item.value == value?.court_id,
+        item => item.value === value.court_id,
       );
-      console.log('court_value', court_value);
+
       setSelectedValue({
         ...selectedValue,
-        selectedEditslot: value?.slot_id,
+        selectedEditslot: value.slot_id,
         Courts: court_value[0].value,
       });
-      setValue(court_value[0].value);
-      setCreateslots({
-        date: value?.start.slice(0, 10),
-        starttime: value?.start?.slice(11, 16),
-        endtime: value?.end?.slice(11, 16),
-        price: value?.price,
-        isActive: value?.isActive,
-      });
-      setAnchorEl(null);
 
-      //      handleChange("Slots");
+      setCreateSlots({
+        date: value.date || '', // Make sure to set date if applicable
+        starttime: value.start,
+        endtime: value.end,
+        price: value.price,
+        isActive: value.isActive,
+        days: value.days, // Include the days array
+      });
+
+      setAnchorEl(null);
     }
   };
+
+  // const handleSlotedit = async value => {
+  //   console.log('value one', value);
+  //   //setLoading(true);
+  //   const courtDataBySlot = await getcourtevent(value.court_id);
+  //   //setLoading(false);
+  //   if (courtDataBySlot.length != 0) {
+  //     const newStartTime = new Date(value.start);
+  //     const newEndTime = new Date(value.end);
+  //     const isExist = courtDataBySlot.filter(item => {
+  //       return (
+  //         (new Date(item.start) < newStartTime &&
+  //           new Date(item.end) < newStartTime) == false &&
+  //         (new Date(item.start) > newEndTime &&
+  //           new Date(item.end) > newEndTime) == false
+  //       );
+  //     });
+
+  //     if (!isExist.length) {
+  //       setAddEdit('Update');
+  //       value.start = formatDateToISO(value.start);
+  //       value.end = formatDateToISO(value.end);
+
+  //       let court_value = courtItems?.filter(
+  //         item => item.value == value?.court_id,
+  //       );
+  //       console.log('court_value123', court_value);
+  //       setSelectedValue({
+  //         ...selectedValue,
+  //         selectedEditslot: value?.slot_id,
+  //         Courts: court_value[0].value,
+  //       });
+  //       setValue(court_value[0].value);
+  //       setCreateSlots({
+  //         date: value?.start.slice(0, 10),
+  //         starttime: value?.start?.slice(11, 16),
+  //         endtime: value?.end?.slice(11, 16),
+  //         price: value?.price,
+  //         isActive: value?.isActive,
+  //       });
+  //       setAnchorEl(null);
+
+  //       //handleChange("Slots");
+  //     } else {
+  //       setSloteditWarning(true);
+  //     }
+  //   } else {
+  //     setAddEdit('Update');
+  //     value.start = formatDateToISO(value.start);
+  //     value.end = formatDateToISO(value.end);
+
+  //     let court_value = courtItems?.filter(
+  //       item => item.value == value?.court_id,
+  //     );
+  //     console.log('court_value', court_value);
+  //     setSelectedValue({
+  //       ...selectedValue,
+  //       selectedEditslot: value?.slot_id,
+  //       Courts: court_value[0].value,
+  //     });
+  //     setValue(court_value[0].value);
+  //     setCreateSlots({
+  //       date: value?.start.slice(0, 10),
+  //       starttime: value?.start?.slice(11, 16),
+  //       endtime: value?.end?.slice(11, 16),
+  //       price: value?.price,
+  //       isActive: value?.isActive,
+  //     });
+  //     setAnchorEl(null);
+
+  //     //      handleChange("Slots");
+  //   }
+  // };
 
   const handleSlotdelete = async value => {
     //setLoading(true);
@@ -1475,7 +1661,6 @@ const CourtScreen = () => {
                   style={{
                     zIndex: 2000,
                     padding: 10,
-                    // marginBottom: 20,
                     backgroundColor: COLORS.fieldColor,
                     borderBottomRightRadius: 12,
                     borderBottomLeftRadius: 12,
@@ -1576,7 +1761,6 @@ const CourtScreen = () => {
                   }}>
                   <View style={styles.horizontalBar} />
                   <Text style={styles.labelSlot}>Courts</Text>
-                  {console.log('value', value)}
                   <DropDownPicker
                     open={open}
                     value={value}
@@ -1607,9 +1791,9 @@ const CourtScreen = () => {
                   <CommonTextInput
                     label="Price"
                     value={createSlots?.price}
-                    onChangeText={text =>
-                      setCreateslots({...createSlots, price: text})
-                    }
+                    onChangeText={text => {
+                      setCreateSlots({...createSlots, price: text});
+                    }}
                     //widthStyle={true}
                   />
                   {AddCourtTimingError && !createSlots.price && (
@@ -1617,7 +1801,266 @@ const CourtScreen = () => {
                       *Enter appropriate price values
                     </Text>
                   )}
+                  {/* Slot Slection                   */}
                   <View style={{paddingTop: 10}}>
+                    <Text style={styles.labelSlot}>Select a slot</Text>
+                    <View style={styles.radioSlot}>
+                      <RadioButton.Group
+                        onValueChange={value => {
+                          setSelectedOption(value);
+                          setCreateSlots({
+                            ...createSlots,
+                            slotType: value,
+                          });
+                        }}
+                        value={selectedOption}>
+                        <View style={styles.radioRow}>
+                          {/* First Row: Weekday and Weekend */}
+                          <View style={styles.radioItem}>
+                            <RadioButton
+                              color={COLORS.PrimaryColor}
+                              value="weekday"
+                              status={
+                                selectedOption === 'weekday'
+                                  ? 'checked'
+                                  : 'unchecked'
+                              }
+                              onValueChange={() => {
+                                setSelectedOption('weekday');
+                                setCreateSlots({
+                                  ...createSlots,
+                                  slotType: selectedOption,
+                                });
+                                console.log('selectedOption', selectedOption);
+                              }}
+                            />
+                            <Text>Weekday</Text>
+                          </View>
+
+                          <View style={styles.radioItem}>
+                            <RadioButton
+                              color={COLORS.PrimaryColor}
+                              value="weekend"
+                              status={
+                                selectedOption === 'weekend'
+                                  ? 'checked'
+                                  : 'unchecked'
+                              }
+                              onValueChange={() => {
+                                setSelectedOption('weekend');
+                                setCreateSlots({
+                                  ...createSlots,
+                                  slotType: 'weekend',
+                                });
+                              }}
+                            />
+                            <Text>Weekend</Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.radioRow}>
+                          {/* Second Row: Custom Days and Custom Date */}
+                          <View style={styles.radioItem}>
+                            <RadioButton
+                              color={COLORS.PrimaryColor}
+                              value="customDays"
+                              status={
+                                selectedOption === 'customDays'
+                                  ? 'checked'
+                                  : 'unchecked'
+                              }
+                              onValueChange={() => {
+                                setSelectedOption('customDays');
+                                setCreateSlots({
+                                  ...createSlots,
+                                  slotType: 'customDays',
+                                });
+                              }}
+                            />
+                            <Text>Custom Days</Text>
+                          </View>
+                          <View style={styles.radioItem}>
+                            <RadioButton
+                              color={COLORS.PrimaryColor}
+                              value="customDate"
+                              status={
+                                selectedOption === 'customDate'
+                                  ? 'checked'
+                                  : 'unchecked'
+                              }
+                              onValueChange={() => {
+                                setSelectedOption('customDate');
+                                setCreateSlots({
+                                  ...createSlots,
+                                  slotType: 'customDate',
+                                });
+                              }}
+                            />
+                            <Text>Custom Date</Text>
+                          </View>
+                        </View>
+                      </RadioButton.Group>
+                    </View>
+                    {console.log('slotType', createSlots?.slotType)}
+                    {AddCourtError && createSlots.slotType === '' && (
+                      <Text style={styles.errorText}>
+                        *Enter appropriate values
+                      </Text>
+                    )}
+                    {/* WeekDay Slot */}
+                    {selectedOption === 'weekday' && (
+                      <View style={styles.radioSlot}>
+                        <Text style={styles.sectionTitle}>Weekday Slot</Text>
+                        <View style={styles.checkboxContainer}>
+                          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(day => (
+                            <View key={day} style={styles.checkboxItem}>
+                              <Checkbox
+                                status="checked"
+                                color={COLORS.PrimaryColor}
+                              />
+                              <Text
+                                style={{
+                                  fontFamily: 'Outfit-Regular',
+                                  fontSize: 16,
+                                }}>
+                                {day}
+                              </Text>
+                            </View>
+                          ))}
+                          {['Sat', 'Sun'].map(day => (
+                            <View key={day} style={styles.checkboxItem}>
+                              <Checkbox status="unchecked" disabled={true} />
+                              <Text
+                                style={{
+                                  fontFamily: 'Outfit-Regular',
+                                  fontSize: 16,
+                                }}>
+                                {day}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+                    {/* Weekend Slot */}
+                    {selectedOption === 'weekend' && (
+                      <View style={styles.radioSlot}>
+                        <Text style={styles.sectionTitle}>Weekend Slot</Text>
+                        <View style={styles.checkboxContainer}>
+                          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(day => (
+                            <View key={day} style={styles.checkboxItem}>
+                              <Checkbox
+                                status="unchecked"
+                                disabled={true}
+                                style={(fontFamily = 'Outfit-Regualar')}
+                              />
+                              <Text
+                                style={{
+                                  fontFamily: 'Outfit-Regular',
+                                  fontSize: 16,
+                                }}>
+                                {day}
+                              </Text>
+                            </View>
+                          ))}
+                          {['Sat', 'Sun'].map(day => (
+                            <View key={day} style={styles.checkboxItem}>
+                              <Checkbox
+                                status="checked"
+                                color={COLORS.PrimaryColor}
+                              />
+                              <Text
+                                style={{
+                                  fontFamily: 'Outfit-Regular',
+                                  fontSize: 16,
+                                }}>
+                                {day}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+                    {/* custom days Slot */}
+                    {selectedOption === 'customDays' && (
+                      <View style={[styles.radioSlot, {paddingTop: 10}]}>
+                        <Text style={styles.sectionTitle}>Custom Days</Text>
+                        <View style={styles.checkboxContainer}>
+                          {Object.keys(customDays).map(day => (
+                            <View key={day} style={styles.checkboxItem}>
+                              <Checkbox
+                                status={
+                                  customDays[day] ? 'checked' : 'unchecked'
+                                }
+                                color={COLORS.PrimaryColor}
+                                onPress={() => toggleCustomCheckbox(day)}
+                              />
+                              <Text>{day}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+                    {/* custom date Slot */}
+                    {selectedOption === 'customDate' && (
+                      <View
+                        style={[
+                          styles.radioSlot,
+                          {paddingTop: 10, paddingBottom: 10},
+                        ]}>
+                        <Text style={styles.sectionTitle}>Custom Date</Text>
+                        <View
+                          style={{
+                            width: '100%',
+                            paddingTop: 10,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 20,
+                          }}>
+                          <Text style={styles.labelSlot}>Date</Text>
+                          <TouchableOpacity
+                            style={styles.buttonSlot}
+                            onPress={() => setOpenDatePicker(true)}>
+                            <Text style={styles.buttonTextSlot}>
+                              {' '}
+                              {createSlots.date
+                                ? new Date(createSlots.date).toLocaleDateString(
+                                    'en-GB',
+                                  )
+                                : 'Select Date'}
+                            </Text>
+                          </TouchableOpacity>
+                          <DatePicker
+                            modal
+                            mode="date"
+                            open={openDatePicker}
+                            date={
+                              createSlots.date
+                                ? new Date(createSlots.date)
+                                : new Date()
+                            }
+                            minimumDate={new Date()}
+                            onConfirm={date => {
+                              setOpenDatePicker(false);
+                              handleDateChange(date);
+                            }}
+                            onCancel={() => {
+                              setOpenDatePicker(false);
+                            }}
+                          />
+                        </View>
+                        {AddCourtTimingError && !createSlots.date && (
+                          <Text style={styles.errorText}>*Choose the date</Text>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                  {AddCourtTimingError && !createSlots.slotType && (
+                    <Text style={styles.errorText}>*Select a SlotType</Text>
+                  )}
+
+                  {/* Old Code            
+                  <View>
                     <Text style={styles.labelSlot}>Date</Text>
                     <TouchableOpacity
                       style={styles.buttonSlot}
@@ -1653,7 +2096,6 @@ const CourtScreen = () => {
                   {AddCourtTimingError && !createSlots.date && (
                     <Text style={styles.errorText}>*Choose the date</Text>
                   )}
-
                   <View style={styles.inputContainer}>
                     <Text style={styles.labelSlot}>Start Time</Text>
                     <TouchableOpacity
@@ -1678,7 +2120,7 @@ const CourtScreen = () => {
                       onConfirm={date => {
                         const now = new Date();
                         setOpenStartPicker(false);
-                        setCreateslots(prevState => ({
+                        setCreateSlots(prevState => ({
                           ...prevState,
                           ['starttime']: formatTime(date),
                         }));
@@ -1724,7 +2166,7 @@ const CourtScreen = () => {
                         // }
                         setOpenEndPicker(false);
                         //handleInputChange('end_time', date);
-                        setCreateslots(prevState => ({
+                        setCreateSlots(prevState => ({
                           ...prevState,
                           ['endtime']: formatTime(date),
                         }));
@@ -1737,6 +2179,8 @@ const CourtScreen = () => {
                       <Text style={styles.errorText}>*Enter end time</Text>
                     )}
                   </View>
+*/}
+
                   <View>
                     <TouchableOpacity
                       style={styles.addButtonRule}
@@ -1787,13 +2231,12 @@ const CourtScreen = () => {
                                     </Text>
                                   )}
                                   {activeSlotData?.map((slot, slotIndex) => {
-                                    {
-                                      console.log(
-                                        'start',
-                                        slot.start,
-                                        slot.end,
-                                      );
-                                    }
+                                    const newSlotStartTime = formatSlotTime(
+                                      slot.start,
+                                    );
+                                    const newSlotEndTime = formatSlotTime(
+                                      slot.end,
+                                    );
 
                                     const startTimeFormatted = getTimeFormatted(
                                       slot.start,
@@ -1804,8 +2247,7 @@ const CourtScreen = () => {
                                     {
                                       console.log(
                                         'startTimeFormatted',
-                                        startTimeFormatted,
-                                        endTimeFormatted,
+                                        slot.days,
                                       );
                                     }
                                     return (
@@ -1814,12 +2256,25 @@ const CourtScreen = () => {
                                         style={styles.slotDetailsSlot}>
                                         <View style={styles.slotTimeSlot}>
                                           <Text style={styles.slotTimeSlotText}>
-                                            {startTimeFormatted.formatedate}
+                                            {slot.slotType &&
+                                            slot.slotType !== 'customDate'
+                                              ? slot.slotType
+                                              : startTimeFormatted.formatedate}
                                           </Text>
+                                          {slot.days &&
+                                            slot.days.length > 0 && (
+                                              <Text
+                                                style={[
+                                                  styles.slotTimeText,
+                                                  {color: COLORS.PrimaryColor},
+                                                ]}>
+                                                {`${slot.days},`}
+                                              </Text>
+                                            )}
                                           <Text
                                             style={
-                                              styles.slotTimeSlotText
-                                            }>{`${startTimeFormatted.Time} - ${endTimeFormatted.Time}`}</Text>
+                                              styles.slotTimeText
+                                            }>{`${newSlotStartTime} - ${newSlotEndTime}`}</Text>
                                         </View>
                                         <Text
                                           style={
@@ -1919,9 +2374,7 @@ const CourtScreen = () => {
                       dropDownStyle={styles.dropdownSlot}
                     />
                     {AddCourtTimingError && availablecourt.Courts === '' && (
-                      <Text style={styles.errorText}>
-                        *Select appropriate values
-                      </Text>
+                      <Text style={styles.errorText}>*Select the Court</Text>
                     )}
                     {/* {AddCourtTimingError && availablecourt.Courts === '' && (
                       <Text style={styles.errorText}>*Select appropriate values</Text>
@@ -2722,9 +3175,16 @@ const styles = StyleSheet.create({
   },
   /* Slot Timing Styles*/
   labelSlot: {
+    fontFamily: 'Outfit-Regular',
     fontSize: 16,
     marginBottom: 8,
     color: '#333',
+  },
+  slotText: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 16,
+    color: '#333',
+    paddingVertical: 5,
   },
 
   dropdownSlot: {
@@ -2739,18 +3199,30 @@ const styles = StyleSheet.create({
   buttonSlot: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fafafa',
+    backgroundColor: '#fff',
     padding: 10,
     borderRadius: 12,
     marginBottom: 16,
-    height: 60,
+    height: 40,
+    // width: '80%',
     borderColor: COLORS.fieldBorderColor,
+    borderWidth: 1,
+  },
+  radioSlot: {
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    backgroundColor: '#fafafa',
+    borderRadius: 12,
+    marginBottom: 16,
+    borderColor: '#ddd',
     borderWidth: 1,
   },
   buttonTextSlot: {
     color: '#000000',
     fontSize: 16,
-    marginVertical: 8,
+    // marginVertical: 8,
   },
   inputSlotDateView: {
     backgroundColor: '#FAFAFA',
@@ -2763,9 +3235,9 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   inputDateViewSlot: {
-    height: 60,
+    height: 40,
     borderRadius: 12,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#fff',
     paddingHorizontal: 10,
     fontFamily: 'Outfit-Regular',
     fontSize: 20,
@@ -2778,7 +3250,10 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   inputContainer: {
-    marginBottom: 20,
+    width: '100%',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 20,
     color: '#fff',
   },
   /* Available Booking Booked Courttimes */
@@ -2890,12 +3365,20 @@ const styles = StyleSheet.create({
   },
   slotTimeSlotText: {
     fontSize: 16,
+    fontFamily: 'Outfit-Regular',
     color: '#192335',
+    lineHeight: 22,
+    textTransform: 'capitalize',
+  },
+  slotTimeText: {
+    fontSize: 14,
+    fontFamily: 'Outfit-Regular',
+    color: '#757C8D',
     lineHeight: 22,
   },
   slotPriceSlot: {
     color: '#097E52',
-    fontWeight: '500',
+    fontFamily: 'Outfit-Medium',
     fontSize: 16,
     lineHeight: 22,
   },
@@ -2944,6 +3427,35 @@ const styles = StyleSheet.create({
     top: -5,
     right: -5,
     borderRadius: 15,
+  },
+  radioRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  radioItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '45%', // Ensures wrapping if there are more than two items in a row
+  },
+  checkboxItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    width: '25%',
+  },
+  sectionTitle: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 16,
+    marginBottom: 10,
+    color: '#333',
+  },
+
+  checkboxContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
   },
 });
 
